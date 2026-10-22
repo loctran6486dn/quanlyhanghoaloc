@@ -336,6 +336,46 @@ const MobileApp = {
       });
     });
 
+    // Xử lý nhập khối lượng: cho phép nhập dấu phẩy ',' hoặc dấu chấm '.' mượt mà trên iPhone
+    const prodWeightInput = document.getElementById('prodWeight');
+    if (prodWeightInput) {
+      prodWeightInput.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+      });
+    }
+
+    // Nút thêm dòng màu
+    document.getElementById('btnAddColorRow')?.addEventListener('click', () => {
+      this.addColorRow('', 1);
+    });
+
+    // Chạm các chip màu nhanh bằng 1 chạm
+    const colorChips = document.querySelectorAll('#quickColorChips .color-chip');
+    colorChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const color = chip.getAttribute('data-color');
+        if (color) {
+          const existingRows = document.querySelectorAll('#productColorsContainer .color-variant-row');
+          let found = false;
+          existingRows.forEach(row => {
+            const nameInput = row.querySelector('.color-name-input');
+            if (nameInput && nameInput.value.trim().toLowerCase() === color.toLowerCase()) {
+              const qtyInput = row.querySelector('.color-qty-input');
+              if (qtyInput) {
+                qtyInput.value = (parseInt(qtyInput.value, 10) || 0) + 1;
+                found = true;
+              }
+            }
+          });
+          if (!found) {
+            this.addColorRow(color, 1);
+          } else {
+            this.syncColorStockSum();
+          }
+        }
+      });
+    });
+
     // Form submit sản phẩm
     document.getElementById('formProduct')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -344,12 +384,28 @@ const MobileApp = {
       const sku = document.getElementById('prodSku').value.trim();
       const category = document.getElementById('prodCategory').value.trim();
       const unit = document.getElementById('prodUnit').value.trim();
-      const weight = parseFloat(document.getElementById('prodWeight').value) || 0;
-      const costPrice = parseFloat(document.getElementById('prodCostPrice').value) || 0;
-      const sellingPrice = parseFloat(document.getElementById('prodSellingPrice').value) || 0;
-      const stock = parseInt(document.getElementById('prodStock').value) || 0;
-      const minStock = parseInt(document.getElementById('prodMinStock').value) || 0;
+      const weight = Calculations.parseDecimal(document.getElementById('prodWeight').value, 0.2);
+      const costPrice = Calculations.parseDecimal(document.getElementById('prodCostPrice').value, 0);
+      const sellingPrice = Calculations.parseDecimal(document.getElementById('prodSellingPrice').value, 0);
+      const minStock = parseInt(document.getElementById('prodMinStock').value, 10) || 0;
       const notes = document.getElementById('prodNotes').value.trim();
+
+      // Đọc danh sách màu sắc & số lượng từng màu
+      const colorRows = document.querySelectorAll('#productColorsContainer .color-variant-row');
+      const colors = [];
+      colorRows.forEach(row => {
+        const cName = (row.querySelector('.color-name-input')?.value || '').trim();
+        const cQty = parseInt(row.querySelector('.color-qty-input')?.value, 10) || 0;
+        if (cName) {
+          colors.push({ name: cName, quantity: cQty });
+        }
+      });
+
+      // Nếu có phân loại màu thì lấy tổng số lượng các màu làm tồn kho, ngược lại lấy ô prodStock
+      let stock = parseInt(document.getElementById('prodStock').value, 10) || 0;
+      if (colors.length > 0) {
+        stock = colors.reduce((sum, c) => sum + c.quantity, 0);
+      }
 
       await window.appStore.saveProduct({
         id: id || undefined,
@@ -358,6 +414,7 @@ const MobileApp = {
         category,
         unit,
         weight,
+        colors,
         costPrice,
         sellingPrice,
         stock,
@@ -366,8 +423,64 @@ const MobileApp = {
       });
 
       this.closeModal('modalProduct');
-      this.showToast(id ? 'Đã sửa sản phẩm!' : 'Đã thêm sản phẩm mới!');
+      this.showToast(id ? 'Đã cập nhật sản phẩm!' : 'Đã thêm sản phẩm mới!');
     });
+  },
+
+  addColorRow(colorName = '', qty = 1) {
+    const container = document.getElementById('productColorsContainer');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'color-variant-row';
+    div.innerHTML = `
+      <div style="flex: 1.3;">
+        <input type="text" class="form-control color-name-input" value="${colorName}" placeholder="Tên màu (Đỏ, Cam...)" style="height: 38px; font-size: 13px;" required>
+      </div>
+      <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
+        <input type="number" class="form-control color-qty-input" value="${qty}" min="0" placeholder="0" inputmode="numeric" style="height: 38px; font-size: 13px; text-align: center;">
+        <span style="font-size: 11px; color: #64748b;">cái</span>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline btn-remove-color" style="color: #ef4444; width: 34px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 16px;">&times;</button>
+    `;
+
+    container.appendChild(div);
+
+    const nameInput = div.querySelector('.color-name-input');
+    const qtyInput = div.querySelector('.color-qty-input');
+    const removeBtn = div.querySelector('.btn-remove-color');
+
+    qtyInput.addEventListener('input', () => this.syncColorStockSum());
+    nameInput.addEventListener('input', () => this.syncColorStockSum());
+    removeBtn.addEventListener('click', () => {
+      div.remove();
+      this.syncColorStockSum();
+    });
+
+    this.syncColorStockSum();
+    if (!colorName) nameInput.focus();
+  },
+
+  syncColorStockSum() {
+    const rows = document.querySelectorAll('#productColorsContainer .color-variant-row');
+    const summaryBox = document.getElementById('colorTotalSummary');
+    const sumDisplay = document.getElementById('colorTotalSumQty');
+    const stockInput = document.getElementById('prodStock');
+
+    if (rows.length === 0) {
+      if (summaryBox) summaryBox.style.display = 'none';
+      return;
+    }
+
+    let totalQty = 0;
+    rows.forEach(r => {
+      const q = parseInt(r.querySelector('.color-qty-input')?.value, 10) || 0;
+      totalQty += q;
+    });
+
+    if (summaryBox) summaryBox.style.display = 'flex';
+    if (sumDisplay) sumDisplay.textContent = totalQty;
+    if (stockInput) stockInput.value = totalQty;
   },
 
   openAddProductModal(product = null) {
@@ -383,6 +496,18 @@ const MobileApp = {
     document.getElementById('prodStock').value = product ? product.stock : 0;
     document.getElementById('prodMinStock').value = product ? product.minStock : 5;
     document.getElementById('prodNotes').value = product ? product.notes : '';
+
+    // Khởi tạo các dòng màu sắc
+    const container = document.getElementById('productColorsContainer');
+    if (container) {
+      container.innerHTML = '';
+      if (product && Array.isArray(product.colors) && product.colors.length > 0) {
+        product.colors.forEach(c => {
+          this.addColorRow(c.name, c.quantity);
+        });
+      }
+    }
+    this.syncColorStockSum();
 
     this.openModal('modalProduct');
   },
@@ -458,6 +583,19 @@ const MobileApp = {
               <strong>${p.weight || 0} kg / ${p.unit}</strong>
             </div>
           </div>
+
+          ${Array.isArray(p.colors) && p.colors.length > 0 ? `
+            <div style="margin: 8px 0 4px 0; padding-top: 6px; border-top: 1px dashed #e2e8f0; font-size: 12px;">
+              <div style="color: #64748b; font-weight: 600; margin-bottom: 4px;">🎨 Màu sắc & tồn từng màu:</div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                ${p.colors.map(c => `
+                  <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ${c.quantity > 0 ? '#eff6ff' : '#f8fafc'}; color: ${c.quantity > 0 ? '#1d4ed8' : '#94a3b8'}; border: 1px solid ${c.quantity > 0 ? '#bfdbfe' : '#e2e8f0'};">
+                    ${c.name}: <strong>${c.quantity}</strong> ${c.quantity === 0 ? '<span style="font-size: 9px; opacity: 0.7;">(Hết)</span>' : ''}
+                  </span>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
 
           <div class="m-card-footer">
             <span style="font-size: 11px; color: #94a3b8;">${p.notes || ''}</span>
@@ -552,8 +690,8 @@ const MobileApp = {
 
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
-        const purchasePrice = parseFloat(priceInput.value) || 0;
-        const weight = parseFloat(weightInput?.value) || 0;
+        const purchasePrice = Calculations.parseDecimal(priceInput.value, 0);
+        const weight = Calculations.parseDecimal(weightInput?.value, 0.2);
 
         if (!productId || quantity <= 0) {
           isValid = false;
@@ -577,9 +715,9 @@ const MobileApp = {
       const date = document.getElementById('poDate').value;
       const supplier = document.getElementById('poSupplier').value;
       const shippingType = document.getElementById('poShippingType')?.value || 'by_weight';
-      const pricePerKg = parseFloat(document.getElementById('poPricePerKg')?.value) || 0;
-      const totalWeight = parseFloat(document.getElementById('poTotalWeight')?.value) || 0;
-      const shippingCost = parseFloat(document.getElementById('poShippingCost')?.value) || 0;
+      const pricePerKg = Calculations.parseDecimal(document.getElementById('poPricePerKg')?.value, 0);
+      const totalWeight = Calculations.parseDecimal(document.getElementById('poTotalWeight')?.value, 0);
+      const shippingCost = Calculations.parseDecimal(document.getElementById('poShippingCost')?.value, 0);
       const notes = document.getElementById('poNotes').value;
 
       await window.appStore.createPurchase({
@@ -666,7 +804,7 @@ const MobileApp = {
       <div class="form-row" style="margin-top: 6px;">
         <div>
           <label style="font-size: 11px; color: #64748b;">Khối lượng (kg/cái):</label>
-          <input type="number" class="form-control po-weight-input" value="0.2" step="0.01" min="0" required inputmode="decimal">
+          <input type="text" class="form-control po-weight-input" value="0.2" placeholder="0.2 hoặc 0,2" inputmode="decimal">
         </div>
         <div>
           <label style="font-size: 11px; color: #64748b;">Tổng kg món này:</label>
@@ -703,7 +841,10 @@ const MobileApp = {
 
     priceInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
     qtyInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
-    weightInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
+    weightInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+      this.updatePurchaseLiveCalc();
+    });
 
     this.updatePurchaseLiveCalc();
   },
@@ -714,12 +855,12 @@ const MobileApp = {
     let sumWeight = 0;
 
     const shipType = document.getElementById('poShippingType')?.value || 'by_weight';
-    const pricePerKg = parseFloat(document.getElementById('poPricePerKg')?.value) || 0;
+    const pricePerKg = Calculations.parseDecimal(document.getElementById('poPricePerKg')?.value, 0);
 
     rows.forEach(row => {
       const qty = parseFloat(row.querySelector('.po-qty-input')?.value) || 0;
-      const price = parseFloat(row.querySelector('.po-price-input')?.value) || 0;
-      const weight = parseFloat(row.querySelector('.po-weight-input')?.value) || 0;
+      const price = Calculations.parseDecimal(row.querySelector('.po-price-input')?.value, 0);
+      const weight = Calculations.parseDecimal(row.querySelector('.po-weight-input')?.value, 0);
 
       const lineTotal = qty * price;
       const lineWeight = qty * weight;
@@ -730,7 +871,7 @@ const MobileApp = {
       if (totalEl) totalEl.textContent = Calculations.formatNumber(lineTotal) + ' đ';
 
       const weightEl = row.querySelector('.po-item-total-weight');
-      if (weightEl) weightEl.textContent = `${lineWeight.toFixed(2)} kg`;
+      if (weightEl) weightEl.textContent = `${Number(lineWeight.toFixed(2))} kg`;
 
       const landedEl = row.querySelector('.po-line-landed-preview');
       if (landedEl) {
@@ -747,16 +888,17 @@ const MobileApp = {
     let totalWeight = sumWeight;
 
     if (shipType === 'by_weight') {
-      if (weightInput && (parseFloat(weightInput.value) === 0 || weightInput.value === '')) {
+      const currentEntered = weightInput ? weightInput.value.trim() : '';
+      if (weightInput && (currentEntered === '0' || currentEntered === '')) {
         weightInput.value = Number(sumWeight.toFixed(2));
       }
-      totalWeight = parseFloat(weightInput?.value) || sumWeight;
+      totalWeight = Calculations.parseDecimal(weightInput?.value, sumWeight);
       const autoShipCost = Math.round(totalWeight * pricePerKg);
       const costInput = document.getElementById('poShippingCost');
       if (costInput) costInput.value = autoShipCost;
     }
 
-    const shipping = parseFloat(document.getElementById('poShippingCost')?.value) || 0;
+    const shipping = Calculations.parseDecimal(document.getElementById('poShippingCost')?.value, 0);
     const total = subtotal + shipping;
 
     document.getElementById('poPreviewSubtotal').textContent = Calculations.formatCurrency(subtotal);
@@ -885,7 +1027,9 @@ const MobileApp = {
 
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
-        const sellingPrice = parseFloat(priceInput.value) || 0;
+        const sellingPrice = Calculations.parseDecimal(priceInput.value, 0);
+        const colorSelect = row.querySelector('.sale-color-select');
+        const color = (colorSelect ? colorSelect.value : '').trim();
 
         if (!productId || quantity <= 0) {
           isValid = false;
@@ -898,6 +1042,7 @@ const MobileApp = {
             productId,
             productName: prod ? prod.name : 'Sản phẩm',
             sku: prod ? prod.sku : '',
+            color,
             quantity,
             sellingPrice,
             costPrice: prod ? prod.costPrice : 0
@@ -991,6 +1136,12 @@ const MobileApp = {
         </select>
         <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 34px; padding: 0;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
       </div>
+      <div class="sale-color-wrap" style="display: none; margin-bottom: 8px;">
+        <label style="font-size: 11px; color: #64748b; margin-bottom: 2px; display: block;">🎨 Chọn màu xuất kho:</label>
+        <select class="form-control sale-color-select" style="font-size: 13px; height: 38px;">
+          <option value="">-- Mặc định --</option>
+        </select>
+      </div>
       <div class="form-row">
         <div>
           <label style="font-size: 11px; color: #64748b;">Số lượng bán:</label>
@@ -1012,11 +1163,26 @@ const MobileApp = {
     const prodSelect = div.querySelector('.sale-product-select');
     const priceInput = div.querySelector('.sale-price-input');
     const qtyInput = div.querySelector('.sale-qty-input');
+    const colorWrap = div.querySelector('.sale-color-wrap');
+    const colorSelect = div.querySelector('.sale-color-select');
 
     prodSelect.addEventListener('change', () => {
       const selected = prodSelect.options[prodSelect.selectedIndex];
       const price = selected.getAttribute('data-price');
       if (price) priceInput.value = price;
+
+      const prod = window.appStore.getProductById(prodSelect.value);
+      if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
+        colorWrap.style.display = 'block';
+        colorSelect.innerHTML = `<option value="">-- Chọn màu xuất kho (${prod.colors.length} màu) --</option>` +
+          prod.colors.map(c => `
+            <option value="${c.name}">Màu ${c.name} (Kho còn: ${c.quantity})</option>
+          `).join('');
+      } else {
+        colorWrap.style.display = 'none';
+        colorSelect.innerHTML = `<option value="">-- Mặc định --</option>`;
+      }
+
       this.updateSaleLiveCalc();
     });
 
@@ -1104,7 +1270,7 @@ const MobileApp = {
     }
 
     container.innerHTML = filtered.map(s => {
-      const itemsList = (s.items || []).map(i => `${i.productName} (x${i.quantity})`).join(', ');
+      const itemsList = (s.items || []).map(i => `${i.productName}${i.color ? ` (Màu: ${i.color})` : ''} (x${i.quantity})`).join(', ');
 
       let statusBadge = '<span class="badge badge-success">Đã thu đủ</span>';
       if (s.paymentStatus === 'unpaid') {

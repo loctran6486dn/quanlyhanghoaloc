@@ -236,16 +236,32 @@ class DataStore {
 
   async saveProduct(product) {
     const isNew = !product.id;
+
+    // Xử lý mảng phân loại màu sắc & số lượng từng màu
+    const cleanedColors = Array.isArray(product.colors) ? product.colors
+      .map(c => ({
+        name: String(c.name || '').trim(),
+        quantity: Math.max(0, parseInt(c.quantity, 10) || 0)
+      }))
+      .filter(c => c.name.length > 0) : [];
+
+    // Nếu có danh sách màu, tồn kho sẽ tự động đồng bộ là tổng số lượng các màu
+    let finalStock = Number(product.stock || 0);
+    if (cleanedColors.length > 0) {
+      finalStock = cleanedColors.reduce((sum, c) => sum + c.quantity, 0);
+    }
+
     const item = {
       id: product.id || 'SP' + Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
       sku: product.sku ? product.sku.trim().toUpperCase() : ('SKU-' + Math.floor(1000 + Math.random() * 9000)),
       name: product.name.trim(),
       category: product.category || 'Mặc định',
       unit: product.unit || 'Cái',
-      weight: parseFloat(product.weight !== undefined ? product.weight : 0.2), // Khối lượng kg/đơn vị
+      weight: Calculations.parseDecimal(product.weight, 0.2), // Khối lượng kg/đơn vị (hỗ trợ cả dấu phẩy)
+      colors: cleanedColors,
       costPrice: Number(product.costPrice || 0),
       sellingPrice: Number(product.sellingPrice || 0),
-      stock: Number(product.stock || 0),
+      stock: finalStock,
       minStock: Number(product.minStock !== undefined ? product.minStock : 5),
       notes: product.notes || '',
       updatedAt: new Date().toISOString(),
@@ -370,6 +386,7 @@ class DataStore {
         productId: item.productId,
         productName: item.productName || (prod ? prod.name : 'Sản phẩm'),
         sku: prod ? prod.sku : '',
+        color: (item.color || '').trim(),
         quantity: Number(item.quantity || 1),
         sellingPrice,
         costPrice
@@ -404,11 +421,17 @@ class DataStore {
       createdAt: new Date().toISOString()
     };
 
-    // Trừ tồn kho sản phẩm
+    // Trừ tồn kho sản phẩm & màu sắc tương ứng
     for (const it of enrichedItems) {
       const prod = this.getProductById(it.productId);
       if (prod) {
         prod.stock = Math.max(0, Number(prod.stock || 0) - Number(it.quantity || 0));
+        if (it.color && Array.isArray(prod.colors)) {
+          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
+          if (colorObj) {
+            colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
+          }
+        }
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -437,11 +460,17 @@ class DataStore {
     const sale = this.state.sales.find(s => s.id === id);
     if (!sale) return;
 
-    // Hoàn trả lại tồn kho
+    // Hoàn trả lại tồn kho sản phẩm & màu sắc
     for (const it of sale.items || []) {
       const prod = this.getProductById(it.productId);
       if (prod) {
         prod.stock = Number(prod.stock || 0) + Number(it.quantity || 0);
+        if (it.color && Array.isArray(prod.colors)) {
+          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
+          if (colorObj) {
+            colorObj.quantity = Number(colorObj.quantity || 0) + Number(it.quantity || 0);
+          }
+        }
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -559,6 +588,11 @@ class DataStore {
         category: 'Thời trang',
         unit: 'Cái',
         weight: 0.2, // 200g
+        colors: [
+          { name: 'Trắng', quantity: 25 },
+          { name: 'Đen', quantity: 15 },
+          { name: 'Xám', quantity: 5 }
+        ],
         costPrice: 53000,
         sellingPrice: 120000,
         stock: 45,
@@ -572,6 +606,10 @@ class DataStore {
         category: 'Thời trang',
         unit: 'Cái',
         weight: 0.25, // 250g
+        colors: [
+          { name: 'Đen', quantity: 18 },
+          { name: 'Xanh', quantity: 10 }
+        ],
         costPrice: 85000,
         sellingPrice: 185000,
         stock: 28,

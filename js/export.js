@@ -51,6 +51,7 @@ const ExportManager = {
         'Danh mục': p.category,
         'Đơn vị tính': p.unit,
         'Khối lượng (kg)': p.weight !== undefined ? p.weight : 0.2,
+        'Phân loại màu': Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(c => `${c.name} (${c.quantity})`).join(', ') : '',
         'Tồn kho': p.stock,
         'Cảnh báo tồn tối thiểu': p.minStock,
         'Giá vốn (VNĐ)': p.costPrice,
@@ -67,7 +68,7 @@ const ExportManager = {
     }
 
     // Fallback sang CSV chuẩn UTF-8
-    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
+    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Phân loại màu', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
     const rows = products.map((p, idx) => [
       idx + 1,
       p.sku,
@@ -75,6 +76,7 @@ const ExportManager = {
       p.category,
       p.unit,
       p.weight !== undefined ? p.weight : 0.2,
+      Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(c => `${c.name} (${c.quantity})`).join(', ') : '',
       p.stock,
       p.minStock,
       p.costPrice,
@@ -95,7 +97,7 @@ const ExportManager = {
 
     if (window.XLSX) {
       const data = sales.map((s, idx) => {
-        const itemNames = (s.items || []).map(i => `${i.productName} (x${i.quantity})`).join(', ');
+        const itemNames = (s.items || []).map(i => `${i.productName}${i.color ? ` [Màu ${i.color}]` : ''} (x${i.quantity})`).join(', ');
         return {
           'STT': idx + 1,
           'Mã đơn hàng': s.code,
@@ -131,7 +133,7 @@ const ExportManager = {
       s.customerName,
       s.customerPhone || '',
       s.channel,
-      (s.items || []).map(i => `${i.productName} (x${i.quantity})`).join('; '),
+      (s.items || []).map(i => `${i.productName}${i.color ? ` [Màu ${i.color}]` : ''} (x${i.quantity})`).join('; '),
       s.shippingFee,
       s.shippingPayer === 'shop' ? 'Shop chịu' : 'Khách trả',
       s.discount,

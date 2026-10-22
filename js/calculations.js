@@ -44,6 +44,18 @@ const Calculations = {
   },
 
   /**
+   * Chuyển đổi chuỗi số thập phân (hỗ trợ cả dấu phẩy ',' và dấu chấm '.')
+   * Cần thiết cho bàn phím số iOS Safari tiếng Việt hiển thị dấu phẩy ','
+   */
+  parseDecimal(value, defaultValue = 0) {
+    if (value === null || value === undefined || value === '') return defaultValue;
+    if (typeof value === 'number') return isNaN(value) ? defaultValue : value;
+    const str = String(value).trim().replace(',', '.');
+    const parsed = parseFloat(str);
+    return isNaN(parsed) ? defaultValue : parsed;
+  },
+
+  /**
    * Tính giá vốn thực tế khi nhập hàng (Landed Cost)
    * Hỗ trợ phân bổ theo cân nặng (by_weight), theo số lượng (by_quantity), hoặc theo giá trị (by_value)
    * @param {Array} items - Danh sách mặt hàng nhập [{ productId, quantity, purchasePrice, weight }]

@@ -410,6 +410,39 @@ input, textarea, select {
 .badge-info { background: #e0f2fe; color: #0369a1; }
 .badge-secondary { background: #f1f5f9; color: #475569; }
 
+/* COLOR CHIPS & VARIANT ROWS */
+.color-chip {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: var(--radius-full);
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.color-chip:active {
+  transform: scale(0.94);
+  background: #e2e8f0;
+}
+
+.color-variant-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
 /* =================== FORM CONTROLS (FINGER-FRIENDLY) =================== */
 
 .form-group {
