@@ -344,6 +344,7 @@ const MobileApp = {
       const sku = document.getElementById('prodSku').value.trim();
       const category = document.getElementById('prodCategory').value.trim();
       const unit = document.getElementById('prodUnit').value.trim();
+      const weight = parseFloat(document.getElementById('prodWeight').value) || 0;
       const costPrice = parseFloat(document.getElementById('prodCostPrice').value) || 0;
       const sellingPrice = parseFloat(document.getElementById('prodSellingPrice').value) || 0;
       const stock = parseInt(document.getElementById('prodStock').value) || 0;
@@ -356,6 +357,7 @@ const MobileApp = {
         sku,
         category,
         unit,
+        weight,
         costPrice,
         sellingPrice,
         stock,
@@ -375,6 +377,7 @@ const MobileApp = {
     document.getElementById('prodSku').value = product ? product.sku : '';
     document.getElementById('prodCategory').value = product ? product.category : 'Thời trang';
     document.getElementById('prodUnit').value = product ? product.unit : 'Cái';
+    document.getElementById('prodWeight').value = product && product.weight !== undefined ? product.weight : 0.2;
     document.getElementById('prodCostPrice').value = product ? product.costPrice : 0;
     document.getElementById('prodSellingPrice').value = product ? product.sellingPrice : '';
     document.getElementById('prodStock').value = product ? product.stock : 0;
@@ -451,8 +454,8 @@ const MobileApp = {
               <strong style="color: #10b981;">+${Calculations.formatNumber(profitPerUnit)} đ</strong>
             </div>
             <div class="m-card-grid-item">
-              <span>Tổng tiền đọng kho:</span>
-              <strong>${Calculations.formatNumber(stock * cost)} đ</strong>
+              <span>Khối lượng:</span>
+              <strong>${p.weight || 0} kg / ${p.unit}</strong>
             </div>
           </div>
 
@@ -492,7 +495,40 @@ const MobileApp = {
       this.addPurchaseRow();
     });
 
-    ['poShippingCost', 'poAllocationMethod'].forEach(id => {
+    // Chuyển đổi giữa tính ship theo kg và ship trọn gói
+    document.getElementById('poShippingType')?.addEventListener('change', (e) => {
+      const isWeight = e.target.value === 'by_weight';
+      const divPricePerKg = document.getElementById('divPoPricePerKg');
+      const divTotalWeight = document.getElementById('divPoTotalWeight');
+      const costInput = document.getElementById('poShippingCost');
+
+      if (divPricePerKg) divPricePerKg.style.display = isWeight ? 'block' : 'none';
+      if (divTotalWeight) divTotalWeight.style.display = isWeight ? 'block' : 'none';
+      if (costInput) {
+        costInput.readOnly = isWeight;
+        costInput.style.background = isWeight ? '#f1f5f9' : '#fff';
+      }
+      this.updatePurchaseLiveCalc();
+    });
+
+    // Nút tự động tính tổng khối lượng từ các dòng món hàng
+    document.getElementById('btnAutoCalcWeight')?.addEventListener('click', () => {
+      const rows = document.querySelectorAll('#purchaseItemsContainer .mobile-item-row');
+      let sumWeight = 0;
+      rows.forEach(row => {
+        const qty = parseFloat(row.querySelector('.po-qty-input')?.value) || 0;
+        const weight = parseFloat(row.querySelector('.po-weight-input')?.value) || 0;
+        sumWeight += (qty * weight);
+      });
+      const weightInput = document.getElementById('poTotalWeight');
+      if (weightInput) {
+        weightInput.value = Number(sumWeight.toFixed(2));
+      }
+      this.updatePurchaseLiveCalc();
+      this.showToast(`Đã tính tổng khối lượng: ${sumWeight.toFixed(2)} kg`);
+    });
+
+    ['poPricePerKg', 'poTotalWeight', 'poShippingCost'].forEach(id => {
       document.getElementById(id)?.addEventListener('input', () => this.updatePurchaseLiveCalc());
       document.getElementById(id)?.addEventListener('change', () => this.updatePurchaseLiveCalc());
     });
@@ -512,10 +548,12 @@ const MobileApp = {
         const prodSelect = row.querySelector('.po-product-select');
         const qtyInput = row.querySelector('.po-qty-input');
         const priceInput = row.querySelector('.po-price-input');
+        const weightInput = row.querySelector('.po-weight-input');
 
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
         const purchasePrice = parseFloat(priceInput.value) || 0;
+        const weight = parseFloat(weightInput?.value) || 0;
 
         if (!productId || quantity <= 0) {
           isValid = false;
@@ -525,7 +563,8 @@ const MobileApp = {
             productId,
             productName: prod ? prod.name : 'Sản phẩm',
             quantity,
-            purchasePrice
+            purchasePrice,
+            weight
           });
         }
       });
@@ -537,15 +576,20 @@ const MobileApp = {
 
       const date = document.getElementById('poDate').value;
       const supplier = document.getElementById('poSupplier').value;
-      const shippingCost = parseFloat(document.getElementById('poShippingCost').value) || 0;
-      const allocationMethod = document.getElementById('poAllocationMethod').value;
+      const shippingType = document.getElementById('poShippingType')?.value || 'by_weight';
+      const pricePerKg = parseFloat(document.getElementById('poPricePerKg')?.value) || 0;
+      const totalWeight = parseFloat(document.getElementById('poTotalWeight')?.value) || 0;
+      const shippingCost = parseFloat(document.getElementById('poShippingCost')?.value) || 0;
       const notes = document.getElementById('poNotes').value;
 
       await window.appStore.createPurchase({
         date,
         supplier,
+        shippingMethod: shippingType,
+        pricePerKg,
+        totalWeight,
         shippingCost,
-        allocationMethod,
+        allocationMethod: shippingType === 'by_weight' ? 'by_weight' : 'by_quantity',
         items,
         notes
       });
@@ -564,8 +608,23 @@ const MobileApp = {
 
     document.getElementById('poDate').value = new Date().toISOString().slice(0, 10);
     document.getElementById('poSupplier').value = '';
-    document.getElementById('poShippingCost').value = 0;
-    document.getElementById('poAllocationMethod').value = window.appStore.state.settings.defaultAllocationMethod || 'by_quantity';
+    
+    const shipType = document.getElementById('poShippingType');
+    if (shipType) shipType.value = 'by_weight';
+
+    const pricePerKg = document.getElementById('poPricePerKg');
+    if (pricePerKg) pricePerKg.value = 30000;
+
+    const totalWeight = document.getElementById('poTotalWeight');
+    if (totalWeight) totalWeight.value = 0;
+
+    const costInput = document.getElementById('poShippingCost');
+    if (costInput) {
+      costInput.value = 0;
+      costInput.readOnly = true;
+      costInput.style.background = '#f1f5f9';
+    }
+
     document.getElementById('poNotes').value = '';
 
     const container = document.getElementById('purchaseItemsContainer');
@@ -579,11 +638,11 @@ const MobileApp = {
     const container = document.getElementById('purchaseItemsContainer');
     const div = document.createElement('div');
     div.className = 'mobile-item-row';
-    div.style.cssText = 'background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px;';
+    div.style.cssText = 'background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px;';
 
     const products = window.appStore.state.products || [];
     const optionsHtml = products.map(p => `
-      <option value="${p.id}" data-cost="${p.costPrice}">${p.name} (Tồn: ${p.stock})</option>
+      <option value="${p.id}" data-cost="${p.costPrice}" data-weight="${p.weight !== undefined ? p.weight : 0.2}">${p.name} (Tồn: ${p.stock})</option>
     `).join('');
 
     div.innerHTML = `
@@ -596,17 +655,29 @@ const MobileApp = {
       </div>
       <div class="form-row">
         <div>
-          <label style="font-size: 11px; color: #64748b;">Số lượng:</label>
+          <label style="font-size: 11px; color: #64748b;">Số lượng nhập:</label>
           <input type="number" class="form-control po-qty-input" value="10" min="1" required inputmode="numeric">
         </div>
         <div>
-          <label style="font-size: 11px; color: #64748b;">Giá mua 1 cái (VNĐ):</label>
+          <label style="font-size: 11px; color: #64748b;">Giá mua (VNĐ/cái):</label>
           <input type="number" class="form-control po-price-input" value="0" min="0" required inputmode="numeric">
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; color: #64748b;">
-        <span>Thành tiền:</span>
-        <strong class="po-line-total" style="color: #0f172a;">0 đ</strong>
+      <div class="form-row" style="margin-top: 6px;">
+        <div>
+          <label style="font-size: 11px; color: #64748b;">Khối lượng (kg/cái):</label>
+          <input type="number" class="form-control po-weight-input" value="0.2" step="0.01" min="0" required inputmode="decimal">
+        </div>
+        <div>
+          <label style="font-size: 11px; color: #64748b;">Tổng kg món này:</label>
+          <div class="po-item-total-weight" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #8b5cf6; padding: 0 10px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+            0 kg
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #e2e8f0; color: #64748b;">
+        <span>Tiền hàng: <strong class="po-line-total" style="color: #0f172a;">0 đ</strong></span>
+        <span class="po-line-landed-preview" style="color: #10b981; font-weight: 600;">Sau ship: 0 đ/cái</span>
       </div>
     `;
 
@@ -615,18 +686,24 @@ const MobileApp = {
     const prodSelect = div.querySelector('.po-product-select');
     const priceInput = div.querySelector('.po-price-input');
     const qtyInput = div.querySelector('.po-qty-input');
+    const weightInput = div.querySelector('.po-weight-input');
 
     prodSelect.addEventListener('change', () => {
       const selected = prodSelect.options[prodSelect.selectedIndex];
       const cost = selected.getAttribute('data-cost');
+      const w = selected.getAttribute('data-weight');
       if (cost && (!priceInput.value || priceInput.value === '0')) {
         priceInput.value = cost;
+      }
+      if (w) {
+        weightInput.value = w;
       }
       this.updatePurchaseLiveCalc();
     });
 
     priceInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
     qtyInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
+    weightInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
 
     this.updatePurchaseLiveCalc();
   },
@@ -634,21 +711,56 @@ const MobileApp = {
   updatePurchaseLiveCalc() {
     const rows = document.querySelectorAll('#purchaseItemsContainer .mobile-item-row');
     let subtotal = 0;
+    let sumWeight = 0;
+
+    const shipType = document.getElementById('poShippingType')?.value || 'by_weight';
+    const pricePerKg = parseFloat(document.getElementById('poPricePerKg')?.value) || 0;
 
     rows.forEach(row => {
       const qty = parseFloat(row.querySelector('.po-qty-input')?.value) || 0;
       const price = parseFloat(row.querySelector('.po-price-input')?.value) || 0;
+      const weight = parseFloat(row.querySelector('.po-weight-input')?.value) || 0;
+
       const lineTotal = qty * price;
+      const lineWeight = qty * weight;
       subtotal += lineTotal;
+      sumWeight += lineWeight;
 
       const totalEl = row.querySelector('.po-line-total');
       if (totalEl) totalEl.textContent = Calculations.formatNumber(lineTotal) + ' đ';
+
+      const weightEl = row.querySelector('.po-item-total-weight');
+      if (weightEl) weightEl.textContent = `${lineWeight.toFixed(2)} kg`;
+
+      const landedEl = row.querySelector('.po-line-landed-preview');
+      if (landedEl) {
+        let shipPerUnit = 0;
+        if (shipType === 'by_weight' && pricePerKg > 0) {
+          shipPerUnit = weight * pricePerKg;
+        }
+        const unitLanded = price + shipPerUnit;
+        landedEl.textContent = `Sau ship: ${Calculations.formatNumber(Math.round(unitLanded))} đ/cái`;
+      }
     });
+
+    const weightInput = document.getElementById('poTotalWeight');
+    let totalWeight = sumWeight;
+
+    if (shipType === 'by_weight') {
+      if (weightInput && (parseFloat(weightInput.value) === 0 || weightInput.value === '')) {
+        weightInput.value = Number(sumWeight.toFixed(2));
+      }
+      totalWeight = parseFloat(weightInput?.value) || sumWeight;
+      const autoShipCost = Math.round(totalWeight * pricePerKg);
+      const costInput = document.getElementById('poShippingCost');
+      if (costInput) costInput.value = autoShipCost;
+    }
 
     const shipping = parseFloat(document.getElementById('poShippingCost')?.value) || 0;
     const total = subtotal + shipping;
 
     document.getElementById('poPreviewSubtotal').textContent = Calculations.formatCurrency(subtotal);
+    document.getElementById('poPreviewWeight').textContent = `${Number(totalWeight.toFixed(2))} kg`;
     document.getElementById('poPreviewShipping').textContent = Calculations.formatCurrency(shipping);
     document.getElementById('poPreviewTotal').textContent = Calculations.formatCurrency(total);
   },
@@ -669,11 +781,19 @@ const MobileApp = {
 
     container.innerHTML = state.purchases.map(p => {
       const itemsHtml = (p.items || []).map(i => `
-        <div style="padding: 3px 0;">
-          • <strong>${i.productName}</strong>: ${i.quantity} cái x ${Calculations.formatNumber(i.purchasePrice)} đ
-          <span style="color: #10b981;">(Sau ship: ${Calculations.formatNumber(i.landedCostPerUnit)} đ)</span>
+        <div style="padding: 4px 0; border-bottom: 1px dashed #e2e8f0;">
+          <div>• <strong>${i.productName}</strong>: ${i.quantity} cái x ${Calculations.formatNumber(i.purchasePrice)} đ</div>
+          <div style="font-size: 11px; color: #64748b; margin-left: 8px;">
+            Nặng: ${i.weight || 0} kg/cái (Tổng: ${(Number(i.quantity || 0) * Number(i.weight || 0)).toFixed(2)} kg) 
+            &rarr; <span style="color: #10b981; font-weight: 700;">Giá vốn sau ship: ${Calculations.formatNumber(i.landedCostPerUnit)} đ/cái</span>
+          </div>
         </div>
       `).join('');
+
+      let shipDetails = `🚚 Tiền ship: +${Calculations.formatNumber(p.shippingCost)} đ`;
+      if (p.pricePerKg > 0) {
+        shipDetails = `⚖️ ${p.totalWeight || 0} kg (${Calculations.formatNumber(p.pricePerKg)} đ/kg) &bull; Ship: +${Calculations.formatNumber(p.shippingCost)} đ`;
+      }
 
       return `
         <div class="m-card">
@@ -690,7 +810,7 @@ const MobileApp = {
           </div>
 
           <div class="m-card-footer">
-            <span style="font-size: 12px; color: #8b5cf6;">🚚 Ship xưởng: +${Calculations.formatNumber(p.shippingCost)} đ</span>
+            <span style="font-size: 12px; color: #8b5cf6; font-weight: 600;">${shipDetails}</span>
             <button class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="MobileApp.deletePurchase('${p.id}')">🗑️ Xóa</button>
           </div>
         </div>

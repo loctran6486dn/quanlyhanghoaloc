@@ -45,30 +45,42 @@ const Calculations = {
 
   /**
    * Tính giá vốn thực tế khi nhập hàng (Landed Cost)
-   * @param {Array} items - Danh sách mặt hàng nhập [{ productId, quantity, purchasePrice }]
+   * Hỗ trợ phân bổ theo cân nặng (by_weight), theo số lượng (by_quantity), hoặc theo giá trị (by_value)
+   * @param {Array} items - Danh sách mặt hàng nhập [{ productId, quantity, purchasePrice, weight }]
    * @param {number} shippingCost - Tiền ship từ nhà cung cấp về kho
    * @param {number} otherFee - Phụ phí khác (nếu có)
-   * @param {string} method - 'by_quantity' (theo số lượng) hoặc 'by_value' (theo giá trị tiền hàng)
+   * @param {string} method - 'by_weight', 'by_quantity', hoặc 'by_value'
+   * @param {number} pricePerKg - Đơn giá ship mỗi kg (VNĐ/kg) nếu có
    * @returns {Array} Danh sách items kèm landedCostPerUnit và totalLandedCost
    */
-  calculateInboundAllocation(items, shippingCost = 0, otherFee = 0, method = 'by_quantity') {
-    const totalExtraFee = Number(shippingCost || 0) + Number(otherFee || 0);
+  calculateInboundAllocation(items, shippingCost = 0, otherFee = 0, method = 'by_weight', pricePerKg = 0) {
+    let totalExtraFee = Number(shippingCost || 0) + Number(otherFee || 0);
     const validItems = items || [];
 
     const totalQuantity = validItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
-    const totalRawValue = validItems.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.purchasePrice || 0)), 0);
+    const totalRawValue = validItems.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.purchasePrice !== undefined ? item.purchasePrice : (item.costPrice || 0))), 0);
+    const totalWeight = validItems.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.weight || 0)), 0);
+
+    // Nếu tính theo giá mỗi kg và có đơn giá ship/kg
+    if (method === 'by_weight' && Number(pricePerKg || 0) > 0 && totalWeight > 0 && totalExtraFee === 0) {
+      totalExtraFee = Math.round(totalWeight * Number(pricePerKg));
+    }
 
     return validItems.map(item => {
       const qty = Number(item.quantity || 0);
-      const price = Number(item.purchasePrice || 0);
+      const price = Number(item.purchasePrice !== undefined ? item.purchasePrice : (item.costPrice || 0));
+      const weightPerUnit = Number(item.weight || 0);
+      const itemTotalWeight = qty * weightPerUnit;
       let allocatedFee = 0;
 
       if (totalExtraFee > 0) {
-        if (method === 'by_value' && totalRawValue > 0) {
+        if (method === 'by_weight' && totalWeight > 0) {
+          // Phân bổ trực tiếp theo tỷ lệ cân nặng kg
+          allocatedFee = (itemTotalWeight / totalWeight) * totalExtraFee;
+        } else if (method === 'by_value' && totalRawValue > 0) {
           const itemValue = qty * price;
           allocatedFee = (itemValue / totalRawValue) * totalExtraFee;
         } else if (totalQuantity > 0) {
-          // Mặc định phân bổ theo số lượng
           allocatedFee = (qty / totalQuantity) * totalExtraFee;
         }
       }
@@ -79,7 +91,9 @@ const Calculations = {
 
       return {
         ...item,
-        allocatedFeePerUnit,
+        weight: weightPerUnit,
+        totalWeight: Number(itemTotalWeight.toFixed(3)),
+        allocatedFeePerUnit: Math.round(allocatedFeePerUnit),
         landedCostPerUnit: Math.round(landedCostPerUnit),
         totalCost: Math.round(totalItemCost)
       };

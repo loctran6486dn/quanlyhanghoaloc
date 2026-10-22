@@ -242,6 +242,7 @@ class DataStore {
       name: product.name.trim(),
       category: product.category || 'Mặc định',
       unit: product.unit || 'Cái',
+      weight: parseFloat(product.weight !== undefined ? product.weight : 0.2), // Khối lượng kg/đơn vị
       costPrice: Number(product.costPrice || 0),
       sellingPrice: Number(product.sellingPrice || 0),
       stock: Number(product.stock || 0),
@@ -277,24 +278,32 @@ class DataStore {
   // =================== CÁC THAO TÁC NHẬP HÀNG (INBOUND) ===================
 
   async createPurchase(purchaseData) {
+    const allocationMethod = purchaseData.allocationMethod || 'by_weight';
+    const pricePerKg = Number(purchaseData.pricePerKg || 0);
+
     // 1. Phân bổ chi phí ship và tính landed cost cho từng item
     const allocatedItems = Calculations.calculateInboundAllocation(
       purchaseData.items,
       purchaseData.shippingCost,
       purchaseData.otherFee,
-      purchaseData.allocationMethod || 'by_quantity'
+      allocationMethod,
+      pricePerKg
     );
 
     const totalAmount = allocatedItems.reduce((sum, it) => sum + it.totalCost, 0);
+    const computedTotalWeight = allocatedItems.reduce((sum, it) => sum + (Number(it.quantity || 0) * Number(it.weight || 0)), 0);
 
     const purchase = {
       id: 'PN' + Date.now().toString(36).toUpperCase(),
       code: purchaseData.code || ('PN' + new Date().toISOString().slice(2, 10).replace(/-/g, '') + '-' + Math.floor(100 + Math.random() * 900)),
       date: purchaseData.date || new Date().toISOString().slice(0, 10),
       supplier: purchaseData.supplier || 'Nhà cung cấp',
+      shippingMethod: purchaseData.shippingMethod || 'by_weight',
+      pricePerKg: pricePerKg,
+      totalWeight: Number(computedTotalWeight.toFixed(2)),
       shippingCost: Number(purchaseData.shippingCost || 0),
       otherFee: Number(purchaseData.otherFee || 0),
-      allocationMethod: purchaseData.allocationMethod || 'by_quantity',
+      allocationMethod: allocationMethod,
       items: allocatedItems,
       totalAmount,
       notes: purchaseData.notes || '',
@@ -549,7 +558,8 @@ class DataStore {
         name: 'Áo thun cotton trơn unisex Trắng',
         category: 'Thời trang',
         unit: 'Cái',
-        costPrice: 53000, // Giá nhập 50k + 3k tiền ship
+        weight: 0.2, // 200g
+        costPrice: 53000,
         sellingPrice: 120000,
         stock: 45,
         minStock: 10,
@@ -561,6 +571,7 @@ class DataStore {
         name: 'Áo Polo thể thao phối cổ Đen',
         category: 'Thời trang',
         unit: 'Cái',
+        weight: 0.25, // 250g
         costPrice: 85000,
         sellingPrice: 185000,
         stock: 28,
@@ -573,6 +584,7 @@ class DataStore {
         name: 'Quần Jean ống suông phong cách Hàn Quốc',
         category: 'Thời trang',
         unit: 'Cái',
+        weight: 0.55, // 550g
         costPrice: 155000,
         sellingPrice: 290000,
         stock: 15,
@@ -585,9 +597,10 @@ class DataStore {
         name: 'Balo laptop chống nước cao cấp',
         category: 'Phụ kiện',
         unit: 'Chiếc',
+        weight: 0.85, // 850g
         costPrice: 130000,
         sellingPrice: 260000,
-        stock: 4, // Dưới minStock để test cảnh báo
+        stock: 4,
         minStock: 6,
         notes: 'Có ngăn đựng laptop 15.6 inch'
       },
@@ -597,6 +610,7 @@ class DataStore {
         name: 'Set 5 đôi tất cotton cổ ngắn kháng khuẩn',
         category: 'Phụ kiện',
         unit: 'Set',
+        weight: 0.1, // 100g
         costPrice: 32000,
         sellingPrice: 75000,
         stock: 60,
