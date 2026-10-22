@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Quản Lý Hàng Hóa & Lợi Nhuận</title>
+  
+  <!-- Cấu hình Web App di động (PWA & iOS Home Screen) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kho & Lợi Nhuận">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+  <link rel="apple-touch-icon" href="assets/icon.svg">
+  <link rel="manifest" href="manifest.json">
+
+  <!-- CSS Stylesheet Mobile-First -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+</head>
+<body>
+
+  <!-- MOBILE APP CONTAINER -->
+  <div class="mobile-app-wrapper">
+
+    <!-- TOP HEADER BAR -->
+    <header class="mobile-header">
+      <div class="header-left">
+        <div class="header-logo">📦</div>
+        <div>
+          <div class="header-title" id="mobileStoreName">Cửa Hàng Cá Nhân</div>
+          <div class="header-subtitle">Quản Lý Vốn & Lợi Nhuận</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <!-- Nút mở QR kết nối điện thoại -->
+        <button class="btn-icon-header" id="btnOpenConnectQR" title="Kết nối điện thoại">📱</button>
+        <!-- Nút mở cài đặt -->
+        <button class="btn-icon-header" id="btnHeaderSettings" title="Cài đặt">⚙️</button>
+      </div>
+    </header>
+
+    <!-- HORIZONTAL SWIPEABLE TIME FILTER PILLS -->
+    <div class="filter-pills-bar" id="mobileTimePills">
+      <div class="pill-item active" data-range="this_month">Tháng này</div>
+      <div class="pill-item" data-range="this_week">7 ngày qua</div>
+      <div class="pill-item" data-range="today">Hôm nay</div>
+      <div class="pill-item" data-range="last_month">Tháng trước</div>
+      <div class="pill-item" data-range="this_year">Năm nay</div>
+      <div class="pill-item" data-range="all">Toàn bộ</div>
+    </div>
+
+    <!-- MAIN BODY -->
+    <main class="mobile-content">
+
+      <!-- ================= TAB 1: TỔNG QUAN (DASHBOARD) ================= -->
+      <section id="tab-dashboard" class="tab-panel active">
+        <!-- HERO BANNER: THỰC LÃI (NET PROFIT) -->
+        <div class="mobile-kpi-banner">
+          <div class="banner-label">Lợi Nhuận Ròng (Thực Lãi)</div>
+          <div class="banner-profit" id="kpiNetProfit">0 đ</div>
+          <div style="font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+            <span class="badge badge-success" id="kpiNetMargin">0%</span>
+            <span>Tỷ suất lợi nhuận ròng</span>
+          </div>
+
+          <div class="banner-subgrid">
+            <div class="banner-sub-item">
+              <span>Doanh Thu Bán</span>
+              <strong id="kpiRevenue">0 đ</strong>
+            </div>
+            <div class="banner-sub-item">
+              <span>Tổng Chi Phí</span>
+              <strong id="kpiTotalExpense" style="color: #f87171;">0 đ</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 MINI KPI CARDS -->
+        <div class="mini-kpi-grid">
+          <div class="mini-kpi-card">
+            <span class="card-label">Lợi Nhuận Gộp</span>
+            <span class="card-value" id="kpiGrossProfit" style="color: #2563eb;">0 đ</span>
+            <span class="card-desc">Lãi bán trừ giá vốn & ship</span>
+          </div>
+          <div class="mini-kpi-card">
+            <span class="card-label">Giá Trị Tồn Kho</span>
+            <span class="card-value" id="kpiInventoryValue" style="color: #06b6d4;">0 đ</span>
+            <span class="card-desc"><span id="kpiInventoryUnits">0</span> sản phẩm trong kho</span>
+          </div>
+          <div class="mini-kpi-card">
+            <span class="card-label">Tiền Vốn Bán Ra</span>
+            <span class="card-value" id="kpiCOGS" style="color: #f59e0b;">0 đ</span>
+            <span class="card-desc">Giá vốn hàng bán (COGS)</span>
+          </div>
+          <div class="mini-kpi-card">
+            <span class="card-label">Công Nợ Khách</span>
+            <span class="card-value" id="kpiPendingDebt" style="color: #ef4444;">0 đ</span>
+            <span class="card-desc">Đơn chưa thu đủ tiền</span>
+          </div>
+        </div>
+
+        <!-- BIỂU ĐỒ DOANH THU & CHI PHÍ -->
+        <div class="m-card" style="margin-bottom: 14px;">
+          <div class="m-card-header">
+            <div>
+              <div class="m-card-title">📈 Xu Hướng 7 Ngày Qua</div>
+              <div class="m-card-subtitle">Doanh thu vs Chi phí vs Lãi</div>
+            </div>
+          </div>
+          <div id="trendChartContainer" style="min-height: 240px; margin-top: 6px;"></div>
+        </div>
+
+        <!-- BIỂU ĐỒ CƠ CẤU CHI PHÍ -->
+        <div class="m-card" style="margin-bottom: 16px;">
+          <div class="m-card-header">
+            <div class="m-card-title">🍰 Cơ Cấu Chi Phí</div>
+          </div>
+          <div id="breakdownChartContainer" style="min-height: 200px;"></div>
+        </div>
+
+        <!-- DANH SÁCH CẢNH BÁO SẮP HẾT HÀNG -->
+        <div class="section-title-bar">
+          <div class="section-title">⚠️ Hàng Sắp Hết Trong Kho</div>
+          <button class="btn btn-sm btn-outline" id="btnDashViewStock">Xem kho</button>
+        </div>
+        <div class="cards-list" id="dashboardLowStockList">
+          <!-- Render động qua JS -->
+        </div>
+
+        <!-- ĐƠN HÀNG GẦN ĐÂY -->
+        <div class="section-title-bar" style="margin-top: 20px;">
+          <div class="section-title">⚡ Đơn Bán Mới Nhất</div>
+          <button class="btn btn-sm btn-outline" id="btnDashViewSales">Xem tất cả</button>
+        </div>
+        <div class="cards-list" id="dashboardRecentSalesList">
+          <!-- Render động qua JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: HÀNG HÓA & TỒN KHO ================= -->
+      <section id="tab-products" class="tab-panel">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="flex: 1;">
+          <button class="btn btn-primary" id="btnMobileAddProduct" style="flex-shrink: 0; padding: 0 14px;">+ Thêm</button>
+        </div>
+
+        <!-- Bộ lọc nhanh trạng thái kho -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none;">
+          <button class="pill-item active prod-stock-pill" data-stock="all">Tất cả</button>
+          <button class="pill-item prod-stock-pill" data-stock="in_stock">Còn hàng</button>
+          <button class="pill-item prod-stock-pill" data-stock="low_stock">Sắp hết</button>
+          <button class="pill-item prod-stock-pill" data-stock="out_of_stock">Hết hàng</button>
+          <button class="btn btn-sm btn-outline" id="btnMobileExportProducts" style="margin-left: auto; height: 30px; font-size: 11px;">📊 Xuất Excel</button>
+        </div>
+
+        <!-- Danh sách thẻ hàng hóa -->
+        <div class="cards-list" id="productsCardsList">
+          <!-- Render động qua JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: NHẬP HÀNG (GIÁ MUA + SHIP VỀ KHO) ================= -->
+      <section id="tab-purchases" class="tab-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">Lịch Sử Nhập Hàng</div>
+          <button class="btn btn-success" id="btnMobileAddPurchase">+ Phiếu Nhập Mới</button>
+        </div>
+
+        <div class="cards-list" id="purchasesCardsList">
+          <!-- Render động qua JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: BÁN HÀNG ================= -->
+      <section id="tab-sales" class="tab-panel">
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="flex: 1;">
+          <button class="btn btn-primary" id="btnMobileAddSale" style="flex-shrink: 0; padding: 0 14px;">+ Tạo Đơn</button>
+        </div>
+
+        <!-- Lọc trạng thái thanh toán -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none;">
+          <button class="pill-item active sale-pay-pill" data-pay="all">Tất cả</button>
+          <button class="pill-item sale-pay-pill" data-pay="paid">Đã thanh toán</button>
+          <button class="pill-item sale-pay-pill" data-pay="partial">Thu một phần</button>
+          <button class="pill-item sale-pay-pill" data-pay="unpaid">Chưa thu (Nợ)</button>
+          <button class="btn btn-sm btn-outline" id="btnMobileExportSales" style="margin-left: auto; height: 30px; font-size: 11px;">📊 Excel</button>
+        </div>
+
+        <div class="cards-list" id="salesCardsList">
+          <!-- Render động qua JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: MENU THÊM / CÀI ĐẶT / SỔ QUỸ ================= -->
+      <section id="tab-more" class="tab-panel">
+        <!-- MENU TIỆN ÍCH CHÍNH -->
+        <div class="menu-list">
+          <!-- Sổ quỹ thu chi -->
+          <div class="menu-item-row" id="menuRowCashflow">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #fef3c7; color: #b45309;">📒</div>
+              <div class="menu-item-text">
+                <strong>Sổ Quỹ Thu - Chi Vận Hành</strong>
+                <span>Tiền bao bì, băng dính, thùng carton, tiền ads...</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Báo cáo kết quả P&L -->
+          <div class="menu-item-row" id="menuRowReports">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #e0e7ff; color: #3730a3;">📈</div>
+              <div class="menu-item-text">
+                <strong>Báo Cáo Lợi Nhuận Chi Tiết (P&L)</strong>
+                <span>Bảng phân tích doanh thu, chi phí, top sản phẩm lãi nhất</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Kết nối điện thoại qua Wi-Fi -->
+          <div class="menu-item-row" id="menuRowConnectPhone">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #ecfdf5; color: #047857;">📱</div>
+              <div class="menu-item-text">
+                <strong>Mở Trên Điện Thoại (Wi-Fi)</strong>
+                <span>Quét mã QR để mở app trực tiếp trên điện thoại của bạn</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+        </div>
+
+        <!-- CÀI ĐẶT & DỮ LIỆU -->
+        <div class="section-title" style="margin-bottom: 8px;">⚙️ Quản Lý Dữ Liệu & Cài Đặt</div>
+        <div class="menu-list">
+          <!-- Cài đặt cửa hàng -->
+          <div class="menu-item-row" id="menuRowSettings">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #f1f5f9; color: #334155;">🏪</div>
+              <div class="menu-item-text">
+                <strong>Cài Đặt Tên Shop & Phí Ship</strong>
+                <span>Đổi tên cửa hàng, người chịu phí ship mặc định</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Sao lưu JSON -->
+          <div class="menu-item-row" id="menuRowBackup">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #eff6ff; color: #1d4ed8;">💾</div>
+              <div class="menu-item-text">
+                <strong>Tải File Sao Lưu (.JSON)</strong>
+                <span>Lưu toàn bộ dữ liệu về máy an toàn</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Phục hồi JSON -->
+          <div class="menu-item-row" id="menuRowRestore">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #fdf4ff; color: #86198f;">⬆️</div>
+              <div class="menu-item-text">
+                <strong>Khôi Phục Dữ Liệu Từ File</strong>
+                <span>Chọn file sao lưu đã tải trước đó</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Nạp Demo Data -->
+          <div class="menu-item-row" id="menuRowDemoData">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #ecfdf5; color: #059669;">📦</div>
+              <div class="menu-item-text">
+                <strong>Nạp Bộ Dữ Liệu Mẫu (Demo)</strong>
+                <span>Trải nghiệm ngay ứng dụng với số liệu thực tế</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Xóa trắng -->
+          <div class="menu-item-row" id="menuRowClearData">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #fef2f2; color: #b91c1c;">🗑️</div>
+              <div class="menu-item-text">
+                <strong style="color: #ef4444;">Xóa Trắng Dữ Liệu</strong>
+                <span>Làm mới toàn bộ hệ thống</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+        </div>
+
+        <input type="file" id="mobileRestoreInput" accept=".json" style="display: none;">
+      </section>
+
+      <!-- ================= SECTION PHỤ: SỔ QUỸ THU CHI (HIỂN THỊ KHI BẤM TỪ MENU) ================= -->
+      <section id="tab-cashflow" class="tab-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <button class="btn btn-sm btn-outline" id="btnBackToMoreFromCashflow">‹ Quay lại</button>
+          <div style="font-size: 14px; font-weight: 700;">Sổ Quỹ Thu - Chi</div>
+          <button class="btn btn-sm btn-primary" id="btnMobileAddCashflow">+ Thu/Chi</button>
+        </div>
+        <div class="cards-list" id="cashflowCardsList">
+          <!-- Render động qua JS -->
+        </div>
+      </section>
+
+      <!-- ================= SECTION PHỤ: BÁO CÁO P&L (HIỂN THỊ KHI BẤM TỪ MENU) ================= -->
+      <section id="tab-reports" class="tab-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <button class="btn btn-sm btn-outline" id="btnBackToMoreFromReports">‹ Quay lại</button>
+          <div style="font-size: 14px; font-weight: 700;">Báo Cáo Lợi Nhuận</div>
+          <button class="btn btn-sm btn-success" id="btnMobileExportReport">📊 Excel</button>
+        </div>
+
+        <!-- BẢNG P&L THU GỌN CHO MOBILE -->
+        <div class="m-card" style="padding: 16px; margin-bottom: 16px;">
+          <div style="font-size: 13.5px; font-weight: 800; text-transform: uppercase; margin-bottom: 12px; color: #1e293b;">
+            Kết Quả Kinh Doanh (P&L)
+          </div>
+          <div class="live-calc-box" style="margin-top: 0; background: #fff;">
+            <div class="live-calc-row">
+              <span>1. Doanh thu thuần:</span>
+              <strong id="repTotalRevenue">0 đ</strong>
+            </div>
+            <div class="live-calc-row" style="color: #64748b;">
+              <span>- Giá vốn hàng bán (COGS):</span>
+              <span id="repCOGS" style="color: #ef4444;">-0 đ</span>
+            </div>
+            <div class="live-calc-row" style="color: #64748b;">
+              <span>- Ship shop chịu (Freeship):</span>
+              <span id="repShopShipping" style="color: #ef4444;">-0 đ</span>
+            </div>
+            <div class="live-calc-row live-calc-total" style="font-size: 14px;">
+              <span>2. LỢI NHUẬN GỘP:</span>
+              <span id="repGrossProfit" style="color: #2563eb;">0 đ</span>
+            </div>
+            <div class="live-calc-row" style="font-size: 12px; color: #64748b;">
+              <span>Biên lợi nhuận gộp:</span>
+              <span id="repGrossMargin">0%</span>
+            </div>
+            <div class="live-calc-row" style="color: #10b981; margin-top: 8px;">
+              <span>+ Thu khác ngoài bán:</span>
+              <span id="repOtherIncome">+0 đ</span>
+            </div>
+            <div class="live-calc-row" style="color: #ef4444;">
+              <span>- Chi phí vận hành (Bao bì, Ads...):</span>
+              <span id="repOperatingExpense">-0 đ</span>
+            </div>
+            <div class="live-calc-row live-calc-total" style="font-size: 16px; color: #10b981; border-top: 2px solid #10b981;">
+              <span>3. LỢI NHUẬN RÒNG (THỰC LÃI):</span>
+              <span id="repNetProfit">0 đ</span>
+            </div>
+            <div class="live-calc-row" style="font-size: 12px; color: #047857; font-weight: 600;">
+              <span>Biên lợi nhuận ròng:</span>
+              <span id="repNetMargin">0%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOP 5 SẢN PHẨM LÃI NHẤT -->
+        <div class="section-title" style="margin-bottom: 8px;">🏆 Top Sản Phẩm Mang Lại Lãi Cao Nhất</div>
+        <div class="cards-list" id="repTopProductsList">
+          <!-- Render động qua JS -->
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ================= BOTTOM NAVIGATION BAR (APP NATIVE) ================= -->
+    <nav class="bottom-nav">
+      <!-- Tab 1: Tổng quan -->
+      <button class="nav-tab-btn active" data-tab="dashboard">
+        <span class="tab-icon">📊</span>
+        <span>Tổng quan</span>
+      </button>
+
+      <!-- Tab 2: Hàng hóa -->
+      <button class="nav-tab-btn" data-tab="products">
+        <span class="tab-icon">🏷️</span>
+        <span>Hàng hóa</span>
+        <span class="nav-tab-badge" id="mobileStockBadge" style="display: none;">0</span>
+      </button>
+
+      <!-- Tab 3 (FAB): NÚT TẠO ĐƠN BÁN HÀNG NỔI BẬT Ở GIỮA -->
+      <button class="nav-fab-btn" id="btnFabCreateSale" title="Bán hàng nhanh">
+        🛒
+      </button>
+
+      <!-- Tab 4: Nhập hàng -->
+      <button class="nav-tab-btn" data-tab="purchases">
+        <span class="tab-icon">📥</span>
+        <span>Nhập hàng</span>
+      </button>
+
+      <!-- Tab 5: Menu Thêm / Cài đặt -->
+      <button class="nav-tab-btn" data-tab="more">
+        <span class="tab-icon">⚙️</span>
+        <span>Menu</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- ================= MODALS (BOTTOM SHEETS TRƯỢT TỪ DƯỚI LÊN) ================= -->
+
+  <!-- MODAL 1: TẠO ĐƠN BÁN HÀNG -->
+  <div class="modal-backdrop" id="modalSale">
+    <div class="modal-dialog">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">🛒 Tạo Đơn Bán Hàng</h3>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="formSale">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ngày bán:</label>
+              <input type="date" id="saleDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Tên khách:</label>
+              <input type="text" id="saleCustomerName" class="form-control" value="Khách lẻ" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Số điện thoại:</label>
+              <input type="tel" id="saleCustomerPhone" class="form-control" placeholder="09xxxxxxxx" inputmode="tel">
+            </div>
+            <div class="form-group">
+              <label>Kênh bán:</label>
+              <select id="saleChannel" class="form-control">
+                <option value="Trực tiếp">Tại chỗ</option>
+                <option value="Facebook">Facebook</option>
+                <option value="TikTok">TikTok Shop</option>
+                <option value="Shopee">Shopee</option>
+                <option value="Zalo">Zalo</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Danh sách món bán -->
+          <div style="margin: 10px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-weight: 700; font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Mặt hàng bán:</label>
+              <button type="button" class="btn btn-sm btn-outline" id="btnAddSaleRow">+ Thêm món</button>
+            </div>
+            <div id="saleItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dòng sản phẩm thêm động qua JS -->
+            </div>
+          </div>
+
+          <!-- Chi phí ship & Giảm giá -->
+          <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); margin: 12px 0;">
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Giảm giá (VNĐ):</label>
+                <input type="number" id="saleDiscount" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>🚚 Tiền ship giao:</label>
+                <input type="number" id="saleShippingFee" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+              <label>Bên chịu tiền ship:</label>
+              <select id="saleShippingPayer" class="form-control">
+                <option value="customer">Khách trả tiền ship (+ vào bill)</option>
+                <option value="shop">Shop chịu ship (Freeship trừ vào lãi)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Trạng thái thanh toán -->
+          <div class="form-row">
+            <div class="form-group">
+              <label>Thanh toán:</label>
+              <select id="salePaymentStatus" class="form-control">
+                <option value="paid">Đã thanh toán đủ</option>
+                <option value="partial">Thu 1 phần (Cọc)</option>
+                <option value="unpaid">Khách nợ lại</option>
+              </select>
+            </div>
+            <div class="form-group" id="divPaidAmount" style="display: none;">
+              <label>Tiền đã nhận:</label>
+              <input type="number" id="salePaidAmount" class="form-control" value="0" min="0" inputmode="numeric">
+            </div>
+          </div>
+
+          <!-- Bảng tính toán tức thì Lợi Nhuận -->
+          <div class="live-calc-box" id="saleLiveCalc">
+            <div class="live-calc-row">
+              <span>Tiền hàng khách mua:</span>
+              <strong id="salePrevMerchandise">0 đ</strong>
+            </div>
+            <div class="live-calc-row" id="salePrevDiscountRow" style="display: none; color: #dc2626;">
+              <span>Chiết khấu:</span>
+              <span id="salePrevDiscount">-0 đ</span>
+            </div>
+            <div class="live-calc-row">
+              <span>Phí vận chuyển giao:</span>
+              <span id="salePrevShipping">0 đ</span>
+            </div>
+            <div class="live-calc-row live-calc-total">
+              <span>TỔNG THU KHÁCH (BILL):</span>
+              <span id="salePrevTotal">0 đ</span>
+            </div>
+            <div style="margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 6px;">
+              <div class="live-calc-row" style="color: #64748b;">
+                <span>Giá vốn hàng bán:</span>
+                <span id="salePrevCOGS">0 đ</span>
+              </div>
+              <div class="live-calc-row" style="font-weight: 800; font-size: 15px; color: #10b981;">
+                <span>LỢI NHUẬN GỘP:</span>
+                <span id="salePrevGrossProfit">0 đ</span>
+              </div>
+              <div class="live-calc-row" style="font-size: 11.5px; color: #64748b;">
+                <span>Biên lợi nhuận đơn:</span>
+                <span id="salePrevMargin">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label>Ghi chú đơn:</label>
+            <input type="text" id="saleNotes" class="form-control" placeholder="Địa chỉ, hẹn giờ giao...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu Đơn & Trừ Kho</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: TẠO PHIẾU NHẬP HÀNG -->
+  <div class="modal-backdrop" id="modalPurchase">
+    <div class="modal-dialog">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">📥 Phiếu Nhập Hàng Mới</h3>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="formPurchase">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ngày nhập:</label>
+              <input type="date" id="poDate" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Nguồn hàng / Xưởng:</label>
+              <input type="text" id="poSupplier" class="form-control" placeholder="Xưởng may, Taobao..." required>
+            </div>
+          </div>
+
+          <!-- Danh sách hàng nhập -->
+          <div style="margin: 10px 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-weight: 700; font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Mặt hàng nhập:</label>
+              <button type="button" class="btn btn-sm btn-outline" id="btnAddPurchaseRow">+ Thêm món</button>
+            </div>
+            <div id="purchaseItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dòng hàng nhập thêm động qua JS -->
+            </div>
+          </div>
+
+          <!-- Phí ship về kho & Phân bổ -->
+          <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); margin: 12px 0;">
+            <div class="form-group">
+              <label>🚚 Phí ship từ xưởng về kho:</label>
+              <input type="number" id="poShippingCost" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Cách chia tiền ship vào giá vốn:</label>
+              <select id="poAllocationMethod" class="form-control">
+                <option value="by_quantity">Chia đều theo số lượng món (Đề xuất)</option>
+                <option value="by_value">Chia theo tỷ lệ tiền hàng</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Live Calc Box -->
+          <div class="live-calc-box" id="purchaseLiveCalc">
+            <div class="live-calc-row">
+              <span>Tiền hàng gốc:</span>
+              <strong id="poPreviewSubtotal">0 đ</strong>
+            </div>
+            <div class="live-calc-row">
+              <span>Phí ship về kho:</span>
+              <strong id="poPreviewShipping">0 đ</strong>
+            </div>
+            <div class="live-calc-row live-calc-total">
+              <span>TỔNG TIỀN PHIẾU NHẬP:</span>
+              <span id="poPreviewTotal">0 đ</span>
+            </div>
+            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
+              💡 Giá vốn thực tế (Landed Cost) = Giá mua + Phí ship được cộng dồn tự động.
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label>Ghi chú nhập:</label>
+            <input type="text" id="poNotes" class="form-control" placeholder="Mã vận đơn bưu cục...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-success">Lưu Phiếu & Tăng Kho</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: THÊM / SỬA SẢN PHẨM -->
+  <div class="modal-backdrop" id="modalProduct">
+    <div class="modal-dialog">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalProductTitle">🏷️ Thêm Hàng Hóa Mới</h3>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="formProduct">
+        <input type="hidden" id="prodId">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Tên sản phẩm: <span style="color: red;">*</span></label>
+            <input type="text" id="prodName" class="form-control" placeholder="VD: Áo thun cotton trơn" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Mã hàng (SKU):</label>
+              <input type="text" id="prodSku" class="form-control" placeholder="Tự sinh nếu trống">
+            </div>
+            <div class="form-group">
+              <label>Danh mục:</label>
+              <input type="text" id="prodCategory" class="form-control" value="Thời trang">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Giá vốn ước tính (VNĐ):</label>
+              <input type="number" id="prodCostPrice" class="form-control" value="0" min="0" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label>Giá bán niêm yết (VNĐ): <span style="color: red;">*</span></label>
+              <input type="number" id="prodSellingPrice" class="form-control" placeholder="0" min="0" required inputmode="numeric">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Đơn vị tính:</label>
+              <input type="text" id="prodUnit" class="form-control" value="Cái">
+            </div>
+            <div class="form-group">
+              <label>Tồn kho hiện có:</label>
+              <input type="number" id="prodStock" class="form-control" value="0" min="0" inputmode="numeric">
+            </div>
+            <div class="form-group">
+              <label>Báo hết khi <=</label>
+              <input type="number" id="prodMinStock" class="form-control" value="5" min="0" inputmode="numeric">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Ghi chú thêm:</label>
+            <input type="text" id="prodNotes" class="form-control" placeholder="Màu sắc, kích cỡ, kệ để...">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu Sản Phẩm</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: GHI SỔ QUỸ THU / CHI VẬN HÀNH -->
+  <div class="modal-backdrop" id="modalCashflow">
+    <div class="modal-dialog">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">📒 Ghi Nhận Thu / Chi</h3>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <form id="formCashflow">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Loại giao dịch:</label>
+              <select id="cfType" class="form-control" required>
+                <option value="expense">Khoản Chi (Chi phí vận hành)</option>
+                <option value="income">Khoản Thu (Thu khác ngoài bán)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ngày:</label>
+              <input type="date" id="cfDate" class="form-control" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Danh mục chi phí:</label>
+            <input type="text" id="cfCategory" class="form-control" list="cfCategoryListMobile" placeholder="Bao bì, Marketing, Mặt bằng..." required>
+            <datalist id="cfCategoryListMobile">
+              <option value="Bao bì & Đóng gói">
+              <option value="Quảng cáo & Marketing">
+              <option value="Mặt bằng & Kho bãi">
+              <option value="Cước viễn thông & Điện thoại">
+              <option value="Phí sàn thương mại điện tử">
+              <option value="Thu khác">
+              <option value="Chi phí khác">
+            </datalist>
+          </div>
+
+          <div class="form-group">
+            <label>Số tiền (VNĐ): <span style="color: red;">*</span></label>
+            <input type="number" id="cfAmount" class="form-control" placeholder="0" min="1000" required inputmode="numeric">
+          </div>
+
+          <div class="form-group">
+            <label>Diễn giải nội dung:</label>
+            <input type="text" id="cfDescription" class="form-control" placeholder="VD: Mua 50 hộp carton size 20x15..." required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="submit" class="btn btn-primary">Lưu Giao Dịch</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 5: CÀI ĐẶT CỬA HÀNG -->
+  <div class="modal-backdrop" id="modalSettings">
+    <div class="modal-dialog">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">⚙️ Cài Đặt Cửa Hàng</h3>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Tên Shop / Tên của bạn:</label>
+          <input type="text" id="mobileSettingStoreName" class="form-control" placeholder="Cửa Hàng Cá Nhân">
+        </div>
+        <div class="form-group">
+          <label>Mặc định bên chịu tiền ship bán:</label>
+          <select id="mobileSettingShippingPayer" class="form-control">
+            <option value="customer">Khách hàng trả tiền ship</option>
+            <option value="shop">Shop freeship cho khách</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Cách chia tiền ship khi nhập hàng:</label>
+          <select id="mobileSettingAllocation" class="form-control">
+            <option value="by_quantity">Chia đều theo số lượng</option>
+            <option value="by_value">Chia theo giá trị tiền hàng</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal>Đóng</button>
+        <button type="button" class="btn btn-primary" id="btnSaveMobileSettings">Lưu Cài Đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 6: MÃ QR KẾT NỐI ĐIỆN THOẠI TRÊN CÙNG MẠNG WI-FI -->
+  <div class="modal-backdrop" id="modalConnectQR">
+    <div class="modal-dialog">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">📱 Mở Trên Điện Thoại</h3>
+        <button class="modal-close" data-close-modal>&times;</button>
+      </div>
+      <div class="modal-body" style="text-align: center;">
+        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+          Đảm bảo điện thoại của bạn đang kết nối <strong>cùng mạng Wi-Fi</strong> với máy tính này:
+        </p>
+
+        <div class="qr-box">
+          <img class="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://192.168.1.11:8000" alt="QR Code Kết nối">
+          <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Hoặc mở Safari / Chrome trên điện thoại và gõ:</div>
+          <div class="qr-url-badge" id="qrLocalUrlDisplay">http://192.168.1.11:8000</div>
+        </div>
+
+        <div style="background: #eff6ff; padding: 12px; border-radius: var(--radius-sm); font-size: 12px; color: #1e40af; text-align: left;">
+          <strong>💡 Mẹo dùng như App thật:</strong><br>
+          Khi trang web tải lên trên Safari điện thoại, bấm nút <strong>Chia sẻ (Share) ⎋</strong> &rarr; chọn <strong>"Thêm vào Màn hình chính" (Add to Home Screen)</strong>. App sẽ xuất hiện trên màn hình điện thoại như một ứng dụng cài đặt thực thụ!
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-block" data-close-modal>Đã Hiểu</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- SCRIPTS -->
+  <script src="js/calculations.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
