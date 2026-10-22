@@ -50,6 +50,7 @@ const ExportManager = {
         'Tên hàng hóa': p.name,
         'Danh mục': p.category,
         'Đơn vị tính': p.unit,
+        'Khối lượng (kg)': p.weight !== undefined ? p.weight : 0.2,
         'Tồn kho': p.stock,
         'Cảnh báo tồn tối thiểu': p.minStock,
         'Giá vốn (VNĐ)': p.costPrice,
@@ -66,13 +67,14 @@ const ExportManager = {
     }
 
     // Fallback sang CSV chuẩn UTF-8
-    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
+    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
     const rows = products.map((p, idx) => [
       idx + 1,
       p.sku,
       p.name,
       p.category,
       p.unit,
+      p.weight !== undefined ? p.weight : 0.2,
       p.stock,
       p.minStock,
       p.costPrice,
