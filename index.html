@@ -226,8 +226,8 @@
       <!-- ================= TAB 2: HÀNG HÓA & TỒN KHO ================= -->
       <section id="tab-products" class="tab-panel">
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="flex: 1;">
-          <button class="btn btn-primary" id="btnMobileAddProduct" style="flex-shrink: 0; padding: 0 14px;">+ Thêm</button>
+          <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="flex: 1; border-radius: 14px;">
+          <button class="btn btn-primary" id="btnMobileAddProduct" style="flex-shrink: 0; padding: 0 16px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28); border-radius: 14px; font-weight: 800;">+ Thêm</button>
         </div>
 
         <!-- Bộ lọc nhanh trạng thái kho -->
@@ -236,7 +236,7 @@
           <button class="pill-item prod-stock-pill" data-stock="in_stock">Còn hàng</button>
           <button class="pill-item prod-stock-pill" data-stock="low_stock">Sắp hết</button>
           <button class="pill-item prod-stock-pill" data-stock="out_of_stock">Hết hàng</button>
-          <button class="btn btn-sm btn-outline" id="btnMobileExportProducts" style="margin-left: auto; height: 30px; font-size: 11px;">📊 Xuất Excel</button>
+          <button class="btn btn-sm btn-outline" id="btnMobileExportProducts" style="margin-left: auto; height: 32px; font-size: 11.5px; border-radius: 999px;">📊 Xuất Excel</button>
         </div>
 
         <!-- Danh sách thẻ hàng hóa -->
@@ -248,8 +248,8 @@
       <!-- ================= TAB 3: NHẬP HÀNG (GIÁ MUA + SHIP VỀ KHO) ================= -->
       <section id="tab-purchases" class="tab-panel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <div style="font-size: 13.5px; font-weight: 700; color: var(--text-main);">Lịch Sử Nhập Hàng</div>
-          <button class="btn btn-success" id="btnMobileAddPurchase">+ Phiếu Nhập Mới</button>
+          <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Lịch Sử Nhập Hàng</div>
+          <button class="btn btn-success" id="btnMobileAddPurchase" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28); border-radius: 14px; font-weight: 800;">+ Phiếu Nhập Mới</button>
         </div>
 
         <div class="cards-list" id="purchasesCardsList">
@@ -260,8 +260,8 @@
       <!-- ================= TAB 4: BÁN HÀNG ================= -->
       <section id="tab-sales" class="tab-panel">
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="flex: 1;">
-          <button class="btn btn-primary" id="btnMobileAddSale" style="flex-shrink: 0; padding: 0 14px;">+ Tạo Đơn</button>
+          <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="flex: 1; border-radius: 14px;">
+          <button class="btn btn-primary" id="btnMobileAddSale" style="flex-shrink: 0; padding: 0 16px; background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); border: none; box-shadow: 0 4px 14px rgba(244, 63, 94, 0.28); border-radius: 14px; font-weight: 800;">+ Tạo Đơn</button>
         </div>
 
         <!-- Lọc trạng thái thanh toán -->
@@ -270,7 +270,7 @@
           <button class="pill-item sale-pay-pill" data-pay="paid">Đã thanh toán</button>
           <button class="pill-item sale-pay-pill" data-pay="partial">Thu một phần</button>
           <button class="pill-item sale-pay-pill" data-pay="unpaid">Chưa thu (Nợ)</button>
-          <button class="btn btn-sm btn-outline" id="btnMobileExportSales" style="margin-left: auto; height: 30px; font-size: 11px;">📊 Excel</button>
+          <button class="btn btn-sm btn-outline" id="btnMobileExportSales" style="margin-left: auto; height: 32px; font-size: 11.5px; border-radius: 999px;">📊 Excel</button>
         </div>
 
         <div class="cards-list" id="salesCardsList">
@@ -389,9 +389,9 @@
       <!-- ================= SECTION PHỤ: SỔ QUỸ THU CHI (HIỂN THỊ KHI BẤM TỪ MENU) ================= -->
       <section id="tab-cashflow" class="tab-panel">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <button class="btn btn-sm btn-outline" id="btnBackToMoreFromCashflow">‹ Quay lại</button>
-          <div style="font-size: 14px; font-weight: 700;">Sổ Quỹ Thu - Chi</div>
-          <button class="btn btn-sm btn-primary" id="btnMobileAddCashflow">+ Thu/Chi</button>
+          <button class="btn btn-sm btn-outline" id="btnBackToMoreFromCashflow" style="border-radius: 999px;">‹ Quay lại</button>
+          <div style="font-size: 15px; font-weight: 800;">Sổ Quỹ Thu - Chi</div>
+          <button class="btn btn-sm btn-primary" id="btnMobileAddCashflow" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.28); border-radius: 12px; font-weight: 800; padding: 0 14px;">+ Thu/Chi</button>
         </div>
         <div class="cards-list" id="cashflowCardsList">
           <!-- Render động qua JS -->
@@ -497,102 +497,111 @@
 
   <!-- ================= MODALS (BOTTOM SHEETS TRƯỢT TỪ DƯỚI LÊN) ================= -->
 
-  <!-- MODAL 1: TẠO ĐƠN BÁN HÀNG -->
+  <!-- MODAL 1: TẠO ĐƠN BÁN HÀNG (THEME BENTO ROSE / CORAL) -->
   <div class="modal-backdrop" id="modalSale">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-theme-sale">
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">🛒 Tạo Đơn Bán Hàng</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="submit" form="formSale" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-weight: 700; border-radius: 8px; font-size: 13px;">Lưu</button>
+          <button type="submit" form="formSale" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
           <button type="button" class="modal-close" data-close-modal>&times;</button>
         </div>
       </div>
       <form id="formSale">
         <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Ngày bán:</label>
-              <input type="date" id="saleDate" class="form-control" required>
+          <!-- BENTO CARD 1: THÔNG TIN KHÁCH HÀNG & KÊNH BÁN -->
+          <div class="bento-modal-card bento-modal-card-rose">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-coral">👤 Khách hàng & Kênh</span>
             </div>
-            <div class="form-group">
-              <label>Tên khách:</label>
-              <input type="text" id="saleCustomerName" class="form-control" value="Khách lẻ" required>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Ngày bán:</label>
+                <input type="date" id="saleDate" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label>Tên khách:</label>
+                <input type="text" id="saleCustomerName" class="form-control" value="Khách lẻ" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Số điện thoại:</label>
+                <input type="tel" id="saleCustomerPhone" class="form-control" placeholder="09xxxxxxxx" inputmode="tel">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Kênh bán:</label>
+                <select id="saleChannel" class="form-control">
+                  <option value="Trực tiếp">Tại chỗ</option>
+                  <option value="Facebook">Facebook</option>
+                  <option value="TikTok">TikTok Shop</option>
+                  <option value="Shopee">Shopee</option>
+                  <option value="Zalo">Zalo</option>
+                  <option value="Khác">Khác</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Số điện thoại:</label>
-              <input type="tel" id="saleCustomerPhone" class="form-control" placeholder="09xxxxxxxx" inputmode="tel">
-            </div>
-            <div class="form-group">
-              <label>Kênh bán:</label>
-              <select id="saleChannel" class="form-control">
-                <option value="Trực tiếp">Tại chỗ</option>
-                <option value="Facebook">Facebook</option>
-                <option value="TikTok">TikTok Shop</option>
-                <option value="Shopee">Shopee</option>
-                <option value="Zalo">Zalo</option>
-                <option value="Khác">Khác</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Danh sách món bán -->
-          <div style="margin: 10px 0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-weight: 700; font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Mặt hàng bán:</label>
-              <button type="button" class="btn btn-sm btn-outline" id="btnAddSaleRow">+ Thêm món</button>
+          <!-- BENTO CARD 2: DANH SÁCH MÓN BÁN -->
+          <div class="bento-modal-card">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-coral">🏷️ Mặt hàng bán:</span>
+              <button type="button" class="bento-pill-btn bento-pill-btn-coral" id="btnAddSaleRow">+ Thêm món</button>
             </div>
             <div id="saleItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
               <!-- Dòng sản phẩm thêm động qua JS -->
             </div>
           </div>
 
-          <!-- Chi phí ship & Giảm giá -->
-          <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); margin: 12px 0;">
+          <!-- BENTO CARD 3: CHI PHÍ SHIP & THANH TOÁN -->
+          <div class="bento-modal-card bento-modal-card-apricot">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-apricot">🚚 Phí ship & Giảm giá</span>
+            </div>
             <div class="form-row">
-              <div class="form-group" style="margin-bottom: 0;">
+              <div class="form-group">
                 <label>Giảm giá (VNĐ):</label>
                 <input type="number" id="saleDiscount" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
               </div>
-              <div class="form-group" style="margin-bottom: 0;">
+              <div class="form-group">
                 <label>🚚 Tiền ship giao:</label>
                 <input type="number" id="saleShippingFee" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
               </div>
             </div>
 
-            <div class="form-group" style="margin-top: 10px; margin-bottom: 0;">
+            <div class="form-group">
               <label>Bên chịu tiền ship:</label>
               <select id="saleShippingPayer" class="form-control">
                 <option value="customer">Khách trả tiền ship (+ vào bill)</option>
                 <option value="shop">Shop chịu ship (Freeship trừ vào lãi)</option>
               </select>
             </div>
+
+            <!-- Trạng thái thanh toán -->
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Thanh toán:</label>
+                <select id="salePaymentStatus" class="form-control">
+                  <option value="paid">Đã thanh toán đủ</option>
+                  <option value="partial">Thu 1 phần (Cọc)</option>
+                  <option value="unpaid">Khách nợ lại</option>
+                </select>
+              </div>
+              <div class="form-group" id="divPaidAmount" style="display: none; margin-bottom: 0;">
+                <label>Tiền đã nhận:</label>
+                <input type="number" id="salePaidAmount" class="form-control" value="0" min="0" inputmode="numeric">
+              </div>
+            </div>
           </div>
 
-          <!-- Trạng thái thanh toán -->
-          <div class="form-row">
-            <div class="form-group">
-              <label>Thanh toán:</label>
-              <select id="salePaymentStatus" class="form-control">
-                <option value="paid">Đã thanh toán đủ</option>
-                <option value="partial">Thu 1 phần (Cọc)</option>
-                <option value="unpaid">Khách nợ lại</option>
-              </select>
-            </div>
-            <div class="form-group" id="divPaidAmount" style="display: none;">
-              <label>Tiền đã nhận:</label>
-              <input type="number" id="salePaidAmount" class="form-control" value="0" min="0" inputmode="numeric">
-            </div>
-          </div>
-
-          <!-- Bảng tính toán tức thì Lợi Nhuận -->
-          <div class="live-calc-box" id="saleLiveCalc">
+          <!-- BENTO CARD 4: BẢNG TÍNH TOÁN LỢI NHUẬN TỨC THÌ (BENTO SHOWCASE) -->
+          <div class="modal-bento-calc calc-sale" id="saleLiveCalc">
             <div class="live-calc-row">
               <span>Tiền hàng khách mua:</span>
-              <strong id="salePrevMerchandise">0 đ</strong>
+              <strong id="salePrevMerchandise" style="color: #0f172a; font-size: 14px;">0 đ</strong>
             </div>
             <div class="live-calc-row" id="salePrevDiscountRow" style="display: none; color: #dc2626;">
               <span>Chiết khấu:</span>
@@ -603,95 +612,107 @@
               <span id="salePrevShipping">0 đ</span>
             </div>
             <div class="live-calc-row live-calc-total">
-              <span>TỔNG THU KHÁCH (BILL):</span>
-              <span id="salePrevTotal">0 đ</span>
+              <span style="color: #9f1239;">TỔNG THU KHÁCH (BILL):</span>
+              <span id="salePrevTotal" style="color: #be123c; font-size: 17px; font-weight: 900;">0 đ</span>
             </div>
-            <div style="margin-top: 8px; border-top: 1px dashed #cbd5e1; padding-top: 6px;">
-              <div class="live-calc-row" style="color: #64748b;">
+            <div style="margin-top: 10px; border-top: 1px dashed #fca5a5; padding-top: 8px;">
+              <div class="live-calc-row" style="color: #64748b; font-size: 12px;">
                 <span>Giá vốn hàng bán:</span>
                 <span id="salePrevCOGS">0 đ</span>
               </div>
-              <div class="live-calc-row" style="font-weight: 800; font-size: 15px; color: #10b981;">
-                <span>LỢI NHUẬN GỘP:</span>
-                <span id="salePrevGrossProfit">0 đ</span>
+              <div class="live-calc-row" style="font-weight: 800; font-size: 16px;">
+                <span style="color: #1e293b;">LỢI NHUẬN GỘP:</span>
+                <span id="salePrevGrossProfit" style="color: #10b981; font-size: 18px;">+0 đ</span>
               </div>
               <div class="live-calc-row" style="font-size: 11.5px; color: #64748b;">
                 <span>Biên lợi nhuận đơn:</span>
-                <span id="salePrevMargin">0%</span>
+                <span id="salePrevMargin" style="font-weight: 700; color: #047857;">0%</span>
               </div>
             </div>
           </div>
 
-          <div class="form-group" style="margin-top: 10px;">
-            <label>Ghi chú đơn:</label>
-            <input type="text" id="saleNotes" class="form-control" placeholder="Địa chỉ, hẹn giờ giao...">
+          <!-- GHI CHÚ ĐƠN -->
+          <div class="bento-modal-card" style="margin-top: 12px; margin-bottom: 0;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Ghi chú đơn:</label>
+              <input type="text" id="saleNotes" class="form-control" placeholder="Địa chỉ, hẹn giờ giao, kênh ship...">
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
-          <button type="submit" class="btn btn-primary">Lưu Đơn & Trừ Kho</button>
+          <button type="submit" class="btn btn-theme-submit">Lưu Đơn & Trừ Kho</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 2: TẠO PHIẾU NHẬP HÀNG -->
+  <!-- MODAL 2: TẠO PHIẾU NHẬP HÀNG (THEME BENTO MINT & BLUE) -->
   <div class="modal-backdrop" id="modalPurchase">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-theme-purchase">
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">📥 Phiếu Nhập Hàng Mới</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="submit" form="formPurchase" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-weight: 700; border-radius: 8px; font-size: 13px;">Lưu</button>
+          <button type="submit" form="formPurchase" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
           <button type="button" class="modal-close" data-close-modal>&times;</button>
         </div>
       </div>
       <form id="formPurchase">
         <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Ngày nhập:</label>
-              <input type="date" id="poDate" class="form-control" required>
+          <!-- BENTO CARD 1: THÔNG TIN XƯỞNG & NGÀY -->
+          <div class="bento-modal-card bento-modal-card-mint">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-mint">🏭 Nguồn hàng & Ngày nhập</span>
             </div>
-            <div class="form-group">
-              <label>Nguồn hàng / Xưởng:</label>
-              <input type="text" id="poSupplier" class="form-control" placeholder="Xưởng may, Taobao..." required>
+            <div class="form-row">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Ngày nhập:</label>
+                <input type="date" id="poDate" class="form-control" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Nguồn hàng / Xưởng:</label>
+                <input type="text" id="poSupplier" class="form-control" placeholder="Xưởng may, Taobao..." required>
+              </div>
             </div>
           </div>
 
-          <!-- Danh sách hàng nhập -->
-          <div style="margin: 10px 0;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <label style="font-weight: 700; font-size: 12px; color: var(--text-muted); text-transform: uppercase;">Mặt hàng nhập:</label>
-              <button type="button" class="btn btn-sm btn-outline" id="btnAddPurchaseRow">+ Thêm món</button>
+          <!-- BENTO CARD 2: DANH SÁCH MÓN NHẬP -->
+          <div class="bento-modal-card">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-mint">📦 Mặt hàng nhập:</span>
+              <button type="button" class="bento-pill-btn bento-pill-btn-mint" id="btnAddPurchaseRow">+ Thêm món</button>
             </div>
             <div id="purchaseItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
               <!-- Dòng hàng nhập thêm động qua JS -->
             </div>
           </div>
 
-          <!-- Phí ship về kho & Cách tính theo Cân nặng (kg) -->
-          <div style="background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: var(--radius-sm); margin: 12px 0;">
+          <!-- BENTO CARD 3: PHÍ SHIP VỀ KHO & CÂN NẶNG KG -->
+          <div class="bento-modal-card bento-modal-card-blue">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-blue">⚖️ Phí ship theo cân nặng</span>
+            </div>
             <div class="form-row">
-              <div class="form-group" style="margin-bottom: 0;">
+              <div class="form-group">
                 <label>⚖️ Cách tính tiền ship:</label>
                 <select id="poShippingType" class="form-control">
                   <option value="by_weight" selected>Theo cân nặng (kg)</option>
                   <option value="fixed">Nhập tiền ship trọn gói</option>
                 </select>
               </div>
-              <div class="form-group" id="divPoPricePerKg" style="margin-bottom: 0;">
+              <div class="form-group" id="divPoPricePerKg">
                 <label>💰 Giá ship mỗi kg (VNĐ/kg):</label>
                 <input type="number" id="poPricePerKg" class="form-control" value="30000" min="0" placeholder="VD: 30000" inputmode="numeric">
               </div>
             </div>
 
             <!-- Cân nặng gói hàng & Tiền ship -->
-            <div class="form-row" style="margin-top: 10px;">
+            <div class="form-row" style="margin-bottom: 0;">
               <div class="form-group" id="divPoTotalWeight" style="margin-bottom: 0;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                   <label style="margin-bottom: 0;">Tổng khối lượng (kg):</label>
-                  <button type="button" id="btnAutoCalcWeight" style="background: none; border: none; color: #2563eb; font-size: 11px; font-weight: 600; cursor: pointer;">⚡ Tính từ các món</button>
+                  <button type="button" id="btnAutoCalcWeight" class="bento-pill-btn bento-pill-btn-blue" style="padding: 2px 8px; font-size: 10.5px;">⚡ Tính từ các món</button>
                 </div>
                 <input type="text" id="poTotalWeight" class="form-control" value="0" placeholder="0" inputmode="decimal">
               </div>
@@ -702,120 +723,139 @@
             </div>
           </div>
 
-          <!-- Live Calc Box -->
-          <div class="live-calc-box" id="purchaseLiveCalc">
+          <!-- BENTO CARD 4: LIVE CALC SHOWCASE PHIẾU NHẬP -->
+          <div class="modal-bento-calc calc-purchase" id="purchaseLiveCalc">
             <div class="live-calc-row">
-              <span>Tiền hàng gốc:</span>
-              <strong id="poPreviewSubtotal">0 đ</strong>
+              <span>Tiền hàng gốc (mua tại xưởng):</span>
+              <strong id="poPreviewSubtotal" style="color: #0f172a; font-size: 14px;">0 đ</strong>
             </div>
             <div class="live-calc-row">
-              <span>Khối lượng cả gói:</span>
-              <span id="poPreviewWeight" style="font-weight: 600; color: #8b5cf6;">0 kg</span>
+              <span>Tổng khối lượng cả gói:</span>
+              <span id="poPreviewWeight" style="font-weight: 700; color: #15803d; background: #dcfce7; padding: 2px 8px; border-radius: 6px;">0 kg</span>
             </div>
             <div class="live-calc-row">
               <span>Phí ship về kho:</span>
-              <strong id="poPreviewShipping" style="color: #8b5cf6;">0 đ</strong>
+              <strong id="poPreviewShipping" style="color: #0369a1;">0 đ</strong>
             </div>
             <div class="live-calc-row live-calc-total">
-              <span>TỔNG TIỀN PHIẾU NHẬP:</span>
-              <span id="poPreviewTotal">0 đ</span>
+              <span style="color: #166534;">TỔNG TIỀN PHIẾU NHẬP:</span>
+              <span id="poPreviewTotal" style="color: #15803d; font-size: 17px; font-weight: 900;">0 đ</span>
             </div>
-            <div style="font-size: 11px; color: #64748b; margin-top: 4px;">
-              💡 Giá vốn thực tế = Giá mua + Phí ship tính chuẩn theo cân nặng từng món.
+            <div style="font-size: 11.5px; color: #166534; margin-top: 6px; line-height: 1.4;">
+              💡 <em>Giá vốn thực tế = Giá mua + Phí ship tính chuẩn theo cân nặng từng món.</em>
             </div>
           </div>
 
-          <div class="form-group" style="margin-top: 10px;">
-            <label>Ghi chú nhập:</label>
-            <input type="text" id="poNotes" class="form-control" placeholder="Mã vận đơn bưu cục...">
+          <!-- GHI CHÚ NHẬP -->
+          <div class="bento-modal-card" style="margin-top: 12px; margin-bottom: 0;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Ghi chú nhập:</label>
+              <input type="text" id="poNotes" class="form-control" placeholder="Mã vận đơn bưu cục, xưởng...">
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
-          <button type="submit" class="btn btn-success">Lưu Phiếu & Tăng Kho</button>
+          <button type="submit" class="btn btn-theme-submit">Lưu Phiếu & Tăng Kho</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 3: THÊM / SỬA SẢN PHẨM -->
+  <!-- MODAL 3: THÊM / SỬA SẢN PHẨM (THEME BENTO HONEY YELLOW & LILAC) -->
   <div class="modal-backdrop" id="modalProduct">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-theme-product">
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title" id="modalProductTitle">🏷️ Thêm Hàng Hóa Mới</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="submit" form="formProduct" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-weight: 700; border-radius: 8px; font-size: 13px;">Lưu</button>
+          <button type="submit" form="formProduct" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
           <button type="button" class="modal-close" data-close-modal>&times;</button>
         </div>
       </div>
       <form id="formProduct">
         <input type="hidden" id="prodId">
         <div class="modal-body">
-          <div class="form-group">
-            <label>Tên sản phẩm: <span style="color: red;">*</span></label>
-            <input type="text" id="prodName" class="form-control" placeholder="VD: Áo thun cotton trơn" required>
-          </div>
+          <!-- BENTO CARD 1: TÊN & PHÂN LOẠI -->
+          <div class="bento-modal-card bento-modal-card-apricot">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-apricot">🏷️ Tên & Định danh</span>
+            </div>
+            <div class="form-group">
+              <label>Tên sản phẩm: <span style="color: red;">*</span></label>
+              <input type="text" id="prodName" class="form-control" placeholder="VD: Áo thun cotton trơn" required>
+            </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Mã hàng (SKU):</label>
-              <input type="text" id="prodSku" class="form-control" placeholder="Tự sinh nếu trống">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Mã hàng (SKU):</label>
+                <input type="text" id="prodSku" class="form-control" placeholder="Tự sinh nếu trống">
+              </div>
+              <div class="form-group">
+                <label>Danh mục:</label>
+                <input type="text" id="prodCategory" class="form-control" value="Thời trang">
+              </div>
             </div>
-            <div class="form-group">
-              <label>Danh mục:</label>
-              <input type="text" id="prodCategory" class="form-control" value="Thời trang">
-            </div>
-          </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label>Giá vốn ước tính (VNĐ):</label>
-              <input type="number" id="prodCostPrice" class="form-control" value="0" min="0" inputmode="numeric">
-            </div>
-            <div class="form-group">
-              <label>Giá bán niêm yết (VNĐ): <span style="color: red;">*</span></label>
-              <input type="number" id="prodSellingPrice" class="form-control" placeholder="0" min="0" required inputmode="numeric">
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Đơn vị tính:</label>
-              <input type="text" id="prodUnit" class="form-control" value="Cái">
-            </div>
-            <div class="form-group">
-              <label>⚖️ Khối lượng (kg / 1 cái):</label>
-              <input type="text" id="prodWeight" class="form-control" value="0.2" placeholder="VD: 0.25 hoặc 1,5" inputmode="decimal">
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Đơn vị tính:</label>
+                <input type="text" id="prodUnit" class="form-control" value="Cái">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>⚖️ Khối lượng (kg / 1 cái):</label>
+                <input type="text" id="prodWeight" class="form-control" value="0.2" placeholder="VD: 0.25 hoặc 1,5" inputmode="decimal">
+              </div>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Tồn kho hiện có:</span>
-                <span id="prodStockSyncBadge" style="font-size: 11px; color: #2563eb; font-weight: 600; text-transform: none; display: none;">(⚡ Tự tính theo màu)</span>
-              </label>
-              <input type="number" id="prodStock" class="form-control" value="0" min="0" inputmode="numeric">
+          <!-- BENTO CARD 2: GIÁ VỐN & GIÁ BÁN -->
+          <div class="bento-modal-card">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-coral">💰 Định giá & Lợi nhuận</span>
             </div>
-            <div class="form-group">
-              <label>Báo hết khi <=</label>
-              <input type="number" id="prodMinStock" class="form-control" value="5" min="0" inputmode="numeric">
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Giá vốn ước tính (VNĐ):</label>
+                <input type="number" id="prodCostPrice" class="form-control" value="0" min="0" inputmode="numeric">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Giá bán niêm yết (VNĐ): <span style="color: red;">*</span></label>
+                <input type="number" id="prodSellingPrice" class="form-control" placeholder="0" min="0" required inputmode="numeric">
+              </div>
             </div>
           </div>
 
-          <!-- PHÂN LOẠI MÀU SẮC & SỐ LƯỢNG TỪNG MÀU -->
-          <div class="product-colors-box" style="background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <label style="font-weight: 700; font-size: 13px; color: #1e293b; margin-bottom: 0;">🎨 Phân loại theo màu sắc:</label>
-              <button type="button" id="btnAddColorRow" class="btn btn-sm btn-outline" style="font-size: 11px; padding: 4px 10px; font-weight: 600; color: #2563eb; border-color: #93c5fd; background: #eff6ff;">
-                + Thêm màu
-              </button>
+          <!-- BENTO CARD 3: QUẢN LÝ TỒN KHO -->
+          <div class="bento-modal-card">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-mint">📦 Tồn kho & Định mức</span>
+            </div>
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>Tồn kho hiện có:</span>
+                  <span id="prodStockSyncBadge" style="font-size: 11px; color: #2563eb; font-weight: 700; text-transform: none; display: none;">(⚡ Tự tính theo màu)</span>
+                </label>
+                <input type="number" id="prodStock" class="form-control" value="0" min="0" inputmode="numeric">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Báo hết khi <=</label>
+                <input type="number" id="prodMinStock" class="form-control" value="5" min="0" inputmode="numeric">
+              </div>
+            </div>
+          </div>
+
+          <!-- BENTO CARD 4: PHÂN LOẠI MÀU SẮC & SỐ LƯỢNG (BENTO STUDIO) -->
+          <div class="bento-modal-card bento-modal-card-lilac product-colors-box">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-lilac">🎨 Phân loại theo màu sắc</span>
+              <button type="button" id="btnAddColorRow" class="bento-pill-btn bento-pill-btn-lilac">+ Thêm màu</button>
             </div>
             
             <!-- Gợi ý chọn màu nhanh bằng 1 chạm trên điện thoại -->
-            <div style="font-size: 11px; color: #64748b; margin-bottom: 6px;">Chạm nhanh để thêm màu:</div>
-            <div id="quickColorChips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+            <div style="font-size: 11.5px; color: #6d28d9; margin-bottom: 8px; font-weight: 600;">Chạm nhanh để thêm màu:</div>
+            <div id="quickColorChips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
               <button type="button" class="color-chip" data-color="Đỏ">🔴 Đỏ</button>
               <button type="button" class="color-chip" data-color="Cam">🟠 Cam</button>
               <button type="button" class="color-chip" data-color="Đen">⚫ Đen</button>
@@ -832,142 +872,183 @@
             </div>
 
             <!-- Tổng kết số lượng màu & đồng bộ tồn kho -->
-            <div id="colorTotalSummary" style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #cbd5e1; display: none; justify-content: space-between; align-items: center; font-size: 12px;">
-              <span style="color: #64748b;">Tổng các màu: <strong id="colorTotalSumQty" style="color: #2563eb; font-size: 14px;">0</strong> cái</span>
-              <span style="color: #10b981; font-size: 11px; font-weight: 600;">⚡ Đã tự đồng bộ vào Tồn kho</span>
+            <div id="colorTotalSummary" style="margin-top: 10px; padding-top: 8px; border-top: 1.5px dashed #c4b5fd; display: none; justify-content: space-between; align-items: center; font-size: 12.5px;">
+              <span style="color: #5b21b6; font-weight: 600;">Tổng các màu: <strong id="colorTotalSumQty" style="color: #6d28d9; font-size: 15px;">0</strong> cái</span>
+              <span style="color: #10b981; font-size: 11px; font-weight: 700; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">⚡ Đã tự đồng bộ tồn kho</span>
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Ghi chú thêm:</label>
-            <input type="text" id="prodNotes" class="form-control" placeholder="Màu sắc, kích cỡ, kệ để...">
+          <!-- GHI CHÚ -->
+          <div class="bento-modal-card" style="margin-bottom: 0;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Ghi chú thêm:</label>
+              <input type="text" id="prodNotes" class="form-control" placeholder="Chất liệu, kệ để, size...">
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
-          <button type="submit" class="btn btn-primary">Lưu Sản Phẩm</button>
+          <button type="submit" class="btn btn-theme-submit">Lưu Sản Phẩm</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 4: GHI SỔ QUỸ THU / CHI VẬN HÀNH -->
+  <!-- MODAL 4: GHI SỔ QUỸ THU / CHI VẬN HÀNH (THEME BENTO LILAC & SLATE) -->
   <div class="modal-backdrop" id="modalCashflow">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-theme-cashflow">
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">📒 Ghi Nhận Thu / Chi</h3>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="submit" form="formCashflow" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
+          <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
       </div>
       <form id="formCashflow">
         <div class="modal-body">
-          <div class="form-row">
-            <div class="form-group">
-              <label>Loại giao dịch:</label>
-              <select id="cfType" class="form-control" required>
-                <option value="expense">Khoản Chi (Chi phí vận hành)</option>
-                <option value="income">Khoản Thu (Thu khác ngoài bán)</option>
-              </select>
+          <!-- BENTO CARD 1: LOẠI GIAO DỊCH -->
+          <div class="bento-modal-card bento-modal-card-lilac">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-lilac">⚖️ Phân loại giao dịch</span>
+            </div>
+            <div class="form-row" style="margin-bottom: 0;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Loại giao dịch:</label>
+                <select id="cfType" class="form-control" required style="font-weight: 700;">
+                  <option value="expense">🔴 Khoản Chi (Chi phí vận hành)</option>
+                  <option value="income">🟢 Khoản Thu (Thu khác ngoài bán)</option>
+                </select>
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Ngày:</label>
+                <input type="date" id="cfDate" class="form-control" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- BENTO CARD 2: SỐ TIỀN & DANH MỤC -->
+          <div class="bento-modal-card bento-modal-card-rose">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-coral">💵 Số tiền & Danh mục</span>
             </div>
             <div class="form-group">
-              <label>Ngày:</label>
-              <input type="date" id="cfDate" class="form-control" required>
+              <label>Số tiền (VNĐ): <span style="color: red;">*</span></label>
+              <input type="number" id="cfAmount" class="form-control" placeholder="0" min="1000" required inputmode="numeric" style="font-size: 18px; font-weight: 800; color: #be123c;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Danh mục chi phí:</label>
+              <input type="text" id="cfCategory" class="form-control" list="cfCategoryListMobile" placeholder="Bao bì, Marketing, Mặt bằng..." required>
+              <datalist id="cfCategoryListMobile">
+                <option value="Bao bì & Đóng gói">
+                <option value="Quảng cáo & Marketing">
+                <option value="Mặt bằng & Kho bãi">
+                <option value="Cước viễn thông & Điện thoại">
+                <option value="Phí sàn thương mại điện tử">
+                <option value="Thu khác">
+                <option value="Chi phí khác">
+              </datalist>
             </div>
           </div>
 
-          <div class="form-group">
-            <label>Danh mục chi phí:</label>
-            <input type="text" id="cfCategory" class="form-control" list="cfCategoryListMobile" placeholder="Bao bì, Marketing, Mặt bằng..." required>
-            <datalist id="cfCategoryListMobile">
-              <option value="Bao bì & Đóng gói">
-              <option value="Quảng cáo & Marketing">
-              <option value="Mặt bằng & Kho bãi">
-              <option value="Cước viễn thông & Điện thoại">
-              <option value="Phí sàn thương mại điện tử">
-              <option value="Thu khác">
-              <option value="Chi phí khác">
-            </datalist>
-          </div>
-
-          <div class="form-group">
-            <label>Số tiền (VNĐ): <span style="color: red;">*</span></label>
-            <input type="number" id="cfAmount" class="form-control" placeholder="0" min="1000" required inputmode="numeric">
-          </div>
-
-          <div class="form-group">
-            <label>Diễn giải nội dung:</label>
-            <input type="text" id="cfDescription" class="form-control" placeholder="VD: Mua 50 hộp carton size 20x15..." required>
+          <!-- BENTO CARD 3: DIỄN GIẢI CHI TIẾT -->
+          <div class="bento-modal-card" style="margin-bottom: 0;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label>Diễn giải nội dung:</label>
+              <input type="text" id="cfDescription" class="form-control" placeholder="VD: Mua 50 hộp carton size 20x15..." required>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
-          <button type="submit" class="btn btn-primary">Lưu Giao Dịch</button>
+          <button type="submit" class="btn btn-theme-submit">Lưu Giao Dịch</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL 5: CÀI ĐẶT CỬA HÀNG -->
+  <!-- MODAL 5: CÀI ĐẶT CỬA HÀNG (THEME BENTO FROSTED SLATE) -->
   <div class="modal-backdrop" id="modalSettings">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-theme-settings">
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">⚙️ Cài Đặt Cửa Hàng</h3>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn btn-sm btn-theme-header" id="btnSaveMobileSettingsHeader" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
+          <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
       </div>
       <div class="modal-body">
-        <div class="form-group">
-          <label>Tên Shop / Tên của bạn:</label>
-          <input type="text" id="mobileSettingStoreName" class="form-control" placeholder="Cửa Hàng Cá Nhân">
+        <div class="bento-modal-card bento-modal-card-lilac">
+          <div class="bento-card-title">
+            <span class="bento-tag-pill tag-lilac">🏪 Hồ sơ cửa hàng</span>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Tên Shop / Tên của bạn:</label>
+            <input type="text" id="mobileSettingStoreName" class="form-control" placeholder="Cửa Hàng Cá Nhân" style="font-weight: 700;">
+          </div>
         </div>
-        <div class="form-group">
-          <label>Mặc định bên chịu tiền ship bán:</label>
-          <select id="mobileSettingShippingPayer" class="form-control">
-            <option value="customer">Khách hàng trả tiền ship</option>
-            <option value="shop">Shop freeship cho khách</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Cách chia tiền ship khi nhập hàng:</label>
-          <select id="mobileSettingAllocation" class="form-control">
-            <option value="by_quantity">Chia đều theo số lượng</option>
-            <option value="by_value">Chia theo giá trị tiền hàng</option>
-          </select>
+
+        <div class="bento-modal-card bento-modal-card-blue" style="margin-bottom: 0;">
+          <div class="bento-card-title">
+            <span class="bento-tag-pill tag-blue">🚚 Chính sách phí ship</span>
+          </div>
+          <div class="form-group">
+            <label>Mặc định bên chịu tiền ship bán:</label>
+            <select id="mobileSettingShippingPayer" class="form-control">
+              <option value="customer">Khách hàng trả tiền ship (+ vào bill)</option>
+              <option value="shop">Shop freeship cho khách (trừ vào lãi)</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>Cách chia tiền ship khi nhập hàng:</label>
+            <select id="mobileSettingAllocation" class="form-control">
+              <option value="by_quantity">Chia đều theo số lượng</option>
+              <option value="by_value">Chia theo giá trị tiền hàng</option>
+            </select>
+          </div>
         </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-outline" data-close-modal>Đóng</button>
-        <button type="button" class="btn btn-primary" id="btnSaveMobileSettings">Lưu Cài Đặt</button>
+        <button type="button" class="btn btn-theme-submit" id="btnSaveMobileSettings">Lưu Cài Đặt</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL 6: MÃ QR KẾT NỐI ĐIỆN THOẠI TRÊN CÙNG MẠNG WI-FI -->
+  <!-- MODAL 6: MÃ QR KẾT NỐI ĐIỆN THOẠI TRÊN CÙNG MẠNG WI-FI (THEME BENTO SKY ICE) -->
   <div class="modal-backdrop" id="modalConnectQR">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-theme-connect">
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">📱 Mở Trên Điện Thoại</h3>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <button type="button" class="modal-close" data-close-modal>&times;</button>
       </div>
       <div class="modal-body" style="text-align: center;">
-        <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
-          Đảm bảo điện thoại của bạn đang kết nối <strong>cùng mạng Wi-Fi</strong> với máy tính này:
-        </p>
+        <div class="bento-modal-card bento-modal-card-blue" style="text-align: center; padding: 20px 16px;">
+          <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 14px;">
+            Đảm bảo điện thoại của bạn đang kết nối <strong>cùng mạng Wi-Fi</strong> với máy tính này:
+          </p>
 
-        <div class="qr-box">
-          <img class="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://192.168.1.11:8000" alt="QR Code Kết nối">
-          <div style="font-size: 12px; color: #64748b; margin-bottom: 6px;">Hoặc mở Safari / Chrome trên điện thoại và gõ:</div>
-          <div class="qr-url-badge" id="qrLocalUrlDisplay">http://192.168.1.11:8000</div>
+          <div class="qr-box" style="margin: 0 auto 12px auto; background: #ffffff; padding: 16px; border-radius: 18px; box-shadow: 0 4px 16px rgba(37,99,235,0.08); border: 1.5px solid #bfdbfe;">
+            <img class="qr-code-img" src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=http://192.168.1.11:8000" alt="QR Code Kết nối" style="border-radius: 12px;">
+            <div style="font-size: 12px; color: #64748b; margin: 10px 0 4px 0;">Hoặc mở Safari / Chrome trên điện thoại và gõ:</div>
+            <div class="qr-url-badge" id="qrLocalUrlDisplay" style="background: #eff6ff; color: #1d4ed8; padding: 6px 14px; border-radius: 999px; font-weight: 700; border: 1px solid #bfdbfe; display: inline-block;">http://192.168.1.11:8000</div>
+          </div>
         </div>
 
-        <div style="background: #eff6ff; padding: 12px; border-radius: var(--radius-sm); font-size: 12px; color: #1e40af; text-align: left;">
-          <strong>💡 Mẹo dùng như App thật:</strong><br>
-          Khi trang web tải lên trên Safari điện thoại, bấm nút <strong>Chia sẻ (Share) ⎋</strong> &rarr; chọn <strong>"Thêm vào Màn hình chính" (Add to Home Screen)</strong>. App sẽ xuất hiện trên màn hình điện thoại như một ứng dụng cài đặt thực thụ!
+        <div class="bento-modal-card bento-modal-card-mint" style="text-align: left; margin-bottom: 0;">
+          <div class="bento-card-title">
+            <span class="bento-tag-pill tag-mint">💡 Mẹo dùng như App thật</span>
+          </div>
+          <div style="font-size: 12.5px; color: #166534; line-height: 1.55;">
+            Khi trang web tải lên trên Safari điện thoại, bấm nút <strong>Chia sẻ (Share) ⎋</strong> &rarr; chọn <strong>"Thêm vào Màn hình chính" (Add to Home Screen)</strong>. App sẽ xuất hiện trên màn hình điện thoại như một ứng dụng cài đặt thực thụ!
+          </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary btn-block" data-close-modal>Đã Hiểu</button>
+        <button type="button" class="btn btn-primary btn-block btn-theme-submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;" data-close-modal>Đã Hiểu</button>
       </div>
     </div>
   </div>

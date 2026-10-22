@@ -490,15 +490,16 @@ const MobileApp = {
 
     const div = document.createElement('div');
     div.className = 'color-variant-row';
+    div.style.cssText = 'background: #ffffff; border: 1.5px solid #ddd6fe; border-radius: 14px; padding: 10px 12px; display: flex; gap: 8px; align-items: center; box-shadow: 0 2px 8px rgba(109,40,217,0.04);';
     div.innerHTML = `
       <div style="flex: 1.3;">
-        <input type="text" class="form-control color-name-input" value="${colorName}" placeholder="Tên màu (Đỏ, Cam...)" style="height: 38px; font-size: 13px;">
+        <input type="text" class="form-control color-name-input" value="${colorName}" placeholder="Tên màu (Đỏ, Cam...)" style="height: 40px; font-size: 13.5px; font-weight: 700; border-radius: 10px;">
       </div>
       <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
-        <input type="number" class="form-control color-qty-input" value="${qty}" min="0" placeholder="0" inputmode="numeric" style="height: 38px; font-size: 13px; text-align: center;">
-        <span style="font-size: 11px; color: #64748b;">cái</span>
+        <input type="number" class="form-control color-qty-input" value="${qty}" min="0" placeholder="0" inputmode="numeric" style="height: 40px; font-size: 14px; text-align: center; font-weight: 800; border-radius: 10px;">
+        <span style="font-size: 11.5px; color: #64748b; font-weight: 700;">cái</span>
       </div>
-      <button type="button" class="btn btn-sm btn-outline btn-remove-color" style="color: #ef4444; width: 34px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 16px;">&times;</button>
+      <button type="button" class="btn btn-sm btn-outline btn-remove-color" style="color: #ef4444; width: 36px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; border-color: #fecdd3; background: #fff1f2; font-weight: 700;">&times;</button>
     `;
 
     container.appendChild(div);
@@ -841,8 +842,7 @@ const MobileApp = {
   addPurchaseRow() {
     const container = document.getElementById('purchaseItemsContainer');
     const div = document.createElement('div');
-    div.className = 'mobile-item-row';
-    div.style.cssText = 'background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px;';
+    div.className = 'mobile-item-row bento-dynamic-row';
 
     const products = window.appStore.state.products || [];
     const optionsHtml = products.map(p => `
@@ -851,37 +851,37 @@ const MobileApp = {
 
     div.innerHTML = `
       <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-        <select class="form-control po-product-select" style="flex: 1;" required>
+        <select class="form-control po-product-select" style="flex: 1; font-weight: 700; border-radius: 12px;" required>
           <option value="">-- Chọn sản phẩm --</option>
           ${optionsHtml}
         </select>
-        <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 34px; padding: 0;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
+        <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 36px; height: 44px; padding: 0; border-radius: 12px; border-color: #fecdd3; background: #fff1f2; font-size: 18px; font-weight: 700;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
       </div>
       <div class="form-row">
         <div>
-          <label style="font-size: 11px; color: #64748b;">Số lượng nhập:</label>
-          <input type="number" class="form-control po-qty-input" value="10" min="1" required inputmode="numeric">
+          <label style="font-size: 11px; color: #64748b; font-weight: 700;">Số lượng nhập:</label>
+          <input type="number" class="form-control po-qty-input" value="10" min="1" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
         </div>
         <div>
-          <label style="font-size: 11px; color: #64748b;">Giá mua (VNĐ/cái):</label>
-          <input type="number" class="form-control po-price-input" value="0" min="0" required inputmode="numeric">
+          <label style="font-size: 11px; color: #64748b; font-weight: 700;">Giá mua (VNĐ/cái):</label>
+          <input type="number" class="form-control po-price-input" value="0" min="0" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
         </div>
       </div>
-      <div class="form-row" style="margin-top: 6px;">
+      <div class="form-row" style="margin-top: 8px;">
         <div>
-          <label style="font-size: 11px; color: #64748b;">Khối lượng (kg/cái):</label>
-          <input type="text" class="form-control po-weight-input" value="0.2" placeholder="0.2 hoặc 0,2" inputmode="decimal">
+          <label style="font-size: 11px; color: #15803d; font-weight: 700;">⚖️ Khối lượng (kg/cái):</label>
+          <input type="text" class="form-control po-weight-input" value="0.2" placeholder="0.2 hoặc 0,2" inputmode="decimal" style="font-weight: 700; border-radius: 12px; background: #f0fdf4; border-color: #86efac; color: #166534;">
         </div>
         <div>
-          <label style="font-size: 11px; color: #64748b;">Tổng kg món này:</label>
-          <div class="po-item-total-weight" style="height: 44px; display: flex; align-items: center; font-weight: 700; color: #8b5cf6; padding: 0 10px; background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+          <label style="font-size: 11px; color: #64748b; font-weight: 700;">Tổng kg món này:</label>
+          <div class="po-item-total-weight" style="height: 44px; display: flex; align-items: center; font-weight: 800; color: #15803d; padding: 0 12px; background: #dcfce7; border: 1.5px solid #86efac; border-radius: 12px; font-size: 13.5px;">
             0 kg
           </div>
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #e2e8f0; color: #64748b;">
-        <span>Tiền hàng: <strong class="po-line-total" style="color: #0f172a;">0 đ</strong></span>
-        <span class="po-line-landed-preview" style="color: #10b981; font-weight: 600;">Sau ship: 0 đ/cái</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin-top: 10px; padding-top: 8px; border-top: 1.5px dashed #bbf7d0; color: #64748b;">
+        <span>Tiền hàng: <strong class="po-line-total" style="color: #0f172a; font-size: 14px; font-weight: 800;">0 đ</strong></span>
+        <span class="po-line-landed-preview" style="color: #15803d; font-weight: 700; background: #dcfce7; padding: 3px 10px; border-radius: 999px;">Sau ship: 0 đ/cái</span>
       </div>
     `;
 
@@ -1186,8 +1186,7 @@ const MobileApp = {
   addSaleRow() {
     const container = document.getElementById('saleItemsContainer');
     const div = document.createElement('div');
-    div.className = 'mobile-item-row';
-    div.style.cssText = 'background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 10px;';
+    div.className = 'mobile-item-row bento-dynamic-row';
 
     const products = window.appStore.state.products || [];
     const optionsHtml = products.map(p => `
@@ -1196,31 +1195,31 @@ const MobileApp = {
 
     div.innerHTML = `
       <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-        <select class="form-control sale-product-select" style="flex: 1;" required>
+        <select class="form-control sale-product-select" style="flex: 1; font-weight: 700; border-radius: 12px;" required>
           <option value="">-- Chọn món bán --</option>
           ${optionsHtml}
         </select>
-        <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 34px; padding: 0;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
+        <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 36px; height: 44px; padding: 0; border-radius: 12px; border-color: #fecdd3; background: #fff1f2; font-size: 18px; font-weight: 700;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
       </div>
-      <div class="sale-color-wrap" style="display: none; margin-bottom: 8px;">
-        <label style="font-size: 11px; color: #64748b; margin-bottom: 2px; display: block;">🎨 Chọn màu xuất kho:</label>
-        <select class="form-control sale-color-select" style="font-size: 13px; height: 38px;">
+      <div class="sale-color-wrap" style="display: none; margin-bottom: 8px; background: #faf5ff; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #ddd6fe;">
+        <label style="font-size: 11px; color: #6d28d9; font-weight: 700; margin-bottom: 4px; display: block;">🎨 Chọn màu xuất kho:</label>
+        <select class="form-control sale-color-select" style="font-size: 13px; height: 38px; background: #ffffff; border-radius: 10px; font-weight: 600;">
           <option value="">-- Mặc định --</option>
         </select>
       </div>
       <div class="form-row">
         <div>
-          <label style="font-size: 11px; color: #64748b;">Số lượng bán:</label>
-          <input type="number" class="form-control sale-qty-input" value="1" min="1" required inputmode="numeric">
+          <label style="font-size: 11px; color: #64748b; font-weight: 700;">Số lượng bán:</label>
+          <input type="number" class="form-control sale-qty-input" value="1" min="1" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
         </div>
         <div>
-          <label style="font-size: 11px; color: #64748b;">Giá bán (VNĐ):</label>
-          <input type="number" class="form-control sale-price-input" value="0" min="0" required inputmode="numeric">
+          <label style="font-size: 11px; color: #64748b; font-weight: 700;">Giá bán (VNĐ):</label>
+          <input type="number" class="form-control sale-price-input" value="0" min="0" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
         </div>
       </div>
-      <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 6px; color: #64748b;">
-        <span>Thành tiền:</span>
-        <strong class="sale-line-total" style="color: #0f172a;">0 đ</strong>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin-top: 8px; padding-top: 6px; border-top: 1.5px dashed #fecdd3; color: #64748b;">
+        <span>Thành tiền món:</span>
+        <strong class="sale-line-total" style="color: #be123c; font-size: 14px; font-weight: 800;">0 đ</strong>
       </div>
     `;
 
@@ -1611,8 +1610,8 @@ const MobileApp = {
       this.openModal('modalSettings');
     });
 
-    // Lưu cài đặt
-    document.getElementById('btnSaveMobileSettings')?.addEventListener('click', async () => {
+    // Lưu cài đặt (Nút footer hoặc nút header)
+    const saveSettingsHandler = async () => {
       const storeName = document.getElementById('mobileSettingStoreName').value.trim() || 'Cửa Hàng Cá Nhân';
       const defaultShippingPayer = document.getElementById('mobileSettingShippingPayer').value;
       const defaultAllocationMethod = document.getElementById('mobileSettingAllocation').value;
@@ -1626,7 +1625,10 @@ const MobileApp = {
       this.closeModal('modalSettings');
       this.loadStoreSettings();
       this.showToast('Đã lưu cài đặt cửa hàng!');
-    });
+    };
+
+    document.getElementById('btnSaveMobileSettings')?.addEventListener('click', saveSettingsHandler);
+    document.getElementById('btnSaveMobileSettingsHeader')?.addEventListener('click', saveSettingsHandler);
 
     // Backup JSON
     document.getElementById('menuRowBackup')?.addEventListener('click', () => {
