@@ -499,7 +499,7 @@ const MobileApp = {
         <input type="number" class="form-control color-qty-input" value="${qty}" min="0" placeholder="0" inputmode="numeric" style="height: 40px; font-size: 14px; text-align: center; font-weight: 800; border-radius: 10px;">
         <span style="font-size: 11.5px; color: #64748b; font-weight: 700;">cái</span>
       </div>
-      <button type="button" class="btn btn-sm btn-outline btn-remove-color" style="color: #ef4444; width: 36px; height: 40px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 18px; border-color: #fecdd3; background: #fff1f2; font-weight: 700;">&times;</button>
+      <button type="button" class="btn-icon-remove btn-remove-color" title="Xóa màu">&times;</button>
     `;
 
     container.appendChild(div);
@@ -667,8 +667,8 @@ const MobileApp = {
           <div class="m-card-footer">
             <span style="font-size: 11px; color: #94a3b8;">${p.notes || ''}</span>
             <div class="m-card-actions">
-              <button class="btn btn-sm btn-outline" onclick="MobileApp.editProduct('${p.id}')">✏️ Sửa</button>
-              <button class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="MobileApp.deleteProduct('${p.id}')">🗑️</button>
+              <button class="btn-flat-action" onclick="MobileApp.editProduct('${p.id}')">✏️ Sửa</button>
+              <button class="btn-icon-circle-danger" title="Xóa" onclick="MobileApp.deleteProduct('${p.id}')">🗑️</button>
             </div>
           </div>
         </div>
@@ -855,7 +855,7 @@ const MobileApp = {
           <option value="">-- Chọn sản phẩm --</option>
           ${optionsHtml}
         </select>
-        <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 36px; height: 44px; padding: 0; border-radius: 12px; border-color: #fecdd3; background: #fff1f2; font-size: 18px; font-weight: 700;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
+        <button type="button" class="btn-icon-remove" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
       </div>
       <div class="form-row">
         <div>
@@ -1019,7 +1019,7 @@ const MobileApp = {
 
           <div class="m-card-footer">
             <span style="font-size: 12px; color: #8b5cf6; font-weight: 600;">${shipDetails}</span>
-            <button class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="MobileApp.deletePurchase('${p.id}')">🗑️ Xóa</button>
+            <button class="btn-flat-danger" onclick="MobileApp.deletePurchase('${p.id}')">🗑️ Xóa</button>
           </div>
         </div>
       `;
@@ -1199,7 +1199,7 @@ const MobileApp = {
           <option value="">-- Chọn món bán --</option>
           ${optionsHtml}
         </select>
-        <button type="button" class="btn btn-sm btn-outline" style="color: #ef4444; width: 36px; height: 44px; padding: 0; border-radius: 12px; border-color: #fecdd3; background: #fff1f2; font-size: 18px; font-weight: 700;" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
+        <button type="button" class="btn-icon-remove" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
       </div>
       <div class="sale-color-wrap" style="display: none; margin-bottom: 8px; background: #faf5ff; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #ddd6fe;">
         <label style="font-size: 11px; color: #6d28d9; font-weight: 700; margin-bottom: 4px; display: block;">🎨 Chọn màu xuất kho:</label>
@@ -1381,9 +1381,9 @@ const MobileApp = {
           <div class="m-card-footer">
             <span style="font-size: 11px; color: #94a3b8;">${s.customerPhone ? '📞 ' + s.customerPhone : ''}</span>
             <div class="m-card-actions">
-              <button class="btn btn-sm btn-outline" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In</button>
-              <button class="btn btn-sm btn-outline" title="Thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">💳 Thu tiền</button>
-              <button class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
+              <button class="btn-flat-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In</button>
+              <button class="btn-flat-dark" title="Thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">💳 Thu tiền</button>
+              <button class="btn-icon-circle-danger" title="Xóa" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
             </div>
           </div>
         </div>
@@ -1499,7 +1499,7 @@ const MobileApp = {
             <span style="font-size: 16px; font-weight: 800; color: ${isExp ? '#ef4444' : '#10b981'};">
               ${isExp ? '-' : '+'}${Calculations.formatCurrency(c.amount)}
             </span>
-            <button class="btn btn-sm btn-outline" style="color: #ef4444;" onclick="MobileApp.deleteCashflow('${c.id}')">🗑️ Xóa</button>
+            <button class="btn-flat-danger" onclick="MobileApp.deleteCashflow('${c.id}')">🗑️ Xóa</button>
           </div>
         </div>
       `;

@@ -38,15 +38,32 @@
         </div>
       </div>
       <div class="header-actions">
-        <!-- Nút cảnh báo tồn kho có badge -->
+        <!-- Nút cảnh báo tồn kho có badge (Icon flat stroke một màu) -->
         <button class="btn-icon-header" id="btnHeaderStockAlert" title="Cảnh báo tồn kho" style="position: relative;">
-          🔔
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+            <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
+          </svg>
           <span class="nav-tab-badge" id="headerAlertBadge" style="top: -2px; right: -2px; display: none;">0</span>
         </button>
-        <!-- Nút mở QR kết nối điện thoại -->
-        <button class="btn-icon-header" id="btnOpenConnectQR" title="Kết nối điện thoại">📱</button>
-        <!-- Nút mở cài đặt -->
-        <button class="btn-icon-header" id="btnHeaderSettings" title="Cài đặt">⚙️</button>
+        <!-- Nút mở QR kết nối điện thoại (Icon flat stroke một màu) -->
+        <button class="btn-icon-header" id="btnOpenConnectQR" title="Kết nối điện thoại">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+            <path d="M12 18h.01"/>
+          </svg>
+        </button>
+        <!-- Nút mở cài đặt (Icon flat stroke một màu) -->
+        <button class="btn-icon-header" id="btnHeaderSettings" title="Cài đặt">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" x2="20" y1="21" y2="21"/>
+            <line x1="4" x2="20" y1="14" y2="14"/>
+            <line x1="4" x2="20" y1="7" y2="7"/>
+            <circle cx="14" cy="21" r="2"/>
+            <circle cx="8" cy="14" r="2"/>
+            <circle cx="16" cy="7" r="2"/>
+          </svg>
+        </button>
       </div>
     </header>
 
@@ -107,10 +124,16 @@
           </div>
         </div>
 
-        <!-- 4 BENTO QUICK ACTION TILES (Chạm nhanh tức thì) -->
+        <!-- 4 BENTO QUICK ACTION TILES (Chạm nhanh tức thì - Icon Flat Một Màu) -->
         <div class="bento-actions-grid">
           <div class="bento-action-tile tile-sale" id="btnQuickActionSale">
-            <div class="action-tile-icon">🛒</div>
+            <div class="action-tile-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="21" r="1"/>
+                <circle cx="19" cy="21" r="1"/>
+                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+              </svg>
+            </div>
             <div class="action-tile-text">
               <strong>Bán Nhanh</strong>
               <span>Tạo đơn</span>
@@ -118,7 +141,13 @@
           </div>
 
           <div class="bento-action-tile tile-purchase" id="btnQuickActionPurchase">
-            <div class="action-tile-icon">📥</div>
+            <div class="action-tile-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" x2="12" y1="15" y2="3"/>
+              </svg>
+            </div>
             <div class="action-tile-text">
               <strong>Nhập Hàng</strong>
               <span>Tính kg & ship</span>
@@ -126,7 +155,12 @@
           </div>
 
           <div class="bento-action-tile tile-product" id="btnQuickActionProduct">
-            <div class="action-tile-icon">🏷️</div>
+            <div class="action-tile-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
+                <path d="M7 7h.01"/>
+              </svg>
+            </div>
             <div class="action-tile-text">
               <strong>Thêm Món</strong>
               <span>Kho hàng</span>
@@ -134,7 +168,13 @@
           </div>
 
           <div class="bento-action-tile tile-cashflow" id="btnQuickActionCashflow">
-            <div class="action-tile-icon">📒</div>
+            <div class="action-tile-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+                <path d="M6 6h10"/>
+                <path d="M6 10h10"/>
+              </svg>
+            </div>
             <div class="action-tile-text">
               <strong>Thu / Chi</strong>
               <span>Sổ quỹ</span>
@@ -207,7 +247,7 @@
         <!-- DANH SÁCH CẢNH BÁO SẮP HẾT HÀNG -->
         <div class="section-title-bar">
           <div class="section-title">⚠️ Hàng Sắp Hết Trong Kho</div>
-          <button class="btn btn-sm btn-outline" id="btnDashViewStock">Xem kho</button>
+          <button class="btn-white-pill" id="btnDashViewStock">Xem kho</button>
         </div>
         <div class="cards-list" id="dashboardLowStockList">
           <!-- Render động qua JS -->
@@ -216,7 +256,7 @@
         <!-- ĐƠN HÀNG GẦN ĐÂY -->
         <div class="section-title-bar" style="margin-top: 20px;">
           <div class="section-title">⚡ Đơn Bán Mới Nhất</div>
-          <button class="btn btn-sm btn-outline" id="btnDashViewSales">Xem tất cả</button>
+          <button class="btn-white-pill" id="btnDashViewSales">Xem tất cả</button>
         </div>
         <div class="cards-list" id="dashboardRecentSalesList">
           <!-- Render động qua JS -->
@@ -227,7 +267,7 @@
       <section id="tab-products" class="tab-panel">
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="flex: 1; border-radius: 14px;">
-          <button class="btn btn-primary" id="btnMobileAddProduct" style="flex-shrink: 0; padding: 0 16px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: none; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.28); border-radius: 14px; font-weight: 800;">+ Thêm</button>
+          <button class="btn-dark-pill" id="btnMobileAddProduct" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
         </div>
 
         <!-- Bộ lọc nhanh trạng thái kho -->
@@ -236,7 +276,7 @@
           <button class="pill-item prod-stock-pill" data-stock="in_stock">Còn hàng</button>
           <button class="pill-item prod-stock-pill" data-stock="low_stock">Sắp hết</button>
           <button class="pill-item prod-stock-pill" data-stock="out_of_stock">Hết hàng</button>
-          <button class="btn btn-sm btn-outline" id="btnMobileExportProducts" style="margin-left: auto; height: 32px; font-size: 11.5px; border-radius: 999px;">📊 Xuất Excel</button>
+          <button class="btn-white-pill" id="btnMobileExportProducts" style="margin-left: auto;">📊 Xuất Excel</button>
         </div>
 
         <!-- Danh sách thẻ hàng hóa -->
@@ -249,7 +289,7 @@
       <section id="tab-purchases" class="tab-panel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Lịch Sử Nhập Hàng</div>
-          <button class="btn btn-success" id="btnMobileAddPurchase" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.28); border-radius: 14px; font-weight: 800;">+ Phiếu Nhập Mới</button>
+          <button class="btn-dark-pill" id="btnMobileAddPurchase">+ Phiếu Nhập Mới</button>
         </div>
 
         <div class="cards-list" id="purchasesCardsList">
@@ -261,7 +301,7 @@
       <section id="tab-sales" class="tab-panel">
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="flex: 1; border-radius: 14px;">
-          <button class="btn btn-primary" id="btnMobileAddSale" style="flex-shrink: 0; padding: 0 16px; background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); border: none; box-shadow: 0 4px 14px rgba(244, 63, 94, 0.28); border-radius: 14px; font-weight: 800;">+ Tạo Đơn</button>
+          <button class="btn-dark-pill" id="btnMobileAddSale" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
         </div>
 
         <!-- Lọc trạng thái thanh toán -->
@@ -270,7 +310,7 @@
           <button class="pill-item sale-pay-pill" data-pay="paid">Đã thanh toán</button>
           <button class="pill-item sale-pay-pill" data-pay="partial">Thu một phần</button>
           <button class="pill-item sale-pay-pill" data-pay="unpaid">Chưa thu (Nợ)</button>
-          <button class="btn btn-sm btn-outline" id="btnMobileExportSales" style="margin-left: auto; height: 32px; font-size: 11.5px; border-radius: 999px;">📊 Excel</button>
+          <button class="btn-white-pill" id="btnMobileExportSales" style="margin-left: auto;">📊 Excel</button>
         </div>
 
         <div class="cards-list" id="salesCardsList">
@@ -389,9 +429,9 @@
       <!-- ================= SECTION PHỤ: SỔ QUỸ THU CHI (HIỂN THỊ KHI BẤM TỪ MENU) ================= -->
       <section id="tab-cashflow" class="tab-panel">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-          <button class="btn btn-sm btn-outline" id="btnBackToMoreFromCashflow" style="border-radius: 999px;">‹ Quay lại</button>
+          <button class="btn-white-pill" id="btnBackToMoreFromCashflow">‹ Quay lại</button>
           <div style="font-size: 15px; font-weight: 800;">Sổ Quỹ Thu - Chi</div>
-          <button class="btn btn-sm btn-primary" id="btnMobileAddCashflow" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); border: none; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.28); border-radius: 12px; font-weight: 800; padding: 0 14px;">+ Thu/Chi</button>
+          <button class="btn-dark-pill" id="btnMobileAddCashflow" style="height: 36px; padding: 0 16px; font-size: 12.5px;">+ Thu/Chi</button>
         </div>
         <div class="cards-list" id="cashflowCardsList">
           <!-- Render động qua JS -->
@@ -401,9 +441,9 @@
       <!-- ================= SECTION PHỤ: BÁO CÁO P&L (HIỂN THỊ KHI BẤM TỪ MENU) ================= -->
       <section id="tab-reports" class="tab-panel">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-          <button class="btn btn-sm btn-outline" id="btnBackToMoreFromReports">‹ Quay lại</button>
-          <div style="font-size: 14px; font-weight: 700;">Báo Cáo Lợi Nhuận</div>
-          <button class="btn btn-sm btn-success" id="btnMobileExportReport">📊 Excel</button>
+          <button class="btn-white-pill" id="btnBackToMoreFromReports">‹ Quay lại</button>
+          <div style="font-size: 14px; font-weight: 800;">Báo Cáo Lợi Nhuận</div>
+          <button class="btn-white-pill" id="btnMobileExportReport">📊 Excel</button>
         </div>
 
         <!-- BẢNG P&L THU GỌN CHO MOBILE -->
@@ -460,35 +500,62 @@
 
     </main>
 
-    <!-- ================= FLOATING ISLAND BOTTOM NAVIGATION DOCK ================= -->
+    <!-- ================= FLOATING ISLAND BOTTOM NAVIGATION DOCK (Icon Flat Một Màu) ================= -->
     <nav class="bottom-nav">
       <!-- Tab 1: Tổng quan -->
       <button class="nav-tab-btn active" data-tab="dashboard">
-        <span class="tab-icon">🏠</span>
+        <span class="tab-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </span>
         <span>Tổng quan</span>
       </button>
 
       <!-- Tab 2: Hàng hóa -->
       <button class="nav-tab-btn" data-tab="products">
-        <span class="tab-icon">📦</span>
+        <span class="tab-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m7.5 4.27 9 5.15"/>
+            <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+            <path d="m3.3 7 8.7 5 8.7-5"/>
+            <path d="M12 22V12"/>
+          </svg>
+        </span>
         <span>Kho hàng</span>
         <span class="nav-tab-badge" id="mobileStockBadge" style="display: none;">0</span>
       </button>
 
-      <!-- Center FAB: Bán Hàng Nhanh (Style nổi bật màn hình 1 & 3) -->
+      <!-- Center FAB: Bán Hàng Nhanh (Vòng tròn trắng phẳng với dấu + đen tuyền) -->
       <button class="nav-fab-btn" id="btnFabCreateSale" title="Bán hàng nhanh">
-        +
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
       </button>
 
       <!-- Tab 4: Nhập hàng -->
       <button class="nav-tab-btn" data-tab="purchases">
-        <span class="tab-icon">📥</span>
+        <span class="tab-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" x2="12" y1="15" y2="3"/>
+          </svg>
+        </span>
         <span>Nhập hàng</span>
       </button>
 
       <!-- Tab 5: Menu Thêm / Cài đặt -->
       <button class="nav-tab-btn" data-tab="more">
-        <span class="tab-icon">⚙️</span>
+        <span class="tab-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" x2="20" y1="12" y2="12"/>
+            <line x1="4" x2="20" y1="6" y2="6"/>
+            <line x1="4" x2="20" y1="18" y2="18"/>
+          </svg>
+        </span>
         <span>Menu</span>
       </button>
     </nav>
@@ -1048,7 +1115,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary btn-block btn-theme-submit" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none;" data-close-modal>Đã Hiểu</button>
+        <button type="button" class="btn btn-theme-submit btn-block" data-close-modal>Đã Hiểu</button>
       </div>
     </div>
   </div>
