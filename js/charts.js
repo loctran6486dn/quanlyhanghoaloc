@@ -76,20 +76,20 @@ const ChartsManager = {
             {
               label: 'Doanh thu',
               data: revenueData,
-              backgroundColor: 'rgba(59, 130, 246, 0.8)', // Blue
-              borderRadius: 4
+              backgroundColor: 'rgba(99, 102, 241, 0.85)', // Indigo
+              borderRadius: 8
             },
             {
               label: 'Tổng Chi phí',
               data: expenseData,
-              backgroundColor: 'rgba(239, 68, 68, 0.75)', // Red
-              borderRadius: 4
+              backgroundColor: 'rgba(244, 63, 94, 0.8)', // Coral Rose
+              borderRadius: 8
             },
             {
               label: 'Lợi nhuận',
               data: profitData,
-              backgroundColor: 'rgba(16, 185, 129, 0.9)', // Emerald Green
-              borderRadius: 4
+              backgroundColor: 'rgba(16, 185, 129, 0.9)', // Emerald Mint
+              borderRadius: 8
             }
           ]
         },
@@ -125,8 +125,8 @@ const ChartsManager = {
 
     // Fallback: Tự sinh SVG Bar Chart cực nhẹ, đẹp mắt, 100% độc lập không cần thư viện
     this.renderCustomSvgBarChart(container, labels, [
-      { name: 'Doanh thu', data: revenueData, color: '#3b82f6' },
-      { name: 'Chi phí', data: expenseData, color: '#ef4444' },
+      { name: 'Doanh thu', data: revenueData, color: '#6366f1' },
+      { name: 'Chi phí', data: expenseData, color: '#f43f5e' },
       { name: 'Lợi nhuận', data: profitData, color: '#10b981' }
     ]);
   },

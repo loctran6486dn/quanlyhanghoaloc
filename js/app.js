@@ -184,6 +184,15 @@ const MobileApp = {
         badge.style.display = 'none';
       }
     }
+    const alertBadge = document.getElementById('headerAlertBadge');
+    if (alertBadge) {
+      if (lowStockCount > 0) {
+        alertBadge.textContent = lowStockCount;
+        alertBadge.style.display = 'inline-block';
+      } else {
+        alertBadge.style.display = 'none';
+      }
+    }
   },
 
   /* =================== MODALS HELPER =================== */
@@ -233,16 +242,42 @@ const MobileApp = {
     document.getElementById('btnHeaderSettings')?.addEventListener('click', () => {
       this.switchTab('more');
     });
+    document.getElementById('btnHeaderStockAlert')?.addEventListener('click', () => {
+      this.switchTab('products');
+      const lowPill = document.querySelector('.prod-stock-pill[data-stock="low_stock"]');
+      if (lowPill) lowPill.click();
+    });
+
+    // 4 Bento Quick Action Tiles
+    document.getElementById('btnQuickActionSale')?.addEventListener('click', () => {
+      this.openAddSaleModal();
+    });
+    document.getElementById('btnQuickActionPurchase')?.addEventListener('click', () => {
+      this.openAddPurchaseModal();
+    });
+    document.getElementById('btnQuickActionProduct')?.addEventListener('click', () => {
+      this.openAddProductModal();
+    });
+    document.getElementById('btnQuickActionCashflow')?.addEventListener('click', () => {
+      this.openAddCashflowModal();
+    });
   },
 
   renderDashboard() {
     const state = window.appStore.state;
     const summary = Calculations.generateFinancialSummary(state, this.dateFilter);
 
-    // Hero Banner
+    // Cập nhật nhãn thời gian trên Bento Hero Card
+    const activePill = document.querySelector('#mobileTimePills .pill-item.active');
+    const heroPeriod = document.getElementById('heroPeriodLabel');
+    if (heroPeriod && activePill) {
+      heroPeriod.textContent = activePill.textContent + ' ▾';
+    }
+
+    // Hero Bento Banner
     const netEl = document.getElementById('kpiNetProfit');
-    netEl.textContent = Calculations.formatCurrency(summary.totalNetProfit);
-    netEl.style.color = summary.totalNetProfit >= 0 ? '#10b981' : '#ef4444';
+    netEl.textContent = (summary.totalNetProfit >= 0 ? '+' : '') + Calculations.formatCurrency(summary.totalNetProfit);
+    netEl.style.color = summary.totalNetProfit >= 0 ? '#059669' : '#e11d48';
 
     document.getElementById('kpiNetMargin').textContent = Calculations.formatPercent(summary.netMargin);
     document.getElementById('kpiRevenue').textContent = Calculations.formatCurrency(summary.totalRevenue);
@@ -250,7 +285,16 @@ const MobileApp = {
     const totalExp = summary.totalCOGS + summary.totalShopOutboundShip + summary.totalOperatingExpense;
     document.getElementById('kpiTotalExpense').textContent = Calculations.formatCurrency(totalExp);
 
-    // 4 Mini KPIs
+    // Vòng tròn tiến trình SVG (Circular Progress Ring chuẩn màn hình 5)
+    const gauge = document.getElementById('heroGaugeCircle');
+    if (gauge) {
+      const marginRatio = Math.max(0, Math.min(1, Number(summary.netMargin || 0)));
+      const circumference = 2 * Math.PI * 34; // r = 34 -> 213.6
+      const offset = circumference - (marginRatio * circumference);
+      gauge.style.strokeDashoffset = offset;
+    }
+
+    // 4 Bento Metric Cards
     document.getElementById('kpiGrossProfit').textContent = Calculations.formatCurrency(summary.totalGrossProfit);
     document.getElementById('kpiInventoryValue').textContent = Calculations.formatCurrency(summary.totalInventoryValue);
     document.getElementById('kpiInventoryUnits').textContent = summary.totalInventoryUnits;
