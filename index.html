@@ -421,7 +421,10 @@
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">🛒 Tạo Đơn Bán Hàng</h3>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="submit" form="formSale" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-weight: 700; border-radius: 8px; font-size: 13px;">Lưu</button>
+          <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
       </div>
       <form id="formSale">
         <div class="modal-body">
@@ -556,7 +559,10 @@
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">📥 Phiếu Nhập Hàng Mới</h3>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="submit" form="formPurchase" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-weight: 700; border-radius: 8px; font-size: 13px;">Lưu</button>
+          <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
       </div>
       <form id="formPurchase">
         <div class="modal-body">
@@ -656,7 +662,10 @@
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title" id="modalProductTitle">🏷️ Thêm Hàng Hóa Mới</h3>
-        <button class="modal-close" data-close-modal>&times;</button>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="submit" form="formProduct" class="btn btn-sm btn-primary" style="padding: 5px 14px; font-weight: 700; border-radius: 8px; font-size: 13px;">Lưu</button>
+          <button type="button" class="modal-close" data-close-modal>&times;</button>
+        </div>
       </div>
       <form id="formProduct">
         <input type="hidden" id="prodId">
@@ -701,7 +710,10 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label>Tồn kho hiện có:</label>
+              <label style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Tồn kho hiện có:</span>
+                <span id="prodStockSyncBadge" style="font-size: 11px; color: #2563eb; font-weight: 600; text-transform: none; display: none;">(⚡ Tự tính theo màu)</span>
+              </label>
               <input type="number" id="prodStock" class="form-control" value="0" min="0" inputmode="numeric">
             </div>
             <div class="form-group">

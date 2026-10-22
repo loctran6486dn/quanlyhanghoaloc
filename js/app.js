@@ -199,6 +199,19 @@ const MobileApp = {
         if (e.target === backdrop) backdrop.classList.remove('active');
       });
     });
+
+    // Khi bàn phím ảo đóng lại trên điện thoại (đặc biệt là iOS Safari), tự động khôi phục vị trí cuộn trang để nút Lưu luôn hiển thị
+    window.addEventListener('focusout', (e) => {
+      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target?.tagName)) {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          document.querySelectorAll('.modal-backdrop.active .modal-dialog').forEach(dialog => {
+            const footer = dialog.querySelector('.modal-footer');
+            if (footer) footer.scrollIntoView({ block: 'nearest' });
+          });
+        }, 50);
+      }
+    });
   },
 
   openModal(id) {
@@ -435,7 +448,7 @@ const MobileApp = {
     div.className = 'color-variant-row';
     div.innerHTML = `
       <div style="flex: 1.3;">
-        <input type="text" class="form-control color-name-input" value="${colorName}" placeholder="Tên màu (Đỏ, Cam...)" style="height: 38px; font-size: 13px;" required>
+        <input type="text" class="form-control color-name-input" value="${colorName}" placeholder="Tên màu (Đỏ, Cam...)" style="height: 38px; font-size: 13px;">
       </div>
       <div style="flex: 1; display: flex; align-items: center; gap: 4px;">
         <input type="number" class="form-control color-qty-input" value="${qty}" min="0" placeholder="0" inputmode="numeric" style="height: 38px; font-size: 13px; text-align: center;">
@@ -466,9 +479,14 @@ const MobileApp = {
     const summaryBox = document.getElementById('colorTotalSummary');
     const sumDisplay = document.getElementById('colorTotalSumQty');
     const stockInput = document.getElementById('prodStock');
+    const syncBadge = document.getElementById('prodStockSyncBadge');
 
     if (rows.length === 0) {
       if (summaryBox) summaryBox.style.display = 'none';
+      if (syncBadge) syncBadge.style.display = 'none';
+      if (stockInput) {
+        stockInput.style.background = '#ffffff';
+      }
       return;
     }
 
@@ -480,7 +498,11 @@ const MobileApp = {
 
     if (summaryBox) summaryBox.style.display = 'flex';
     if (sumDisplay) sumDisplay.textContent = totalQty;
-    if (stockInput) stockInput.value = totalQty;
+    if (syncBadge) syncBadge.style.display = 'inline';
+    if (stockInput) {
+      stockInput.value = totalQty;
+      stockInput.style.background = '#f1f5f9';
+    }
   },
 
   openAddProductModal(product = null) {
