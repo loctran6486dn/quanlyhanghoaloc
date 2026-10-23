@@ -25,9 +25,14 @@ module.exports = async function handler(req, res) {
   // Khóa định danh chuẩn hóa an toàn
   const safeKey = `store_${storeCode.replace(/[^A-Z0-9_-]/g, '')}`;
 
-  // Kiểm tra biến môi trường Vercel KV (Upstash Redis)
-  const KV_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const KV_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  // Kiểm tra biến môi trường Vercel KV / Upstash Redis
+  const KV_URL = process.env.KV_REST_API_URL 
+    || process.env.UPSTASH_REDIS_REST_URL 
+    || process.env.REDIS_REST_URL;
+
+  const KV_TOKEN = process.env.KV_REST_API_TOKEN 
+    || process.env.UPSTASH_REDIS_REST_TOKEN 
+    || process.env.REDIS_REST_TOKEN;
 
   if (!KV_URL || !KV_TOKEN) {
     return res.status(200).json({
