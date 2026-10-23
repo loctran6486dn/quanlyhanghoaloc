@@ -139,8 +139,8 @@ const MobileApp = {
       p.classList.toggle('active', p.id === `tab-${tabName}`);
     });
 
-    // Cuộn mượt về đầu trang khi chuyển tab
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Cuộn tức thì về đầu trang khi chuyển tab (loại bỏ kinetic scroll nuốt touch event trên điện thoại)
+    window.scrollTo(0, 0);
 
     this.renderCurrentView();
   },
@@ -197,40 +197,94 @@ const MobileApp = {
 
   /* =================== MODALS HELPER =================== */
   setupModalEvents() {
-    document.querySelectorAll('[data-close-modal]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
-      });
-    });
-
-    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) backdrop.classList.remove('active');
-      });
-    });
-
-    // Khi bàn phím ảo đóng lại trên điện thoại (đặc biệt là iOS Safari), tự động khôi phục vị trí cuộn trang để nút Lưu luôn hiển thị
-    window.addEventListener('focusout', (e) => {
-      if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target?.tagName)) {
-        setTimeout(() => {
-          window.scrollTo(0, 0);
-          document.querySelectorAll('.modal-backdrop.active .modal-dialog').forEach(dialog => {
-            const footer = dialog.querySelector('.modal-footer');
-            if (footer) footer.scrollIntoView({ block: 'nearest' });
-          });
-        }, 50);
+    // 1. Xử lý đóng modal khi chạm/click nút đóng [data-close-modal] (bao gồm nút X và nút Hủy)
+    const handleCloseModal = (btn, e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
       }
+      // Nhả focus bàn phím ảo ngay lập tức để không gây giật màn hình
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      const modal = btn.closest('.modal-backdrop');
+      if (modal) {
+        this.closeModal(modal.id);
+      } else {
+        document.querySelectorAll('.modal-backdrop.active').forEach(m => this.closeModal(m.id));
+      }
+    };
+
+    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+      btn.addEventListener('click', (e) => handleCloseModal(btn, e));
+      btn.addEventListener('touchend', (e) => handleCloseModal(btn, e), { passive: false });
+    });
+
+    // 2. Chặn click bên trong .modal-dialog không cho nổi bọt (bubble) ra ngoài backdrop
+    document.querySelectorAll('.modal-dialog').forEach(dialog => {
+      dialog.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      dialog.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+      }, { passive: true });
+    });
+
+    // 3. Đóng modal khi chạm vào vùng backdrop mờ phía sau
+    // CHỈ đóng khi điểm chạm bắt đầu (pointerdown) VÀ điểm kết thúc (click) đều thuộc về chính backdrop
+    // Ngăn chặn hoàn toàn lỗi vô tình đóng popup khi chuyển ô nhập liệu hoặc vuốt cuộn trên mobile
+    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+      let pointerDownOnBackdrop = false;
+
+      backdrop.addEventListener('pointerdown', (e) => {
+        pointerDownOnBackdrop = (e.target === backdrop);
+      });
+
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop && pointerDownOnBackdrop) {
+          if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+          }
+          this.closeModal(backdrop.id);
+        }
+        pointerDownOnBackdrop = false;
+      });
+    });
+
+    // 4. Ngăn phím Enter trên bàn phím ảo gửi form bất ngờ làm đóng modal khi đang nhập liệu dở dang
+    document.querySelectorAll('.modal-dialog form').forEach(form => {
+      form.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'submit') {
+          e.preventDefault();
+          const inputs = Array.from(form.querySelectorAll('input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled])'));
+          const idx = inputs.indexOf(e.target);
+          if (idx >= 0 && idx < inputs.length - 1) {
+            inputs[idx + 1].focus();
+          } else {
+            e.target.blur();
+          }
+        }
+      });
     });
   },
 
   openModal(id) {
     const el = document.getElementById(id);
-    if (el) el.classList.add('active');
+    if (el) {
+      el.classList.add('active');
+      const body = el.querySelector('.modal-body');
+      if (body) body.scrollTop = 0;
+    }
   },
 
   closeModal(id) {
     const el = document.getElementById(id);
-    if (el) el.classList.remove('active');
+    if (el) {
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      el.classList.remove('active');
+    }
   },
 
   /* =================== 1. TỔNG QUAN (DASHBOARD) =================== */
