@@ -116,9 +116,14 @@ class DataStore {
       const settingsList = await this.getAllFromStore('settings');
 
       this.state.products = products || [];
-      this.state.purchases = (purchases || []).sort((a, b) => new Date(b.date) - new Date(a.date));
-      this.state.sales = (sales || []).sort((a, b) => new Date(b.date) - new Date(a.date));
-      this.state.cashflow = (cashflow || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+      const sortByNewest = (a, b) => {
+        const timeA = new Date(a.createdAt || a.date).getTime();
+        const timeB = new Date(b.createdAt || b.date).getTime();
+        return timeB - timeA;
+      };
+      this.state.purchases = (purchases || []).sort(sortByNewest);
+      this.state.sales = (sales || []).sort(sortByNewest);
+      this.state.cashflow = (cashflow || []).sort(sortByNewest);
 
       if (settingsList && settingsList.length > 0) {
         this.state.settings = { ...this.state.settings, ...settingsList[0] };

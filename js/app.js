@@ -197,42 +197,23 @@ const MobileApp = {
 
   /* =================== MODALS HELPER =================== */
   setupModalEvents() {
-    // 1. Xử lý đóng modal khi chạm/click nút đóng [data-close-modal] (bao gồm nút X và nút Hủy)
-    const handleCloseModal = (btn, e) => {
-      if (e) {
+    // 1. Đóng modal khi bấm các nút đóng [data-close-modal] (bao gồm nút X và nút Hủy)
+    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-      }
-      // Nhả focus bàn phím ảo ngay lập tức để không gây giật màn hình
-      if (document.activeElement && typeof document.activeElement.blur === 'function') {
-        document.activeElement.blur();
-      }
-      const modal = btn.closest('.modal-backdrop');
-      if (modal) {
-        this.closeModal(modal.id);
-      } else {
-        document.querySelectorAll('.modal-backdrop.active').forEach(m => this.closeModal(m.id));
-      }
-    };
-
-    document.querySelectorAll('[data-close-modal]').forEach(btn => {
-      btn.addEventListener('click', (e) => handleCloseModal(btn, e));
-      btn.addEventListener('touchend', (e) => handleCloseModal(btn, e), { passive: false });
+        this.closeModal();
+      });
     });
 
-    // 2. Chặn click bên trong .modal-dialog không cho nổi bọt (bubble) ra ngoài backdrop
+    // 2. Chặn click bên trong .modal-dialog không cho nổi bọt ra ngoài backdrop
     document.querySelectorAll('.modal-dialog').forEach(dialog => {
       dialog.addEventListener('click', (e) => {
         e.stopPropagation();
       });
-      dialog.addEventListener('touchend', (e) => {
-        e.stopPropagation();
-      }, { passive: true });
     });
 
-    // 3. Đóng modal khi chạm vào vùng backdrop mờ phía sau
-    // CHỈ đóng khi điểm chạm bắt đầu (pointerdown) VÀ điểm kết thúc (click) đều thuộc về chính backdrop
-    // Ngăn chặn hoàn toàn lỗi vô tình đóng popup khi chuyển ô nhập liệu hoặc vuốt cuộn trên mobile
+    // 3. Đóng modal khi chạm vào vùng backdrop mờ bên ngoài
     document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
       let pointerDownOnBackdrop = false;
 
@@ -242,16 +223,13 @@ const MobileApp = {
 
       backdrop.addEventListener('click', (e) => {
         if (e.target === backdrop && pointerDownOnBackdrop) {
-          if (document.activeElement && typeof document.activeElement.blur === 'function') {
-            document.activeElement.blur();
-          }
-          this.closeModal(backdrop.id);
+          this.closeModal();
         }
         pointerDownOnBackdrop = false;
       });
     });
 
-    // 4. Ngăn phím Enter trên bàn phím ảo gửi form bất ngờ làm đóng modal khi đang nhập liệu dở dang
+    // 4. Ngăn phím Enter trên bàn phím ảo gửi form bất ngờ làm đóng modal khi đang nhập liệu
     document.querySelectorAll('.modal-dialog form').forEach(form => {
       form.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'submit') {
@@ -271,19 +249,29 @@ const MobileApp = {
   openModal(id) {
     const el = document.getElementById(id);
     if (el) {
+      document.querySelectorAll('.modal-backdrop.active').forEach(m => {
+        if (m !== el) m.classList.remove('active');
+      });
       el.classList.add('active');
       const body = el.querySelector('.modal-body');
       if (body) body.scrollTop = 0;
+      document.body.style.overflow = 'hidden';
     }
   },
 
-  closeModal(id) {
-    const el = document.getElementById(id);
-    if (el) {
-      if (document.activeElement && typeof document.activeElement.blur === 'function') {
-        document.activeElement.blur();
-      }
-      el.classList.remove('active');
+  closeModal(id = null) {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    if (id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('active');
+    } else {
+      document.querySelectorAll('.modal-backdrop.active').forEach(m => m.classList.remove('active'));
+    }
+    const hasActiveModal = document.querySelectorAll('.modal-backdrop.active').length > 0;
+    if (!hasActiveModal) {
+      document.body.style.overflow = '';
     }
   },
 
@@ -605,30 +593,39 @@ const MobileApp = {
   },
 
   openAddProductModal(product = null) {
-    document.getElementById('modalProductTitle').textContent = product ? '✏️ Sửa Hàng Hóa' : '🏷️ Thêm Hàng Hóa Mới';
-    document.getElementById('prodId').value = product ? product.id : '';
-    document.getElementById('prodName').value = product ? product.name : '';
-    document.getElementById('prodSku').value = product ? product.sku : '';
-    document.getElementById('prodCategory').value = product ? product.category : 'Thời trang';
-    document.getElementById('prodUnit').value = product ? product.unit : 'Cái';
-    document.getElementById('prodWeight').value = product && product.weight !== undefined ? product.weight : 0.2;
-    document.getElementById('prodCostPrice').value = product ? product.costPrice : 0;
-    document.getElementById('prodSellingPrice').value = product ? product.sellingPrice : '';
-    document.getElementById('prodStock').value = product ? product.stock : 0;
-    document.getElementById('prodMinStock').value = product ? product.minStock : 5;
-    document.getElementById('prodNotes').value = product ? product.notes : '';
+    try {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+      const titleEl = document.getElementById('modalProductTitle');
+      if (titleEl) titleEl.textContent = product ? '✏️ Sửa Hàng Hóa' : '🏷️ Thêm Hàng Hóa Mới';
+      setVal('prodId', product ? product.id : '');
+      setVal('prodName', product ? product.name : '');
+      setVal('prodSku', product ? product.sku : '');
+      setVal('prodCategory', product ? product.category : 'Thời trang');
+      setVal('prodUnit', product ? product.unit : 'Cái');
+      setVal('prodWeight', product && product.weight !== undefined ? product.weight : 0.2);
+      setVal('prodCostPrice', product ? product.costPrice : 0);
+      setVal('prodSellingPrice', product ? product.sellingPrice : '');
+      setVal('prodStock', product ? product.stock : 0);
+      setVal('prodMinStock', product ? product.minStock : 5);
+      setVal('prodNotes', product ? product.notes : '');
 
-    // Khởi tạo các dòng màu sắc
-    const container = document.getElementById('productColorsContainer');
-    if (container) {
-      container.innerHTML = '';
-      if (product && Array.isArray(product.colors) && product.colors.length > 0) {
-        product.colors.forEach(c => {
-          this.addColorRow(c.name, c.quantity);
-        });
+      // Khởi tạo các dòng màu sắc
+      const container = document.getElementById('productColorsContainer');
+      if (container) {
+        container.innerHTML = '';
+        if (product && Array.isArray(product.colors) && product.colors.length > 0) {
+          product.colors.forEach(c => {
+            this.addColorRow(c.name, c.quantity);
+          });
+        }
       }
+      this.syncColorStockSum();
+    } catch (err) {
+      console.warn('Lỗi chuẩn bị form sản phẩm:', err);
     }
-    this.syncColorStockSum();
 
     this.openModal('modalProduct');
   },
@@ -859,36 +856,41 @@ const MobileApp = {
   },
 
   openAddPurchaseModal() {
-    if (window.appStore.state.products.length === 0) {
-      alert('Vui lòng thêm ít nhất 1 sản phẩm trong kho trước khi nhập.');
-      this.switchTab('products');
-      return;
+    try {
+      if (!window.appStore.state.products || window.appStore.state.products.length === 0) {
+        alert('Vui lòng thêm ít nhất 1 sản phẩm trong kho trước khi nhập.');
+        this.switchTab('products');
+        return;
+      }
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      setVal('poDate', new Date().toISOString().slice(0, 10));
+      setVal('poSupplier', '');
+      setVal('poShippingType', 'by_weight');
+      setVal('poPricePerKg', 30000);
+      setVal('poTotalWeight', 0);
+      
+      const costInput = document.getElementById('poShippingCost');
+      if (costInput) {
+        costInput.value = 0;
+        costInput.readOnly = true;
+        costInput.style.background = '#f1f5f9';
+      }
+
+      setVal('poNotes', '');
+
+      const container = document.getElementById('purchaseItemsContainer');
+      if (container) {
+        container.innerHTML = '';
+        this.addPurchaseRow();
+      }
+    } catch (err) {
+      console.warn('Lỗi chuẩn bị form nhập hàng:', err);
     }
-
-    document.getElementById('poDate').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('poSupplier').value = '';
-    
-    const shipType = document.getElementById('poShippingType');
-    if (shipType) shipType.value = 'by_weight';
-
-    const pricePerKg = document.getElementById('poPricePerKg');
-    if (pricePerKg) pricePerKg.value = 30000;
-
-    const totalWeight = document.getElementById('poTotalWeight');
-    if (totalWeight) totalWeight.value = 0;
-
-    const costInput = document.getElementById('poShippingCost');
-    if (costInput) {
-      costInput.value = 0;
-      costInput.readOnly = true;
-      costInput.style.background = '#f1f5f9';
-    }
-
-    document.getElementById('poNotes').value = '';
-
-    const container = document.getElementById('purchaseItemsContainer');
-    container.innerHTML = '';
-    this.addPurchaseRow();
 
     this.openModal('modalPurchase');
   },
@@ -1212,27 +1214,39 @@ const MobileApp = {
   },
 
   openAddSaleModal() {
-    if (window.appStore.state.products.length === 0) {
-      alert('Chưa có sản phẩm nào. Vui lòng thêm sản phẩm trước khi bán.');
-      this.switchTab('products');
-      return;
+    try {
+      if (!window.appStore.state.products || window.appStore.state.products.length === 0) {
+        alert('Kho chưa có sản phẩm nào. Vui lòng thêm sản phẩm trước khi tạo đơn bán.');
+        this.switchTab('products');
+        return;
+      }
+
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+
+      setVal('saleDate', new Date().toISOString().slice(0, 10));
+      setVal('saleCustomerName', 'Khách lẻ');
+      setVal('saleCustomerPhone', '');
+      setVal('saleChannel', 'Trực tiếp');
+      setVal('salePaymentStatus', 'paid');
+      const divPaid = document.getElementById('divPaidAmount');
+      if (divPaid) divPaid.style.display = 'none';
+      setVal('salePaidAmount', 0);
+      setVal('saleDiscount', 0);
+      setVal('saleShippingFee', 0);
+      setVal('saleShippingPayer', window.appStore.state.settings?.defaultShippingPayer || 'customer');
+      setVal('saleNotes', '');
+
+      const container = document.getElementById('saleItemsContainer');
+      if (container) {
+        container.innerHTML = '';
+        this.addSaleRow();
+      }
+    } catch (err) {
+      console.warn('Lỗi chuẩn bị form bán hàng:', err);
     }
-
-    document.getElementById('saleDate').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('saleCustomerName').value = 'Khách lẻ';
-    document.getElementById('saleCustomerPhone').value = '';
-    document.getElementById('saleChannel').value = 'Trực tiếp';
-    document.getElementById('salePaymentStatus').value = 'paid';
-    document.getElementById('divPaidAmount').style.display = 'none';
-    document.getElementById('salePaidAmount').value = 0;
-    document.getElementById('saleDiscount').value = 0;
-    document.getElementById('saleShippingFee').value = 0;
-    document.getElementById('saleShippingPayer').value = window.appStore.state.settings.defaultShippingPayer || 'customer';
-    document.getElementById('saleNotes').value = '';
-
-    const container = document.getElementById('saleItemsContainer');
-    container.innerHTML = '';
-    this.addSaleRow();
 
     this.openModal('modalSale');
   },
@@ -1487,14 +1501,26 @@ const MobileApp = {
   },
 
   /* =================== 5. SỔ QUỸ THU - CHI =================== */
+  openAddCashflowModal() {
+    try {
+      const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      };
+      setVal('cfDate', new Date().toISOString().slice(0, 10));
+      setVal('cfType', 'expense');
+      setVal('cfCategory', 'Bao bì & Đóng gói');
+      setVal('cfAmount', '');
+      setVal('cfDescription', '');
+    } catch (err) {
+      console.warn('Lỗi chuẩn bị form thu chi:', err);
+    }
+    this.openModal('modalCashflow');
+  },
+
   setupCashflowEvents() {
     document.getElementById('btnMobileAddCashflow')?.addEventListener('click', () => {
-      document.getElementById('cfDate').value = new Date().toISOString().slice(0, 10);
-      document.getElementById('cfType').value = 'expense';
-      document.getElementById('cfCategory').value = 'Bao bì & Đóng gói';
-      document.getElementById('cfAmount').value = '';
-      document.getElementById('cfDescription').value = '';
-      this.openModal('modalCashflow');
+      this.openAddCashflowModal();
     });
 
     document.getElementById('btnBackToMoreFromCashflow')?.addEventListener('click', () => {

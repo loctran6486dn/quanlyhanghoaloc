@@ -126,7 +126,7 @@
 
         <!-- 4 BENTO QUICK ACTION TILES (Chạm nhanh tức thì - Icon Flat Một Màu) -->
         <div class="bento-actions-grid">
-          <div class="bento-action-tile tile-sale" id="btnQuickActionSale">
+          <div class="bento-action-tile tile-sale" id="btnQuickActionSale" onclick="MobileApp.openAddSaleModal()">
             <div class="action-tile-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="8" cy="21" r="1"/>
@@ -140,7 +140,7 @@
             </div>
           </div>
 
-          <div class="bento-action-tile tile-purchase" id="btnQuickActionPurchase">
+          <div class="bento-action-tile tile-purchase" id="btnQuickActionPurchase" onclick="MobileApp.openAddPurchaseModal()">
             <div class="action-tile-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -154,7 +154,7 @@
             </div>
           </div>
 
-          <div class="bento-action-tile tile-product" id="btnQuickActionProduct">
+          <div class="bento-action-tile tile-product" id="btnQuickActionProduct" onclick="MobileApp.openAddProductModal()">
             <div class="action-tile-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
@@ -167,7 +167,7 @@
             </div>
           </div>
 
-          <div class="bento-action-tile tile-cashflow" id="btnQuickActionCashflow">
+          <div class="bento-action-tile tile-cashflow" id="btnQuickActionCashflow" onclick="MobileApp.openAddCashflowModal()">
             <div class="action-tile-icon">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
@@ -267,7 +267,7 @@
       <section id="tab-products" class="tab-panel">
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="flex: 1; border-radius: 14px;">
-          <button type="button" class="btn-dark-pill" id="btnMobileAddProduct" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
+          <button type="button" class="btn-dark-pill" id="btnMobileAddProduct" onclick="MobileApp.openAddProductModal()" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
         </div>
 
         <!-- Bộ lọc nhanh trạng thái kho -->
@@ -289,7 +289,7 @@
       <section id="tab-purchases" class="tab-panel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
           <div style="font-size: 14px; font-weight: 800; color: var(--text-main);">Lịch Sử Nhập Hàng</div>
-          <button type="button" class="btn-dark-pill" id="btnMobileAddPurchase">+ Phiếu Nhập Mới</button>
+          <button type="button" class="btn-dark-pill" id="btnMobileAddPurchase" onclick="MobileApp.openAddPurchaseModal()">+ Phiếu Nhập Mới</button>
         </div>
 
         <div class="cards-list" id="purchasesCardsList">
@@ -301,7 +301,7 @@
       <section id="tab-sales" class="tab-panel">
         <div style="display: flex; gap: 8px; margin-bottom: 12px;">
           <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="flex: 1; border-radius: 14px;">
-          <button type="button" class="btn-dark-pill" id="btnMobileAddSale" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
+          <button type="button" class="btn-dark-pill" id="btnMobileAddSale" onclick="MobileApp.openAddSaleModal()" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
         </div>
 
         <!-- Lọc trạng thái thanh toán -->
@@ -431,7 +431,7 @@
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
           <button type="button" class="btn-white-pill" id="btnBackToMoreFromCashflow">‹ Quay lại</button>
           <div style="font-size: 15px; font-weight: 800;">Sổ Quỹ Thu - Chi</div>
-          <button type="button" class="btn-dark-pill" id="btnMobileAddCashflow" style="height: 36px; padding: 0 16px; font-size: 12.5px;">+ Thu/Chi</button>
+          <button type="button" class="btn-dark-pill" id="btnMobileAddCashflow" onclick="MobileApp.openAddCashflowModal()" style="height: 36px; padding: 0 16px; font-size: 12.5px;">+ Thu/Chi</button>
         </div>
         <div class="cards-list" id="cashflowCardsList">
           <!-- Render động qua JS -->
@@ -528,7 +528,7 @@
       </button>
 
       <!-- Center FAB: Bán Hàng Nhanh (Vòng tròn trắng phẳng với dấu + đen tuyền) -->
-      <button type="button" class="nav-fab-btn" id="btnFabCreateSale" title="Bán hàng nhanh">
+      <button type="button" class="nav-fab-btn" id="btnFabCreateSale" onclick="MobileApp.openAddSaleModal()" title="Bán hàng nhanh">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/>
           <line x1="5" y1="12" x2="19" y2="12"/>
@@ -572,7 +572,7 @@
         <h3 class="modal-title">🛒 Tạo Đơn Bán Hàng</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="submit" form="formSale" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
-          <button type="button" class="modal-close" data-close-modal>&times;</button>
+          <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
         </div>
       </div>
       <form id="formSale">
@@ -707,7 +707,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
           <button type="submit" class="btn btn-theme-submit">Lưu Đơn & Trừ Kho</button>
         </div>
       </form>
@@ -722,7 +722,7 @@
         <h3 class="modal-title">📥 Phiếu Nhập Hàng Mới</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="submit" form="formPurchase" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
-          <button type="button" class="modal-close" data-close-modal>&times;</button>
+          <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
         </div>
       </div>
       <form id="formPurchase">
@@ -822,7 +822,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
           <button type="submit" class="btn btn-theme-submit">Lưu Phiếu & Tăng Kho</button>
         </div>
       </form>
@@ -837,7 +837,7 @@
         <h3 class="modal-title" id="modalProductTitle">🏷️ Thêm Hàng Hóa Mới</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="submit" form="formProduct" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
-          <button type="button" class="modal-close" data-close-modal>&times;</button>
+          <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
         </div>
       </div>
       <form id="formProduct">
@@ -954,7 +954,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
           <button type="submit" class="btn btn-theme-submit">Lưu Sản Phẩm</button>
         </div>
       </form>
@@ -969,7 +969,7 @@
         <h3 class="modal-title">📒 Ghi Nhận Thu / Chi</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="submit" form="formCashflow" class="btn btn-sm btn-theme-header" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
-          <button type="button" class="modal-close" data-close-modal>&times;</button>
+          <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
         </div>
       </div>
       <form id="formCashflow">
@@ -1028,7 +1028,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal>Hủy</button>
+          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
           <button type="submit" class="btn btn-theme-submit">Lưu Giao Dịch</button>
         </div>
       </form>
@@ -1043,7 +1043,7 @@
         <h3 class="modal-title">⚙️ Cài Đặt Cửa Hàng</h3>
         <div style="display: flex; align-items: center; gap: 8px;">
           <button type="button" class="btn btn-sm btn-theme-header" id="btnSaveMobileSettingsHeader" style="padding: 6px 16px; font-weight: 700; border-radius: 999px; font-size: 13px;">Lưu</button>
-          <button type="button" class="modal-close" data-close-modal>&times;</button>
+          <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
         </div>
       </div>
       <div class="modal-body">
@@ -1078,7 +1078,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-outline" data-close-modal>Đóng</button>
+        <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Đóng</button>
         <button type="button" class="btn btn-theme-submit" id="btnSaveMobileSettings">Lưu Cài Đặt</button>
       </div>
     </div>
@@ -1090,7 +1090,7 @@
       <div class="modal-handle-bar"></div>
       <div class="modal-header">
         <h3 class="modal-title">📱 Mở Trên Điện Thoại</h3>
-        <button type="button" class="modal-close" data-close-modal>&times;</button>
+        <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
       </div>
       <div class="modal-body" style="text-align: center;">
         <div class="bento-modal-card bento-modal-card-blue" style="text-align: center; padding: 20px 16px;">
@@ -1115,7 +1115,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-theme-submit btn-block" data-close-modal>Đã Hiểu</button>
+        <button type="button" class="btn btn-theme-submit btn-block" data-close-modal onclick="MobileApp.closeModal()">Đã Hiểu</button>
       </div>
     </div>
   </div>
