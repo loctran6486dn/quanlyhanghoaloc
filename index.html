@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.6">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -265,9 +265,9 @@
 
       <!-- ================= TAB 2: HÀNG HÓA & TỒN KHO ================= -->
       <section id="tab-products" class="tab-panel">
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="flex: 1; border-radius: 14px;">
-          <button type="button" class="btn-dark-pill" id="btnMobileAddProduct" onclick="MobileApp.openAddProductModal()" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
+        <div class="search-header-row">
+          <input type="text" id="mobileProductSearch" class="form-control" placeholder="🔍 Tìm tên sản phẩm, mã SKU..." style="border-radius: 14px;">
+          <button type="button" class="btn-dark-pill" id="btnMobileAddProduct" onclick="if(window.MobileApp){MobileApp.openAddProductModal(event);}else if(window.openAddProductModal){window.openAddProductModal(event);}" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
         </div>
 
         <!-- Bộ lọc nhanh trạng thái kho -->
@@ -299,9 +299,9 @@
 
       <!-- ================= TAB 4: BÁN HÀNG ================= -->
       <section id="tab-sales" class="tab-panel">
-        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-          <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="flex: 1; border-radius: 14px;">
-          <button type="button" class="btn-dark-pill" id="btnMobileAddSale" onclick="MobileApp.openAddSaleModal()" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
+        <div class="search-header-row">
+          <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="border-radius: 14px;">
+          <button type="button" class="btn-dark-pill" id="btnMobileAddSale" onclick="if(window.MobileApp){MobileApp.openAddSaleModal(event);}else if(window.openAddSaleModal){window.openAddSaleModal(event);}" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
         </div>
 
         <!-- Lọc trạng thái thanh toán -->
@@ -1123,11 +1123,11 @@
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- SCRIPTS -->
-  <script src="js/calculations.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/export.js"></script>
-  <script src="js/charts.js"></script>
-  <script src="js/app.js"></script>
+  <!-- SCRIPTS (Cache busted) -->
+  <script src="js/calculations.js?v=2.6"></script>
+  <script src="js/store.js?v=2.6"></script>
+  <script src="js/export.js?v=2.6"></script>
+  <script src="js/charts.js?v=2.6"></script>
+  <script src="js/app.js?v=2.6"></script>
 </body>
 </html>

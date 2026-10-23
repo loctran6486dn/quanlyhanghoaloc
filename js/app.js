@@ -2,11 +2,7 @@
  * app.js - Trình Điều Khiển Mobile-First Tối Ưu Cho Điện Thoại Di Động
  */
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await window.appStore.init();
-  MobileApp.init();
-});
-
+// Đảm bảo đối tượng MobileApp và các hàm mở modal luôn sẵn sàng trên phạm vi toàn cục (Global Scope)
 const MobileApp = {
   activeTab: 'dashboard',
   dateFilter: { startDate: '', endDate: '' },
@@ -139,8 +135,14 @@ const MobileApp = {
       p.classList.toggle('active', p.id === `tab-${tabName}`);
     });
 
-    // Cuộn tức thì về đầu trang khi chuyển tab (loại bỏ kinetic scroll nuốt touch event trên điện thoại)
-    window.scrollTo(0, 0);
+    // Nhả focus nếu có để tránh giật bàn phím khi chuyển tab
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+
+    if (window.scrollY > 0) {
+      window.scrollTo(0, 0);
+    }
 
     this.renderCurrentView();
   },
@@ -199,11 +201,20 @@ const MobileApp = {
   setupModalEvents() {
     // 1. Đóng modal khi bấm các nút đóng [data-close-modal] (bao gồm nút X và nút Hủy)
     document.querySelectorAll('[data-close-modal]').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.closeModal();
-      });
+      let lastCloseTrigger = 0;
+      const triggerClose = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastCloseTrigger < 300) return;
+        lastCloseTrigger = now;
+        MobileApp.closeModal();
+      };
+      btn.addEventListener('pointerup', triggerClose, { passive: false });
+      btn.addEventListener('touchend', triggerClose, { passive: false });
+      btn.addEventListener('click', triggerClose);
     });
 
     // 2. Chặn click bên trong .modal-dialog không cho nổi bọt ra ngoài backdrop
@@ -413,9 +424,23 @@ const MobileApp = {
 
   /* =================== 2. HÀNG HÓA & TỒN KHO =================== */
   setupProductsEvents() {
-    document.getElementById('btnMobileAddProduct')?.addEventListener('click', () => {
-      this.openAddProductModal();
-    });
+    const btnAddProd = document.getElementById('btnMobileAddProduct');
+    if (btnAddProd) {
+      let lastTrigger = 0;
+      const triggerOpen = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastTrigger < 350) return;
+        lastTrigger = now;
+        MobileApp.openAddProductModal();
+      };
+      btnAddProd.addEventListener('pointerup', triggerOpen, { passive: false });
+      btnAddProd.addEventListener('touchend', triggerOpen, { passive: false });
+      btnAddProd.addEventListener('click', triggerOpen);
+    }
 
     document.getElementById('btnMobileExportProducts')?.addEventListener('click', () => {
       ExportManager.exportProducts(window.appStore.state.products);
@@ -618,16 +643,16 @@ const MobileApp = {
         container.innerHTML = '';
         if (product && Array.isArray(product.colors) && product.colors.length > 0) {
           product.colors.forEach(c => {
-            this.addColorRow(c.name, c.quantity);
+            MobileApp.addColorRow(c.name, c.quantity);
           });
         }
       }
-      this.syncColorStockSum();
+      MobileApp.syncColorStockSum();
     } catch (err) {
       console.warn('Lỗi chuẩn bị form sản phẩm:', err);
     }
 
-    this.openModal('modalProduct');
+    MobileApp.openModal('modalProduct');
   },
 
   renderProducts() {
@@ -743,9 +768,23 @@ const MobileApp = {
 
   /* =================== 3. NHẬP HÀNG (PURCHASES) =================== */
   setupPurchasesEvents() {
-    document.getElementById('btnMobileAddPurchase')?.addEventListener('click', () => {
-      this.openAddPurchaseModal();
-    });
+    const btnAddPo = document.getElementById('btnMobileAddPurchase');
+    if (btnAddPo) {
+      let lastTrigger = 0;
+      const triggerOpen = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastTrigger < 350) return;
+        lastTrigger = now;
+        MobileApp.openAddPurchaseModal();
+      };
+      btnAddPo.addEventListener('pointerup', triggerOpen, { passive: false });
+      btnAddPo.addEventListener('touchend', triggerOpen, { passive: false });
+      btnAddPo.addEventListener('click', triggerOpen);
+    }
 
     document.getElementById('btnAddPurchaseRow')?.addEventListener('click', () => {
       this.addPurchaseRow();
@@ -1091,9 +1130,23 @@ const MobileApp = {
 
   /* =================== 4. BÁN HÀNG (SALES) =================== */
   setupSalesEvents() {
-    document.getElementById('btnMobileAddSale')?.addEventListener('click', () => {
-      this.openAddSaleModal();
-    });
+    const btnAddSale = document.getElementById('btnMobileAddSale');
+    if (btnAddSale) {
+      let lastTrigger = 0;
+      const triggerOpen = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const now = Date.now();
+        if (now - lastTrigger < 350) return;
+        lastTrigger = now;
+        MobileApp.openAddSaleModal();
+      };
+      btnAddSale.addEventListener('pointerup', triggerOpen, { passive: false });
+      btnAddSale.addEventListener('touchend', triggerOpen, { passive: false });
+      btnAddSale.addEventListener('click', triggerOpen);
+    }
 
     document.getElementById('btnAddSaleRow')?.addEventListener('click', () => {
       this.addSaleRow();
@@ -1774,4 +1827,17 @@ const MobileApp = {
   }
 };
 
+// Xuất MobileApp ra window để mọi sự kiện inline HTML và script khác đều gọi được ngay lập tức
 window.MobileApp = MobileApp;
+window.openAddProductModal = (prod = null) => MobileApp.openAddProductModal(prod);
+window.openAddSaleModal = () => MobileApp.openAddSaleModal();
+window.openAddPurchaseModal = () => MobileApp.openAddPurchaseModal();
+window.openAddCashflowModal = () => MobileApp.openAddCashflowModal();
+window.closeModal = (id = null) => MobileApp.closeModal(id);
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.appStore && typeof window.appStore.init === 'function') {
+    await window.appStore.init();
+  }
+  MobileApp.init();
+});
