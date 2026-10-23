@@ -271,6 +271,7 @@ const MobileApp = {
   },
 
   closeModal(id = null) {
+    this.hideCategorySuggestions();
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
@@ -468,6 +469,32 @@ const MobileApp = {
       });
     }
 
+    // Xử lý gợi ý danh mục đã từng điền
+    const prodCatInput = document.getElementById('prodCategory');
+    if (prodCatInput) {
+      prodCatInput.addEventListener('focus', () => {
+        MobileApp.renderCategorySuggestions(prodCatInput.value);
+      });
+      prodCatInput.addEventListener('input', (e) => {
+        MobileApp.renderCategorySuggestions(e.target.value);
+      });
+      prodCatInput.addEventListener('click', (e) => {
+        e.stopPropagation();
+        MobileApp.renderCategorySuggestions(prodCatInput.value);
+      });
+    }
+
+    // Đóng dropdown khi click/touch ra ngoài
+    document.addEventListener('pointerdown', (e) => {
+      const dropdown = document.getElementById('categorySuggestionsDropdown');
+      const input = document.getElementById('prodCategory');
+      if (dropdown && dropdown.classList.contains('show')) {
+        if (e.target !== dropdown && !dropdown.contains(e.target) && e.target !== input) {
+          MobileApp.hideCategorySuggestions();
+        }
+      }
+    });
+
     // Nút thêm dòng màu
     document.getElementById('btnAddColorRow')?.addEventListener('click', () => {
       this.addColorRow('', 1);
@@ -551,6 +578,86 @@ const MobileApp = {
     });
   },
 
+  /* =================== GỢI Ý DANH MỤC HÀNG HÓA =================== */
+  getCategoriesList() {
+    const products = window.appStore?.state?.products || [];
+    const usedCats = [];
+    products.forEach(p => {
+      if (p.category && typeof p.category === 'string') {
+        const cat = p.category.trim();
+        if (cat && !usedCats.includes(cat)) {
+          usedCats.push(cat);
+        }
+      }
+    });
+    return usedCats;
+  },
+
+  renderCategorySuggestions(filterText = '') {
+    const dropdown = document.getElementById('categorySuggestionsDropdown');
+    const input = document.getElementById('prodCategory');
+    if (!dropdown || !input) return;
+
+    const list = this.getCategoriesList();
+    const query = (filterText || '').trim().toLowerCase();
+    const filtered = query ? list.filter(c => c.toLowerCase().includes(query)) : list;
+
+    if (filtered.length === 0) {
+      if (list.length === 0) {
+        dropdown.innerHTML = `
+          <div style="padding: 12px 14px; font-size: 12px; color: #94a3b8; text-align: center; line-height: 1.4;">
+            Chưa có danh mục cũ nào.<br>Bạn hãy tự nhập danh mục mới vào đây nhé!
+          </div>
+        `;
+      } else {
+        dropdown.innerHTML = `
+          <div style="padding: 10px 14px; font-size: 12px; color: #94a3b8; text-align: center;">
+            Gõ để tạo mới: "<strong>${filterText}</strong>"
+          </div>
+        `;
+      }
+      dropdown.classList.add('show');
+      return;
+    }
+
+    dropdown.innerHTML = `
+      <div style="padding: 6px 12px 4px 12px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
+        <span>📁 Danh mục đã dùng (${filtered.length})</span>
+        <span style="font-size: 10px; color: #94a3b8;">Chạm để chọn</span>
+      </div>
+      <div style="max-height: 170px; overflow-y: auto;">
+        ${filtered.map(cat => `
+          <div class="category-suggest-item" data-category="${cat}">
+            <span>🏷️ ${cat}</span>
+            <span style="font-size: 11px; color: #4f46e5; font-weight: 700;">Chọn ↵</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    dropdown.classList.add('show');
+
+    dropdown.querySelectorAll('.category-suggest-item').forEach(item => {
+      const selectCat = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        const val = item.getAttribute('data-category');
+        if (val) {
+          input.value = val;
+        }
+        MobileApp.hideCategorySuggestions();
+      };
+      item.addEventListener('pointerdown', selectCat);
+      item.addEventListener('click', selectCat);
+    });
+  },
+
+  hideCategorySuggestions() {
+    const dropdown = document.getElementById('categorySuggestionsDropdown');
+    if (dropdown) dropdown.classList.remove('show');
+  },
+
   addColorRow(colorName = '', qty = 1) {
     const container = document.getElementById('productColorsContainer');
     if (!container) return;
@@ -628,7 +735,7 @@ const MobileApp = {
       setVal('prodId', product ? product.id : '');
       setVal('prodName', product ? product.name : '');
       setVal('prodSku', product ? product.sku : '');
-      setVal('prodCategory', product ? product.category : 'Thời trang');
+      setVal('prodCategory', product ? product.category : '');
       setVal('prodUnit', product ? product.unit : 'Cái');
       setVal('prodWeight', product && product.weight !== undefined ? product.weight : 0.2);
       setVal('prodCostPrice', product ? product.costPrice : 0);
@@ -648,6 +755,7 @@ const MobileApp = {
         }
       }
       MobileApp.syncColorStockSum();
+      MobileApp.hideCategorySuggestions();
     } catch (err) {
       console.warn('Lỗi chuẩn bị form sản phẩm:', err);
     }
