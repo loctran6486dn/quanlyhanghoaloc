@@ -46,6 +46,13 @@
           </svg>
           <span class="nav-tab-badge" id="headerAlertBadge" style="top: -2px; right: -2px; display: none;">0</span>
         </button>
+        <!-- Nút đồng bộ Cloud đa thiết bị -->
+        <button type="button" class="btn-icon-header" id="btnHeaderCloudSync" onclick="MobileApp.openCloudSyncModal()" title="Đồng bộ đa thiết bị" style="position: relative;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+          </svg>
+          <span class="sync-status-dot" id="headerSyncDot" style="position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; border: 1.5px solid #ffffff;"></span>
+        </button>
         <!-- Nút mở QR kết nối điện thoại (Icon flat stroke một màu) -->
         <button type="button" class="btn-icon-header" id="btnOpenConnectQR" title="Kết nối điện thoại">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -341,6 +348,21 @@
               <div class="menu-item-text">
                 <strong>Báo Cáo Lợi Nhuận Chi Tiết (P&L)</strong>
                 <span>Bảng phân tích doanh thu, chi phí, top sản phẩm lãi nhất</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Đồng bộ đám mây đa thiết bị -->
+          <div class="menu-item-row" id="menuRowCloudSync" onclick="MobileApp.openCloudSyncModal()">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #e0f2fe; color: #0284c7;">☁️</div>
+              <div class="menu-item-text">
+                <strong style="display: flex; align-items: center; gap: 6px;">
+                  <span>Đồng Bộ Đa Thiết Bị (Cloud)</span>
+                  <span class="bento-tag-pill" id="menuSyncBadge" style="background: #f1f5f9; color: #64748b; font-size: 10px; padding: 2px 8px;">Chưa kết nối</span>
+                </strong>
+                <span>Nhiều điện thoại cùng dùng chung kho hàng & đơn hàng</span>
               </div>
             </div>
             <div class="menu-item-chevron">›</div>
@@ -1121,14 +1143,100 @@
     </div>
   </div>
 
+  <!-- MODAL 7: ĐỒNG BỘ ĐA THIẾT BỊ (THEME BENTO SKY CLOUD) -->
+  <div class="modal-backdrop" id="modalCloudSync">
+    <div class="modal-dialog modal-theme-sync">
+      <div class="modal-handle-bar"></div>
+      <div class="modal-header">
+        <h3 class="modal-title">☁️ Đồng Bộ Đa Thiết Bị</h3>
+        <button type="button" class="modal-close" data-close-modal onclick="MobileApp.closeModal()" title="Đóng">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- BENTO CARD 1: TRẠNG THÁI & MÃ KHO CHUNG -->
+        <div class="bento-modal-card bento-modal-card-blue">
+          <div class="bento-card-title">
+            <span class="bento-tag-pill tag-blue">🔑 Mã Kết Nối Cửa Hàng</span>
+            <span id="syncLiveStatusBadge" class="bento-tag-pill" style="background: #f1f5f9; color: #64748b;">⚪ Chưa kết nối</span>
+          </div>
+
+          <p style="font-size: 12.5px; color: #475569; margin: 6px 0 12px 0; line-height: 1.45;">
+            Tất cả các điện thoại nhập <strong>cùng một mã</strong> sẽ tự động đồng bộ hàng hóa, tồn kho và đơn hàng với nhau theo thời gian thực.
+          </p>
+
+          <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+            <input type="text" id="inputSyncStoreCode" class="form-control" placeholder="VD: KHOLOC-6486" style="flex: 1; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; font-size: 15px; border-radius: 12px;">
+            <button type="button" class="btn-dark-pill" id="btnConnectSyncCode" style="flex-shrink: 0; padding: 0 16px;">Kết Nối</button>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+            <button type="button" class="btn-white-pill" id="btnGenerateRandomSyncCode" style="font-size: 11.5px; height: 32px; padding: 0 10px;">🎲 Tạo mã ngẫu nhiên</button>
+            <button type="button" class="btn-white-pill" id="btnManualSyncNow" style="font-size: 11.5px; height: 32px; padding: 0 12px; display: none;">🔄 Đồng bộ ngay</button>
+          </div>
+
+          <div id="syncTimeStatus" style="font-size: 11.5px; color: #64748b; margin-top: 10px; display: none;">
+            Lần cuối: <span id="syncLastTimeText">Chưa có</span>
+          </div>
+
+          <!-- Thông báo hướng dẫn KV nếu chưa kích hoạt -->
+          <div id="syncKVNoticeBox" style="display: none; background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 10px 12px; margin-top: 12px; text-align: left;">
+            <div style="font-size: 12px; font-weight: 800; color: #92400e; margin-bottom: 4px;">⚡ BƯỚC KÍCH HOẠT VERCEL KV (CHỈ LÀM 1 LẦN - MIỄN PHÍ):</div>
+            <div style="font-size: 11.5px; color: #78350f; line-height: 1.4;">
+              1. Mở trang quản trị <strong>Vercel &rarr; Storage</strong>.<br>
+              2. Bấm <strong>Create Database &rarr; Chọn KV &rarr; Create</strong>.<br>
+              3. Xong! Hệ thống sẽ tự động liên kết lưu trữ đám mây vĩnh viễn.
+            </div>
+          </div>
+        </div>
+
+        <!-- BENTO CARD 2: CHIA SẺ CHO ĐIỆN THOẠI KHÁC (QUÉT QR HOẶC LINK) -->
+        <div class="bento-modal-card" id="cardShareSyncPhone" style="text-align: center; display: none;">
+          <div class="bento-card-title">
+            <span class="bento-tag-pill tag-mint">📲 Kết Nối Điện Thoại Mới</span>
+          </div>
+
+          <p style="font-size: 12px; color: #64748b; margin-bottom: 12px;">
+            Mở máy điện thoại thứ 2, 3... rồi dùng Camera quét mã này để tự động kết nối:
+          </p>
+
+          <div style="background: #ffffff; padding: 14px; border-radius: 16px; border: 1.5px solid #e2e8f0; display: inline-block; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.05);">
+            <img id="imgSyncQRCode" src="" alt="QR Code Đồng Bộ" style="width: 180px; height: 180px; border-radius: 10px; display: block;">
+          </div>
+
+          <div>
+            <button type="button" class="btn btn-block btn-white-pill" id="btnCopySyncShareLink" style="font-size: 13px; font-weight: 700; height: 42px;">
+              📋 Sao Chép Link Gửi Qua Zalo / Tin Nhắn
+            </button>
+          </div>
+        </div>
+
+        <!-- BENTO CARD 3: NGUYÊN TẮC HOẠT ĐỘNG -->
+        <div class="bento-modal-card bento-modal-card-lilac" style="margin-bottom: 0;">
+          <div class="bento-card-title">
+            <span class="bento-tag-pill tag-lilac">ℹ️ Cách Nhiều Người Cùng Dùng</span>
+          </div>
+          <ul style="font-size: 12px; color: #475569; margin: 0; padding-left: 18px; line-height: 1.5;">
+            <li><strong>Không lo mất đơn:</strong> App tự động gộp đơn hàng và sản phẩm từ tất cả các máy mà không bị ghi đè mất mát.</li>
+            <li><strong>Tự động kéo dữ liệu:</strong> Mỗi khi mở app hoặc chuyển lại tab trên điện thoại, máy tự động kéo số tồn kho mới nhất.</li>
+            <li><strong>Bán hàng khi mất mạng:</strong> Vẫn tạo đơn bình thường, khi có mạng trở lại dữ liệu sẽ tự động đẩy lên Cloud.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Đóng</button>
+        <button type="button" class="btn btn-outline" id="btnDisconnectSync" style="color: #ef4444; border-color: #fecaca; display: none;">Ngắt Kết Nối</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=2.6"></script>
-  <script src="js/store.js?v=2.6"></script>
-  <script src="js/export.js?v=2.6"></script>
-  <script src="js/charts.js?v=2.6"></script>
-  <script src="js/app.js?v=2.7"></script>
+  <script src="js/calculations.js?v=2.8"></script>
+  <script src="js/cloud-sync.js?v=2.8"></script>
+  <script src="js/store.js?v=2.8"></script>
+  <script src="js/export.js?v=2.8"></script>
+  <script src="js/charts.js?v=2.8"></script>
+  <script src="js/app.js?v=2.8"></script>
 </body>
 </html>

@@ -20,6 +20,14 @@ const MobileApp = {
     this.setupCashflowEvents();
     this.setupReportsEvents();
     this.setupSettingsAndMoreEvents();
+    this.setupCloudSyncEvents();
+
+    // Khởi tạo và lắng nghe trạng thái Đồng bộ Đám mây (Cloud Sync)
+    if (window.CloudSync && typeof window.CloudSync.init === 'function') {
+      window.CloudSync.init();
+      window.CloudSync.subscribe((status) => this.updateCloudSyncUI(status));
+      this.updateCloudSyncUI(window.CloudSync.getStatus());
+    }
 
     // Tự động re-render khi DataStore thay đổi
     window.appStore.subscribe(() => {
@@ -1932,11 +1940,194 @@ const MobileApp = {
 
     const allocSelect = document.getElementById('mobileSettingAllocation');
     if (allocSelect) allocSelect.value = settings.defaultAllocationMethod || 'by_quantity';
+  },
+
+  /* =================== 8. ĐỒNG BỘ ĐÁM MÂY ĐA THIẾT BỊ =================== */
+  setupCloudSyncEvents() {
+    // Nút mở modal từ Header
+    document.getElementById('btnHeaderCloudSync')?.addEventListener('click', () => {
+      this.openCloudSyncModal();
+    });
+
+    // Nút mở modal từ Menu
+    document.getElementById('menuRowCloudSync')?.addEventListener('click', () => {
+      this.openCloudSyncModal();
+    });
+
+    // Nút Kết Nối / Bật đồng bộ
+    document.getElementById('btnConnectSyncCode')?.addEventListener('click', async () => {
+      const input = document.getElementById('inputSyncStoreCode');
+      const code = (input?.value || '').trim();
+      if (code.length < 3) {
+        alert('Mã cửa hàng phải có ít nhất 3 ký tự (Ví dụ: KHOLOC-6486)');
+        return;
+      }
+
+      if (window.CloudSync) {
+        window.CloudSync.saveStoreCode(code);
+        this.showToast('Đang kết nối Cloud...');
+        const res = await window.CloudSync.pull(true);
+        if (res.needsKVSetup) {
+          this.showToast('Vui lòng kích hoạt Vercel KV theo hướng dẫn!', 'danger');
+        } else if (res.success) {
+          this.showToast('Đã kết nối kho Cloud thành công!');
+        } else {
+          this.showToast('Lỗi: ' + (res.error || 'Không thể kết nối'), 'danger');
+        }
+      }
+    });
+
+    // Nút Tạo mã ngẫu nhiên
+    document.getElementById('btnGenerateRandomSyncCode')?.addEventListener('click', () => {
+      const input = document.getElementById('inputSyncStoreCode');
+      if (input) {
+        const rand = 'KHO-' + Math.floor(1000 + Math.random() * 9000);
+        input.value = rand;
+      }
+    });
+
+    // Nút Đồng bộ ngay
+    document.getElementById('btnManualSyncNow')?.addEventListener('click', async () => {
+      if (!window.CloudSync || !window.CloudSync.storeCode) {
+        this.showToast('Chưa có mã kết nối cửa hàng!', 'danger');
+        return;
+      }
+      const btn = document.getElementById('btnManualSyncNow');
+      if (btn) btn.textContent = '⏳ Đang kéo...';
+      const res = await window.CloudSync.pull(true);
+      if (btn) btn.textContent = '🔄 Đồng bộ ngay';
+
+      if (res.needsKVSetup) {
+        this.showToast('Vui lòng kích hoạt Vercel KV!', 'danger');
+      } else if (res.success) {
+        this.showToast('Đã đồng bộ dữ liệu mới nhất!');
+      } else {
+        this.showToast('Lỗi: ' + (res.error || 'Thất bại'), 'danger');
+      }
+    });
+
+    // Nút Ngắt kết nối
+    document.getElementById('btnDisconnectSync')?.addEventListener('click', () => {
+      if (confirm('Bạn có chắc muốn ngắt kết nối đồng bộ đám mây trên máy này?')) {
+        if (window.CloudSync) {
+          window.CloudSync.saveStoreCode('');
+          this.showToast('Đã ngắt kết nối đồng bộ.');
+          this.closeModal('modalCloudSync');
+        }
+      }
+    });
+
+    // Nút Sao chép link chia sẻ
+    document.getElementById('btnCopySyncShareLink')?.addEventListener('click', async () => {
+      if (!window.CloudSync || !window.CloudSync.storeCode) return;
+      const shareUrl = window.CloudSync.getShareUrl();
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(shareUrl);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = shareUrl;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        this.showToast('Đã sao chép link kết nối!');
+      } catch (e) {
+        prompt('Sao chép liên kết này gửi cho nhân viên:', shareUrl);
+      }
+    });
+  },
+
+  openCloudSyncModal() {
+    const input = document.getElementById('inputSyncStoreCode');
+    const sync = window.CloudSync;
+    const currentCode = sync ? sync.storeCode : '';
+
+    if (input) {
+      input.value = currentCode || 'KHOLOC-6486';
+    }
+
+    if (sync) {
+      this.updateCloudSyncUI(sync.getStatus());
+    }
+
+    this.openModal('modalCloudSync');
+  },
+
+  updateCloudSyncUI(status) {
+    if (!status) return;
+
+    // 1. Chấm tròn trên Header
+    const dot = document.getElementById('headerSyncDot');
+    if (dot) {
+      dot.classList.toggle('active', !!status.isConnected);
+      dot.title = status.isConnected ? `Đang đồng bộ: ${status.storeCode}` : 'Chưa kết nối Cloud';
+    }
+
+    // 2. Badge trong Menu tab-more
+    const menuBadge = document.getElementById('menuSyncBadge');
+    if (menuBadge) {
+      if (status.isConnected) {
+        menuBadge.textContent = `🟢 ${status.storeCode}`;
+        menuBadge.style.background = '#dcfce7';
+        menuBadge.style.color = '#15803d';
+      } else {
+        menuBadge.textContent = 'Chưa kết nối';
+        menuBadge.style.background = '#f1f5f9';
+        menuBadge.style.color = '#64748b';
+      }
+    }
+
+    // 3. Trong modalCloudSync
+    const liveBadge = document.getElementById('syncLiveStatusBadge');
+    const btnSyncNow = document.getElementById('btnManualSyncNow');
+    const timeStatus = document.getElementById('syncTimeStatus');
+    const timeText = document.getElementById('syncLastTimeText');
+    const cardShare = document.getElementById('cardShareSyncPhone');
+    const btnDisconnect = document.getElementById('btnDisconnectSync');
+    const imgQr = document.getElementById('imgSyncQRCode');
+    const kvNotice = document.getElementById('syncKVNoticeBox');
+
+    if (kvNotice) {
+      kvNotice.style.display = status.needsKVSetup ? 'block' : 'none';
+    }
+
+    if (status.isConnected) {
+      if (liveBadge) {
+        liveBadge.textContent = status.isSyncing ? '⏳ Đang đồng bộ...' : '🟢 Đang đồng bộ tự động';
+        liveBadge.style.background = '#dcfce7';
+        liveBadge.style.color = '#15803d';
+      }
+      if (btnSyncNow) btnSyncNow.style.display = 'inline-flex';
+      if (btnDisconnect) btnDisconnect.style.display = 'inline-flex';
+      if (timeStatus) timeStatus.style.display = 'block';
+      if (timeText) {
+        timeText.textContent = status.lastSyncTime
+          ? new Date(status.lastSyncTime).toLocaleTimeString('vi-VN')
+          : 'Vừa xong';
+      }
+      if (cardShare) cardShare.style.display = 'block';
+      if (imgQr && window.CloudSync) {
+        imgQr.src = window.CloudSync.getQrCodeUrl();
+      }
+    } else {
+      if (liveBadge) {
+        liveBadge.textContent = '⚪ Chưa kết nối';
+        liveBadge.style.background = '#f1f5f9';
+        liveBadge.style.color = '#64748b';
+      }
+      if (btnSyncNow) btnSyncNow.style.display = 'none';
+      if (btnDisconnect) btnDisconnect.style.display = 'none';
+      if (timeStatus) timeStatus.style.display = 'none';
+      if (cardShare) cardShare.style.display = 'none';
+    }
   }
 };
 
 // Xuất MobileApp ra window để mọi sự kiện inline HTML và script khác đều gọi được ngay lập tức
 window.MobileApp = MobileApp;
+window.openCloudSyncModal = () => MobileApp.openCloudSyncModal();
 window.openAddProductModal = (prod = null) => MobileApp.openAddProductModal(prod);
 window.openAddSaleModal = () => MobileApp.openAddSaleModal();
 window.openAddPurchaseModal = () => MobileApp.openAddPurchaseModal();

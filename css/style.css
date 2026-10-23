@@ -1365,6 +1365,19 @@ input, textarea, select {
 .modal-theme-connect .modal-handle-bar { background: #93c5fd; }
 .modal-theme-connect .modal-title { color: #1e40af; }
 
+/* 7. Modal Sync Cloud: Bento Sky Theme */
+.modal-theme-sync .modal-header {
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+  border-bottom: 1.5px solid #e0f2fe;
+}
+.modal-theme-sync .modal-handle-bar { background: #7dd3fc; }
+.modal-theme-sync .modal-title { color: #0369a1; }
+
+.sync-status-dot.active {
+  background: #22c55e !important;
+  box-shadow: 0 0 6px #22c55e;
+}
+
 /* Unified Flat Obsidian Buttons for All Modals (Không dùng gradient lòe loẹt) */
 .btn-theme-header {
   background: #0f172a !important;

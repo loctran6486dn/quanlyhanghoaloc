@@ -102,6 +102,33 @@ class DataStore {
     this.listeners.forEach(cb => {
       try { cb(this.state); } catch (e) { console.error('Listener error:', e); }
     });
+
+    // Kích hoạt tự động đẩy dữ liệu lên Cloud nếu đang bật đồng bộ
+    if (window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
+      window.CloudSync.triggerAutoPush();
+    }
+  }
+
+  /**
+   * Lưu toàn bộ state hiện tại vào cả LocalStorage và IndexedDB sau khi đồng bộ
+   */
+  async persistAll() {
+    this.saveToLocalStorage();
+    if (!this.db) return;
+    try {
+      const stores = ['products', 'purchases', 'sales', 'cashflow'];
+      for (const s of stores) {
+        const tx = this.db.transaction([s], 'readwrite');
+        const st = tx.objectStore(s);
+        st.clear();
+        const items = this.state[s] || [];
+        for (const item of items) {
+          st.put(item);
+        }
+      }
+    } catch (e) {
+      console.warn('Lỗi ghi IndexedDB persistAll:', e);
+    }
   }
 
   /**
