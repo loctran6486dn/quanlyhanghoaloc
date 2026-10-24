@@ -771,6 +771,13 @@ const MobileApp = {
     MobileApp.openModal('modalProduct');
   },
 
+  toggleProductAccordion(id) {
+    const card = document.getElementById(`prod-card-${id}`);
+    if (card) {
+      card.classList.toggle('expanded');
+    }
+  },
+
   renderProducts() {
     const state = window.appStore.state;
     const search = (document.getElementById('mobileProductSearch')?.value || '').toLowerCase().trim();
@@ -806,61 +813,76 @@ const MobileApp = {
       const cost = Number(p.costPrice || 0);
       const sell = Number(p.sellingPrice || 0);
       const profitPerUnit = sell - cost;
+      const unit = p.unit || 'cái';
 
-      let stockBadge = '<span class="badge badge-success">Còn ' + stock + ' ' + p.unit + '</span>';
+      let stockBadge = '<span class="badge badge-success">Còn ' + stock + ' ' + unit + '</span>';
       if (stock === 0) {
         stockBadge = '<span class="badge badge-danger">Hết hàng</span>';
       } else if (stock <= minStock) {
         stockBadge = '<span class="badge badge-warning">Còn ' + stock + ' (Sắp hết)</span>';
       }
 
+      const colorsBreakdownHtml = (Array.isArray(p.colors) && p.colors.length > 0) ? `
+        <div class="prod-colors-breakdown">
+          <div style="color: #64748b; font-weight: 700; margin-bottom: 5px; font-size: 11px;">🎨 Màu sắc & tồn từng màu:</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+            ${p.colors.map(c => `
+              <span class="color-stock-pill ${c.quantity > 0 ? 'in-stock' : 'out'}">
+                ${c.name}: <strong>${c.quantity}</strong> ${c.quantity === 0 ? '<span style="font-size: 9px; opacity: 0.7;">(Hết)</span>' : ''}
+              </span>
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+
+      const notesHtml = p.notes ? `<div class="prod-notes-row">📝 ${p.notes}</div>` : '';
+
       return `
-        <div class="m-card">
-          <div class="m-card-header">
-            <div>
-              <div class="m-card-title">${p.name}</div>
-              <div class="m-card-subtitle">Mã: <code>${p.sku}</code> • ${p.category}</div>
-            </div>
-            ${stockBadge}
-          </div>
-
-          <div class="m-card-grid">
-            <div class="m-card-grid-item">
-              <span>Giá vốn:</span>
-              <strong>${Calculations.formatNumber(cost)} đ</strong>
-            </div>
-            <div class="m-card-grid-item">
-              <span>Giá bán niêm yết:</span>
-              <strong style="color: #2563eb;">${Calculations.formatNumber(sell)} đ</strong>
-            </div>
-            <div class="m-card-grid-item">
-              <span>Lãi dự kiến/cái:</span>
-              <strong style="color: #10b981;">+${Calculations.formatNumber(profitPerUnit)} đ</strong>
-            </div>
-            <div class="m-card-grid-item">
-              <span>Khối lượng:</span>
-              <strong>${p.weight || 0} kg / ${p.unit}</strong>
-            </div>
-          </div>
-
-          ${Array.isArray(p.colors) && p.colors.length > 0 ? `
-            <div style="margin: 8px 0 4px 0; padding-top: 6px; border-top: 1px dashed #e2e8f0; font-size: 12px;">
-              <div style="color: #64748b; font-weight: 600; margin-bottom: 4px;">🎨 Màu sắc & tồn từng màu:</div>
-              <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                ${p.colors.map(c => `
-                  <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ${c.quantity > 0 ? '#eff6ff' : '#f8fafc'}; color: ${c.quantity > 0 ? '#1d4ed8' : '#94a3b8'}; border: 1px solid ${c.quantity > 0 ? '#bfdbfe' : '#e2e8f0'};">
-                    ${c.name}: <strong>${c.quantity}</strong> ${c.quantity === 0 ? '<span style="font-size: 9px; opacity: 0.7;">(Hết)</span>' : ''}
-                  </span>
-                `).join('')}
+        <div class="product-accordion-card" id="prod-card-${p.id}" onclick="MobileApp.toggleProductAccordion('${p.id}')">
+          <div class="prod-compact-summary">
+            <div class="prod-summary-left">
+              <div class="prod-summary-title">${p.name}</div>
+              <div class="prod-summary-meta">
+                <span class="prod-category-tag">${p.category || 'Mặc định'}</span>
+                <span class="prod-sku-tag">#${p.sku}</span>
               </div>
             </div>
-          ` : ''}
+            <div class="prod-summary-right">
+              ${stockBadge}
+              <span class="prod-chevron-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </div>
+          </div>
 
-          <div class="m-card-footer">
-            <span style="font-size: 11px; color: #94a3b8;">${p.notes || ''}</span>
-            <div class="m-card-actions">
-              <button class="btn-flat-action" onclick="MobileApp.editProduct('${p.id}')">✏️ Sửa</button>
-              <button class="btn-icon-circle-danger" title="Xóa" onclick="MobileApp.deleteProduct('${p.id}')">🗑️</button>
+          <div class="prod-accordion-details" id="prod-details-${p.id}" onclick="event.stopPropagation()">
+            <div class="m-card-grid">
+              <div class="m-card-grid-item">
+                <span>Giá vốn:</span>
+                <strong>${Calculations.formatNumber(cost)} đ</strong>
+              </div>
+              <div class="m-card-grid-item">
+                <span>Giá bán niêm yết:</span>
+                <strong style="color: #2563eb;">${Calculations.formatNumber(sell)} đ</strong>
+              </div>
+              <div class="m-card-grid-item">
+                <span>Lãi dự kiến/cái:</span>
+                <strong style="color: #10b981;">+${Calculations.formatNumber(profitPerUnit)} đ</strong>
+              </div>
+              <div class="m-card-grid-item">
+                <span>Khối lượng:</span>
+                <strong>${p.weight || 0} kg / ${unit}</strong>
+              </div>
+            </div>
+
+            ${colorsBreakdownHtml}
+            ${notesHtml}
+
+            <div class="prod-card-actions-bar">
+              <button type="button" class="btn-flat-action" onclick="event.stopPropagation(); MobileApp.editProduct('${p.id}')">✏️ Sửa sản phẩm</button>
+              <button type="button" class="btn-flat-danger" onclick="event.stopPropagation(); MobileApp.deleteProduct('${p.id}')">🗑️ Xóa</button>
             </div>
           </div>
         </div>
@@ -2127,6 +2149,7 @@ const MobileApp = {
 
 // Xuất MobileApp ra window để mọi sự kiện inline HTML và script khác đều gọi được ngay lập tức
 window.MobileApp = MobileApp;
+window.toggleProductAccordion = (id) => MobileApp.toggleProductAccordion(id);
 window.openCloudSyncModal = () => MobileApp.openCloudSyncModal();
 window.openAddProductModal = (prod = null) => MobileApp.openAddProductModal(prod);
 window.openAddSaleModal = () => MobileApp.openAddSaleModal();
