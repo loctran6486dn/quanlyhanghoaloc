@@ -3,6 +3,42 @@
  * Lưu trữ trên Vercel KV / Upstash Redis
  */
 
+function safeParse(val) {
+  let res = val;
+  while (typeof res === 'string') {
+    try {
+      res = JSON.parse(res);
+    } catch (e) {
+      break;
+    }
+  }
+  return (res && typeof res === 'object') ? res : {};
+}
+
+function mergeListById(listA, listB, deletedSet = new Set(), dateField = 'updatedAt') {
+  const map = new Map();
+  (Array.isArray(listA) ? listA : []).forEach(item => {
+    if (item && item.id && !deletedSet.has(item.id)) {
+      map.set(item.id, item);
+    }
+  });
+  (Array.isArray(listB) ? listB : []).forEach(item => {
+    if (item && item.id && !deletedSet.has(item.id)) {
+      if (!map.has(item.id)) {
+        map.set(item.id, item);
+      } else {
+        const existing = map.get(item.id);
+        const timeA = new Date(existing[dateField] || existing.createdAt || 0).getTime();
+        const timeB = new Date(item[dateField] || item.createdAt || 0).getTime();
+        if (timeB >= timeA) {
+          map.set(item.id, item);
+        }
+      }
+    }
+  });
+  return Array.from(map.values());
+}
+
 module.exports = async function handler(req, res) {
   // Cấu hình CORS cho phép mọi thiết bị điện thoại gọi API
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -64,14 +100,7 @@ module.exports = async function handler(req, res) {
         });
       }
 
-      let storeData = json.result;
-      if (typeof storeData === 'string') {
-        try {
-          storeData = JSON.parse(storeData);
-        } catch (e) {
-          console.warn('Lỗi parse JSON storeData:', e);
-        }
-      }
+      const storeData = safeParse(json.result);
 
       return res.status(200).json({
         success: true,
@@ -82,32 +111,77 @@ module.exports = async function handler(req, res) {
 
     // ================= 2. POST: Đẩy dữ liệu từ máy lên Cloud =================
     if (req.method === 'POST') {
-      const payload = req.body;
+      let payload = req.body;
+      if (typeof payload === 'string') {
+        try { payload = JSON.parse(payload); } catch (e) {}
+      }
       if (!payload || !payload.data) {
         return res.status(400).json({ error: 'Thiếu dữ liệu cửa hàng để lưu.' });
       }
 
-      const clientData = payload.data;
+      let clientData = payload.data;
+      if (typeof clientData === 'string') {
+        try { clientData = JSON.parse(clientData); } catch (e) {}
+      }
+
       const now = Date.now();
 
+      // Đọc dữ liệu cũ từ Cloud để thực hiện Smart Merge trên Server
+      let existingData = {};
+      try {
+        const getResp = await fetch(`${KV_URL}/get/${safeKey}`, {
+          headers: { Authorization: `Bearer ${KV_TOKEN}` }
+        });
+        if (getResp.ok) {
+          const getJson = await getResp.json();
+          if (getJson && getJson.result) {
+            existingData = safeParse(getJson.result);
+          }
+        }
+      } catch (e) {
+        console.warn('Lỗi đọc dữ liệu cũ để merge:', e);
+      }
+
+      // Xử lý danh sách ID đã xóa (Tombstone)
+      const clientDeleted = clientData.deletedIds || {};
+      const existingDeleted = existingData.deletedIds || {};
+      const allDeleted = {
+        products: Array.from(new Set([...(clientDeleted.products || []), ...(existingDeleted.products || [])])),
+        sales: Array.from(new Set([...(clientDeleted.sales || []), ...(existingDeleted.sales || [])])),
+        purchases: Array.from(new Set([...(clientDeleted.purchases || []), ...(existingDeleted.purchases || [])])),
+        cashflow: Array.from(new Set([...(clientDeleted.cashflow || []), ...(existingDeleted.cashflow || [])]))
+      };
+
+      const delProds = new Set(allDeleted.products);
+      const delSales = new Set(allDeleted.sales);
+      const delPo = new Set(allDeleted.purchases);
+      const delCf = new Set(allDeleted.cashflow);
+
+      const mergedProducts = mergeListById(existingData.products, clientData.products, delProds);
+      const mergedPurchases = mergeListById(existingData.purchases, clientData.purchases, delPo);
+      const mergedSales = mergeListById(existingData.sales, clientData.sales, delSales);
+      const mergedCashflow = mergeListById(existingData.cashflow, clientData.cashflow, delCf);
+      const mergedSettings = { ...(existingData.settings || {}), ...(clientData.settings || {}) };
+
       const storeData = {
-        products: Array.isArray(clientData.products) ? clientData.products : [],
-        purchases: Array.isArray(clientData.purchases) ? clientData.purchases : [],
-        sales: Array.isArray(clientData.sales) ? clientData.sales : [],
-        cashflow: Array.isArray(clientData.cashflow) ? clientData.cashflow : [],
-        settings: clientData.settings || {},
+        products: mergedProducts,
+        purchases: mergedPurchases,
+        sales: mergedSales,
+        cashflow: mergedCashflow,
+        settings: mergedSettings,
+        deletedIds: allDeleted,
         lastUpdated: now,
         updatedBy: payload.deviceName || 'Điện thoại'
       };
 
-      // Ghi vào Vercel KV (Lưu dạng chuỗi JSON)
+      // Ghi vào Vercel KV / Upstash (Lưu chuỗi JSON chuẩn, KHÔNG double stringify)
       const resp = await fetch(`${KV_URL}/set/${safeKey}`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${KV_TOKEN}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(JSON.stringify(storeData))
+        body: JSON.stringify(storeData)
       });
 
       if (!resp.ok) {
@@ -116,6 +190,7 @@ module.exports = async function handler(req, res) {
 
       return res.status(200).json({
         success: true,
+        data: storeData,
         message: 'Đã đồng bộ lên Cloud thành công!',
         lastUpdated: now
       });
@@ -128,4 +203,4 @@ module.exports = async function handler(req, res) {
       error: 'Lỗi máy chủ khi xử lý đồng bộ: ' + err.message
     });
   }
-}
+};

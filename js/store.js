@@ -113,6 +113,27 @@ class DataStore {
     this.notify(triggerCloudPush);
   }
 
+  getDeletedIds() {
+    try {
+      return JSON.parse(localStorage.getItem('app_deleted_ids') || '{"products":[],"purchases":[],"sales":[],"cashflow":[]}');
+    } catch (e) {
+      return { products: [], purchases: [], sales: [], cashflow: [] };
+    }
+  }
+
+  recordDeletedId(type, id) {
+    if (!id) return;
+    const deleted = this.getDeletedIds();
+    if (!deleted[type]) deleted[type] = [];
+    if (!deleted[type].includes(id)) {
+      deleted[type].push(id);
+      if (deleted[type].length > 500) deleted[type] = deleted[type].slice(-500);
+      try {
+        localStorage.setItem('app_deleted_ids', JSON.stringify(deleted));
+      } catch (e) {}
+    }
+  }
+
   /**
    * Lưu toàn bộ state hiện tại vào cả LocalStorage và IndexedDB sau khi đồng bộ
    */
@@ -320,6 +341,7 @@ class DataStore {
   async deleteProduct(id) {
     await this.deleteFromStore('products', id);
     this.state.products = this.state.products.filter(p => p.id !== id);
+    this.recordDeletedId('products', id);
     this.notify();
   }
 
@@ -407,6 +429,7 @@ class DataStore {
 
     await this.deleteFromStore('purchases', id);
     this.state.purchases = this.state.purchases.filter(p => p.id !== id);
+    this.recordDeletedId('purchases', id);
     this.notify();
   }
 
@@ -514,6 +537,7 @@ class DataStore {
 
     await this.deleteFromStore('sales', id);
     this.state.sales = this.state.sales.filter(s => s.id !== id);
+    this.recordDeletedId('sales', id);
     this.notify();
   }
 
@@ -539,6 +563,7 @@ class DataStore {
   async deleteCashflow(id) {
     await this.deleteFromStore('cashflow', id);
     this.state.cashflow = this.state.cashflow.filter(c => c.id !== id);
+    this.recordDeletedId('cashflow', id);
     this.notify();
   }
 

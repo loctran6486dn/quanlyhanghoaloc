@@ -152,7 +152,7 @@ class CloudSyncManager {
       }
 
       if (resJson.success && resJson.data) {
-        const remoteData = resJson.data;
+        const remoteData = this.parseStoreData(resJson.data);
         const localState = window.appStore ? window.appStore.state : null;
 
         if (localState) {
@@ -172,6 +172,18 @@ class CloudSyncManager {
             window.appStore.notify(false);
           } else if (typeof window.appStore.notifyListeners === 'function') {
             window.appStore.notifyListeners(false);
+          }
+
+          // Kiểm tra xem máy này có mặt hàng/đơn hàng nào chưa có trên Cloud hay không
+          // Nếu có -> Tự động đẩy lên Cloud ngay để các máy khác cùng nhận được
+          const localContributedNew = (localState.products || []).some(p => !(remoteData.products || []).some(rp => rp.id === p.id))
+            || (localState.sales || []).some(s => !(remoteData.sales || []).some(rs => rs.id === s.id))
+            || (localState.purchases || []).some(pu => !(remoteData.purchases || []).some(rpu => rpu.id === pu.id))
+            || (localState.cashflow || []).some(c => !(remoteData.cashflow || []).some(rc => rc.id === c.id));
+
+          if (localContributedNew) {
+            console.log('Phát hiện dữ liệu nội bộ mới hơn Cloud, tự động đồng bộ ngược lên...');
+            this.triggerAutoPush();
           }
         }
 
@@ -220,7 +232,8 @@ class CloudSyncManager {
           purchases: window.appStore.state.purchases || [],
           sales: window.appStore.state.sales || [],
           cashflow: window.appStore.state.cashflow || [],
-          settings: window.appStore.state.settings || {}
+          settings: window.appStore.state.settings || {},
+          deletedIds: window.appStore.getDeletedIds ? window.appStore.getDeletedIds() : {}
         }
       };
 
@@ -237,6 +250,21 @@ class CloudSyncManager {
         this.needsKVSetup = false;
         this.lastSyncTime = Date.now();
         this.lastError = null;
+
+        // Nếu server trả về dữ liệu đã trộn (merged data), nạp ngay vào máy
+        if (resJson.data) {
+          const serverData = this.parseStoreData(resJson.data);
+          if (serverData && Array.isArray(serverData.products)) {
+            const mergedWithServer = this.smartMerge(window.appStore.state, serverData);
+            window.appStore.state = mergedWithServer;
+            if (typeof window.appStore.persistAll === 'function') {
+              await window.appStore.persistAll();
+            }
+            if (typeof window.appStore.notify === 'function') {
+              window.appStore.notify(false);
+            }
+          }
+        }
       } else {
         throw new Error(resJson.error || 'Lỗi lưu dữ liệu');
       }
@@ -249,32 +277,55 @@ class CloudSyncManager {
     }
   }
 
+  parseStoreData(data) {
+    let res = data;
+    while (typeof res === 'string') {
+      try {
+        res = JSON.parse(res);
+      } catch (e) {
+        break;
+      }
+    }
+    return (res && typeof res === 'object') ? res : {};
+  }
+
   /**
    * Trộn dữ liệu thông minh (Smart Merge):
    * Kết hợp dữ liệu từ cả 2 điện thoại mà KHÔNG BAO GIỜ làm mất đơn hàng hay sản phẩm của nhau
    */
   smartMerge(local, remote) {
+    const safeLocal = this.parseStoreData(local);
+    const safeRemote = this.parseStoreData(remote);
+
     const result = {
       products: [],
       purchases: [],
       sales: [],
       cashflow: [],
-      settings: local.settings || remote.settings || {}
+      settings: safeLocal.settings || safeRemote.settings || {}
     };
+
+    const del = (window.appStore && typeof window.appStore.getDeletedIds === 'function')
+      ? window.appStore.getDeletedIds()
+      : {};
+    const delProds = new Set(del.products || []);
+    const delSales = new Set(del.sales || []);
+    const delPo = new Set(del.purchases || []);
+    const delCf = new Set(del.cashflow || []);
 
     // 1. Trộn sản phẩm (Ghép theo ID, ưu tiên bản ghi có thời gian cập nhật mới hơn)
     const prodMap = new Map();
-    (local.products || []).forEach(p => {
-      if (p && p.id) prodMap.set(p.id, p);
+    (safeLocal.products || []).forEach(p => {
+      if (p && p.id && !delProds.has(p.id)) prodMap.set(p.id, p);
     });
-    (remote.products || []).forEach(p => {
-      if (p && p.id) {
+    (safeRemote.products || []).forEach(p => {
+      if (p && p.id && !delProds.has(p.id)) {
         if (!prodMap.has(p.id)) {
           prodMap.set(p.id, p);
         } else {
           const existing = prodMap.get(p.id);
-          const localTime = existing.updatedAt || existing.createdAt || 0;
-          const remoteTime = p.updatedAt || p.createdAt || 0;
+          const localTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+          const remoteTime = new Date(p.updatedAt || p.createdAt || 0).getTime();
           if (remoteTime >= localTime) {
             prodMap.set(p.id, p);
           }
@@ -285,8 +336,8 @@ class CloudSyncManager {
 
     // 2. Trộn lịch sử bán hàng (Hợp nhất theo mã đơn ID, giữ đủ đơn của cả 2 máy)
     const salesMap = new Map();
-    (local.sales || []).forEach(s => { if (s && s.id) salesMap.set(s.id, s); });
-    (remote.sales || []).forEach(s => { if (s && s.id) salesMap.set(s.id, s); });
+    (safeLocal.sales || []).forEach(s => { if (s && s.id && !delSales.has(s.id)) salesMap.set(s.id, s); });
+    (safeRemote.sales || []).forEach(s => { if (s && s.id && !delSales.has(s.id)) salesMap.set(s.id, s); });
     result.sales = Array.from(salesMap.values()).sort((a, b) => {
       const dateA = new Date(a.date || a.createdAt || 0).getTime();
       const dateB = new Date(b.date || b.createdAt || 0).getTime();
@@ -295,8 +346,8 @@ class CloudSyncManager {
 
     // 3. Trộn lịch sử nhập hàng (Hợp nhất theo ID)
     const poMap = new Map();
-    (local.purchases || []).forEach(po => { if (po && po.id) poMap.set(po.id, po); });
-    (remote.purchases || []).forEach(po => { if (po && po.id) poMap.set(po.id, po); });
+    (safeLocal.purchases || []).forEach(po => { if (po && po.id && !delPo.has(po.id)) poMap.set(po.id, po); });
+    (safeRemote.purchases || []).forEach(po => { if (po && po.id && !delPo.has(po.id)) poMap.set(po.id, po); });
     result.purchases = Array.from(poMap.values()).sort((a, b) => {
       const dateA = new Date(a.date || a.createdAt || 0).getTime();
       const dateB = new Date(b.date || b.createdAt || 0).getTime();
@@ -305,8 +356,8 @@ class CloudSyncManager {
 
     // 4. Trộn sổ quỹ thu chi (Hợp nhất theo ID)
     const cfMap = new Map();
-    (local.cashflow || []).forEach(cf => { if (cf && cf.id) cfMap.set(cf.id, cf); });
-    (remote.cashflow || []).forEach(cf => { if (cf && cf.id) cfMap.set(cf.id, cf); });
+    (safeLocal.cashflow || []).forEach(cf => { if (cf && cf.id && !delCf.has(cf.id)) cfMap.set(cf.id, cf); });
+    (safeRemote.cashflow || []).forEach(cf => { if (cf && cf.id && !delCf.has(cf.id)) cfMap.set(cf.id, cf); });
     result.cashflow = Array.from(cfMap.values()).sort((a, b) => {
       const dateA = new Date(a.date || a.createdAt || 0).getTime();
       const dateB = new Date(b.date || b.createdAt || 0).getTime();
@@ -314,8 +365,8 @@ class CloudSyncManager {
     });
 
     // 5. Cài đặt cửa hàng
-    if (remote.settings && Object.keys(remote.settings).length > 0) {
-      result.settings = { ...local.settings, ...remote.settings };
+    if (safeRemote.settings && Object.keys(safeRemote.settings).length > 0) {
+      result.settings = { ...safeLocal.settings, ...safeRemote.settings };
     }
 
     return result;
