@@ -174,12 +174,19 @@ class CloudSyncManager {
             window.appStore.notifyListeners(false);
           }
 
-          // Kiểm tra xem máy này có mặt hàng/đơn hàng nào chưa có trên Cloud hay không
-          // Nếu có -> Tự động đẩy lên Cloud ngay để các máy khác cùng nhận được
-          const localContributedNew = (localState.products || []).some(p => !(remoteData.products || []).some(rp => rp.id === p.id))
-            || (localState.sales || []).some(s => !(remoteData.sales || []).some(rs => rs.id === s.id))
-            || (localState.purchases || []).some(pu => !(remoteData.purchases || []).some(rpu => rpu.id === pu.id))
-            || (localState.cashflow || []).some(c => !(remoteData.cashflow || []).some(rc => rc.id === c.id));
+          // Kiểm tra xem máy này có mặt hàng/đơn hàng hợp lệ nào chưa có trên Cloud hay không
+          const del = (window.appStore && typeof window.appStore.getDeletedIds === 'function')
+            ? window.appStore.getDeletedIds()
+            : {};
+          const delProds = new Set(del.products || []);
+          const delSales = new Set(del.sales || []);
+          const delPo = new Set(del.purchases || []);
+          const delCf = new Set(del.cashflow || []);
+
+          const localContributedNew = (localState.products || []).some(p => !delProds.has(p.id) && !(remoteData.products || []).some(rp => rp.id === p.id))
+            || (localState.sales || []).some(s => !delSales.has(s.id) && !(remoteData.sales || []).some(rs => rs.id === s.id))
+            || (localState.purchases || []).some(pu => !delPo.has(pu.id) && !(remoteData.purchases || []).some(rpu => rpu.id === pu.id))
+            || (localState.cashflow || []).some(c => !delCf.has(c.id) && !(remoteData.cashflow || []).some(rc => rc.id === c.id));
 
           if (localContributedNew) {
             console.log('Phát hiện dữ liệu nội bộ mới hơn Cloud, tự động đồng bộ ngược lên...');
@@ -277,6 +284,49 @@ class CloudSyncManager {
     }
   }
 
+  /**
+   * Đồng bộ yêu cầu reset toàn bộ giao dịch lên Cloud
+   */
+  async resetTransactionsOnCloud() {
+    if (!this.storeCode || !navigator.onLine || !window.appStore) return;
+
+    this.isSyncing = true;
+    this.notifyListeners();
+
+    try {
+      const payload = {
+        storeCode: this.storeCode,
+        resetTransactions: true,
+        deviceName: navigator.userAgent.includes('iPhone') ? 'iPhone' : 'Điện thoại',
+        data: {
+          products: window.appStore.state.products || [],
+          purchases: [],
+          sales: [],
+          cashflow: [],
+          settings: window.appStore.state.settings || {},
+          deletedIds: window.appStore.getDeletedIds ? window.appStore.getDeletedIds() : {}
+        }
+      };
+
+      const resp = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const resJson = await resp.json();
+      if (resJson.success) {
+        this.lastSyncTime = Date.now();
+        this.lastError = null;
+      }
+    } catch (err) {
+      console.warn('Lỗi gửi reset lên Cloud:', err);
+    } finally {
+      this.isSyncing = false;
+      this.notifyListeners();
+    }
+  }
+
   parseStoreData(data) {
     let res = data;
     while (typeof res === 'string') {
@@ -308,10 +358,11 @@ class CloudSyncManager {
     const del = (window.appStore && typeof window.appStore.getDeletedIds === 'function')
       ? window.appStore.getDeletedIds()
       : {};
-    const delProds = new Set(del.products || []);
-    const delSales = new Set(del.sales || []);
-    const delPo = new Set(del.purchases || []);
-    const delCf = new Set(del.cashflow || []);
+    const remoteDel = safeRemote.deletedIds || {};
+    const delProds = new Set([...(del.products || []), ...(remoteDel.products || [])]);
+    const delSales = new Set([...(del.sales || []), ...(remoteDel.sales || [])]);
+    const delPo = new Set([...(del.purchases || []), ...(remoteDel.purchases || [])]);
+    const delCf = new Set([...(del.cashflow || []), ...(remoteDel.cashflow || [])]);
 
     // 1. Trộn sản phẩm (Ghép theo ID, ưu tiên bản ghi có thời gian cập nhật mới hơn)
     const prodMap = new Map();

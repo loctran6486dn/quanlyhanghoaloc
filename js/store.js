@@ -182,12 +182,18 @@ class DataStore {
       }
 
       // Tự động dọn sạch các giao dịch thử nghiệm cũ 1 lần duy nhất để người dùng bắt đầu làm việc thực tế
-      if (!localStorage.getItem('app_metrics_reset_clean_20261024')) {
-        localStorage.setItem('app_metrics_reset_clean_20261024', 'true');
+      if (!localStorage.getItem('app_metrics_reset_cloud_v3')) {
+        localStorage.setItem('app_metrics_reset_cloud_v3', 'true');
+        (this.state.sales || []).forEach(s => s && s.id && this.recordDeletedId('sales', s.id));
+        (this.state.purchases || []).forEach(p => p && p.id && this.recordDeletedId('purchases', p.id));
+        (this.state.cashflow || []).forEach(c => c && c.id && this.recordDeletedId('cashflow', c.id));
         this.state.sales = [];
         this.state.purchases = [];
         this.state.cashflow = [];
         await this.persistAll();
+        if (window.CloudSync && typeof window.CloudSync.resetTransactionsOnCloud === 'function') {
+          setTimeout(() => window.CloudSync.resetTransactionsOnCloud(), 600);
+        }
       }
 
       // Nếu lần đầu hoàn toàn trống, kiểm tra xem có trong LocalStorage không
@@ -914,13 +920,16 @@ class DataStore {
    * Đặt lại toàn bộ chỉ số tài chính & giao dịch về 0 (xóa sạch sales, purchases, cashflow, giữ nguyên danh mục hàng hóa trong kho)
    */
   async resetTransactions(shouldNotify = true) {
+    (this.state.sales || []).forEach(s => s && s.id && this.recordDeletedId('sales', s.id));
+    (this.state.purchases || []).forEach(p => p && p.id && this.recordDeletedId('purchases', p.id));
+    (this.state.cashflow || []).forEach(c => c && c.id && this.recordDeletedId('cashflow', c.id));
     this.state.sales = [];
     this.state.purchases = [];
     this.state.cashflow = [];
     await this.persistAll();
     if (shouldNotify) this.notify();
-    if (window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
-      window.CloudSync.triggerAutoPush();
+    if (window.CloudSync && typeof window.CloudSync.resetTransactionsOnCloud === 'function') {
+      await window.CloudSync.resetTransactionsOnCloud();
     }
   }
 

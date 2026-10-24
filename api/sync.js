@@ -152,6 +152,24 @@ module.exports = async function handler(req, res) {
         cashflow: Array.from(new Set([...(clientDeleted.cashflow || []), ...(existingDeleted.cashflow || [])]))
       };
 
+      // Nếu yêu cầu reset các giao dịch về 0 để bắt đầu kinh doanh thực tế
+      const isResetTransactions = !!(payload.resetTransactions || clientData.resetTransactions);
+      if (isResetTransactions) {
+        (existingData.sales || []).forEach(s => s && s.id && allDeleted.sales.push(s.id));
+        (existingData.purchases || []).forEach(p => p && p.id && allDeleted.purchases.push(p.id));
+        (existingData.cashflow || []).forEach(c => c && c.id && allDeleted.cashflow.push(c.id));
+        (clientData.sales || []).forEach(s => s && s.id && allDeleted.sales.push(s.id));
+        (clientData.purchases || []).forEach(p => p && p.id && allDeleted.purchases.push(p.id));
+        (clientData.cashflow || []).forEach(c => c && c.id && allDeleted.cashflow.push(c.id));
+
+        existingData.sales = [];
+        clientData.sales = [];
+        existingData.purchases = [];
+        clientData.purchases = [];
+        existingData.cashflow = [];
+        clientData.cashflow = [];
+      }
+
       const delProds = new Set(allDeleted.products);
       const delSales = new Set(allDeleted.sales);
       const delPo = new Set(allDeleted.purchases);
