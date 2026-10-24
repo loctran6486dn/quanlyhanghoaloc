@@ -98,15 +98,19 @@ class DataStore {
     return () => this.listeners.delete(callback);
   }
 
-  notify() {
+  notify(triggerCloudPush = true) {
     this.listeners.forEach(cb => {
       try { cb(this.state); } catch (e) { console.error('Listener error:', e); }
     });
 
     // Kích hoạt tự động đẩy dữ liệu lên Cloud nếu đang bật đồng bộ
-    if (window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
+    if (triggerCloudPush && window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
       window.CloudSync.triggerAutoPush();
     }
+  }
+
+  notifyListeners(triggerCloudPush = false) {
+    this.notify(triggerCloudPush);
   }
 
   /**

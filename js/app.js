@@ -31,6 +31,7 @@ const MobileApp = {
 
     // Tự động re-render khi DataStore thay đổi
     window.appStore.subscribe(() => {
+      this.loadStoreSettings();
       this.renderCurrentView();
     });
 

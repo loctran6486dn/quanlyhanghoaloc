@@ -167,8 +167,12 @@ class CloudSyncManager {
             window.appStore.saveToLocalStorage();
           }
 
-          // Thông báo cho toàn bộ giao diện re-render
-          window.appStore.notifyListeners();
+          // Thông báo cho toàn bộ giao diện re-render (truyền false để không đẩy ngược lên Cloud)
+          if (typeof window.appStore.notify === 'function') {
+            window.appStore.notify(false);
+          } else if (typeof window.appStore.notifyListeners === 'function') {
+            window.appStore.notifyListeners(false);
+          }
         }
 
         this.lastSyncTime = Date.now();
