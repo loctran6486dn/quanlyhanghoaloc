@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=3.4">
+  <link rel="stylesheet" href="css/style.css?v=3.5">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -252,15 +252,6 @@
         <div class="cards-list" id="dashboardLowStockList">
           <!-- Render động qua JS -->
         </div>
-
-        <!-- ĐƠN HÀNG GẦN ĐÂY -->
-        <div class="section-title-bar" style="margin-top: 20px;">
-          <div class="section-title">⚡ Đơn Bán Mới Nhất</div>
-          <button type="button" class="btn-white-pill" id="btnDashViewSales">Xem tất cả</button>
-        </div>
-        <div class="cards-list" id="dashboardRecentSalesList">
-          <!-- Render động qua JS -->
-        </div>
       </section>
 
       <!-- ================= TAB 2: HÀNG HÓA & TỒN KHO ================= -->
@@ -297,19 +288,33 @@
         </div>
       </section>
 
-      <!-- ================= TAB 4: BÁN HÀNG ================= -->
+      <!-- ================= TAB 4: QUẢN LÝ (ĐƠN BÁN & LỊCH SỬ MUA BÁN) ================= -->
       <section id="tab-sales" class="tab-panel">
         <div class="search-header-row">
           <input type="text" id="mobileSalesSearch" class="form-control" placeholder="🔍 Tìm mã đơn, tên khách, SĐT..." style="border-radius: 14px;">
           <button type="button" class="btn-dark-pill" id="btnMobileAddSale" onclick="if(window.MobileApp){MobileApp.openAddSaleModal(event);}else if(window.openAddSaleModal){window.openAddSaleModal(event);}" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
         </div>
 
-        <!-- Lọc trạng thái thanh toán -->
-        <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none;">
-          <button type="button" class="pill-item active sale-pay-pill" data-pay="all">Tất cả</button>
-          <button type="button" class="pill-item sale-pay-pill" data-pay="paid">Đã thanh toán</button>
-          <button type="button" class="pill-item sale-pay-pill" data-pay="partial">Thu một phần</button>
-          <button type="button" class="pill-item sale-pay-pill" data-pay="unpaid">Chưa thu (Nợ)</button>
+        <!-- Segmented 2 Sub-tabs: Đơn bán & Lịch sử mua bán -->
+        <div class="manage-subtabs-dock">
+          <button type="button" class="manage-subtab-btn active" id="btnSubtabSales" onclick="MobileApp.switchManageSubTab('active')">
+            <span>⚡ Đơn Bán</span>
+            <span class="subtab-badge badge-active-tab" id="badgeActiveSalesCount">0</span>
+          </button>
+          <button type="button" class="manage-subtab-btn" id="btnSubtabHistory" onclick="MobileApp.switchManageSubTab('history')">
+            <span>📜 Lịch Sử Mua Bán</span>
+            <span class="subtab-badge badge-history-tab" id="badgeHistorySalesCount">0</span>
+          </button>
+        </div>
+
+        <!-- Thanh lọc phụ & xuất file -->
+        <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none; align-items: center;">
+          <div id="wrapPaymentFilterPills" style="display: flex; gap: 6px;">
+            <button type="button" class="pill-item active sale-pay-pill" data-pay="all">Tất cả</button>
+            <button type="button" class="pill-item sale-pay-pill" data-pay="unpaid">Chưa thu</button>
+            <button type="button" class="pill-item sale-pay-pill" data-pay="partial">Đã cọc</button>
+            <button type="button" class="pill-item sale-pay-pill" data-pay="paid">Đã thu đủ</button>
+          </div>
           <button type="button" class="btn-white-pill" id="btnMobileExportSales" style="margin-left: auto;">📊 Excel</button>
         </div>
 
@@ -320,6 +325,11 @@
 
       <!-- ================= TAB 5: MENU THÊM / CÀI ĐẶT / SỔ QUỸ ================= -->
       <section id="tab-more" class="tab-panel">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+          <div style="font-size: 16px; font-weight: 800; color: #0f172a;">⚙️ Cài Đặt & Tiện Ích</div>
+          <button type="button" class="btn-white-pill" onclick="MobileApp.switchTab('dashboard')">✕ Đóng</button>
+        </div>
+
         <!-- MENU TIỆN ÍCH CHÍNH -->
         <div class="menu-list">
           <!-- Sổ quỹ thu chi -->
@@ -574,16 +584,19 @@
         <span>Nhập hàng</span>
       </button>
 
-      <!-- Tab 5: Menu Thêm / Cài đặt -->
-      <button type="button" class="nav-tab-btn" data-tab="more">
+      <!-- Tab 5: Quản Lý -->
+      <button type="button" class="nav-tab-btn" data-tab="sales">
         <span class="tab-icon">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" x2="20" y1="12" y2="12"/>
-            <line x1="4" x2="20" y1="6" y2="6"/>
-            <line x1="4" x2="20" y1="18" y2="18"/>
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+            <path d="M9 14h6"/>
+            <path d="M9 18h6"/>
+            <path d="M9 10h6"/>
           </svg>
         </span>
-        <span>Menu</span>
+        <span>Quản lý</span>
+        <span class="nav-tab-badge" id="mobileSalesBadge" style="display: none;">0</span>
       </button>
     </nav>
 
@@ -603,6 +616,7 @@
         </div>
       </div>
       <form id="formSale">
+        <input type="hidden" id="saleEditId" value="">
         <div class="modal-body">
           <!-- BENTO CARD 1: THÔNG TIN KHÁCH HÀNG & KÊNH BÁN -->
           <div class="bento-modal-card bento-modal-card-rose">
@@ -1237,11 +1251,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=3.4"></script>
-  <script src="js/cloud-sync.js?v=3.4"></script>
-  <script src="js/store.js?v=3.4"></script>
-  <script src="js/export.js?v=3.4"></script>
-  <script src="js/charts.js?v=3.4"></script>
-  <script src="js/app.js?v=3.4"></script>
+  <script src="js/calculations.js?v=3.5"></script>
+  <script src="js/cloud-sync.js?v=3.5"></script>
+  <script src="js/store.js?v=3.5"></script>
+  <script src="js/export.js?v=3.5"></script>
+  <script src="js/charts.js?v=3.5"></script>
+  <script src="js/app.js?v=3.5"></script>
 </body>
 </html>

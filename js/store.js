@@ -491,6 +491,7 @@ class DataStore {
       grossMargin: financials.grossMargin,
       paymentStatus: saleData.paymentStatus || 'paid', // 'paid', 'unpaid', 'partial'
       paidAmount: saleData.paymentStatus === 'paid' ? financials.totalCustomerPayment : Number(saleData.paidAmount || 0),
+      status: saleData.status || 'pending', // 'pending' (Đơn bán đang xử lý), 'completed' (Đã hoàn thành)
       notes: saleData.notes || '',
       createdAt: new Date().toISOString()
     };
@@ -528,6 +529,107 @@ class DataStore {
     await this.putToStore('sales', sale);
     this.notify();
     return sale;
+  }
+
+  async updateSaleStatus(id, status = 'completed', paymentStatus = 'paid', paidAmount = null) {
+    const sale = this.state.sales.find(s => s.id === id);
+    if (!sale) return;
+
+    sale.status = status;
+    if (paymentStatus) sale.paymentStatus = paymentStatus;
+    if (paidAmount !== null) sale.paidAmount = Number(paidAmount);
+    else if (paymentStatus === 'paid') sale.paidAmount = sale.totalAmount;
+    sale.updatedAt = new Date().toISOString();
+
+    await this.putToStore('sales', sale);
+    this.notify();
+    return sale;
+  }
+
+  async updateSale(id, saleData) {
+    const oldSale = this.state.sales.find(s => s.id === id);
+    if (!oldSale) return;
+
+    // 1. Hoàn lại tồn kho theo đơn cũ
+    for (const it of oldSale.items || []) {
+      const prod = this.getProductById(it.productId);
+      if (prod) {
+        prod.stock = Number(prod.stock || 0) + Number(it.quantity || 0);
+        if (it.color && Array.isArray(prod.colors)) {
+          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
+          if (colorObj) colorObj.quantity = Number(colorObj.quantity || 0) + Number(it.quantity || 0);
+        }
+        prod.updatedAt = new Date().toISOString();
+        await this.putToStore('products', prod);
+      }
+    }
+
+    // 2. Tính toán lại theo dữ liệu mới
+    const enrichedItems = (saleData.items || []).map(item => {
+      const prod = this.getProductById(item.productId);
+      const costPrice = item.costPrice !== undefined ? Number(item.costPrice) : (prod ? Number(prod.costPrice || 0) : 0);
+      const sellingPrice = Number(item.sellingPrice || (prod ? prod.sellingPrice : 0));
+      return {
+        productId: item.productId,
+        productName: item.productName || (prod ? prod.name : 'Sản phẩm'),
+        sku: prod ? prod.sku : '',
+        color: (item.color || '').trim(),
+        quantity: Number(item.quantity || 1),
+        sellingPrice,
+        costPrice
+      };
+    });
+
+    const financials = Calculations.calculateOrderProfit(
+      enrichedItems,
+      saleData.discount,
+      saleData.shippingFee,
+      saleData.shippingPayer || 'customer'
+    );
+
+    // 3. Trừ tồn kho theo dữ liệu mới
+    for (const it of enrichedItems) {
+      const prod = this.getProductById(it.productId);
+      if (prod) {
+        prod.stock = Math.max(0, Number(prod.stock || 0) - Number(it.quantity || 0));
+        if (it.color && Array.isArray(prod.colors)) {
+          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
+          if (colorObj) {
+            colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
+          }
+        }
+        prod.updatedAt = new Date().toISOString();
+        await this.putToStore('products', prod);
+      }
+    }
+
+    const updatedSale = {
+      ...oldSale,
+      date: saleData.date || oldSale.date,
+      customerName: (saleData.customerName || 'Khách lẻ').trim(),
+      customerPhone: (saleData.customerPhone || '').trim(),
+      channel: saleData.channel || oldSale.channel,
+      items: enrichedItems,
+      discount: financials.discount,
+      shippingFee: financials.shippingFee,
+      shippingPayer: financials.shippingPayer,
+      totalAmount: financials.totalCustomerPayment,
+      totalCOGS: financials.totalCOGS,
+      grossProfit: financials.grossProfit,
+      grossMargin: financials.grossMargin,
+      paymentStatus: saleData.paymentStatus || oldSale.paymentStatus,
+      paidAmount: saleData.paymentStatus === 'paid' ? financials.totalCustomerPayment : Number(saleData.paidAmount || 0),
+      status: saleData.status !== undefined ? saleData.status : (oldSale.status || 'pending'),
+      notes: saleData.notes !== undefined ? saleData.notes : oldSale.notes,
+      updatedAt: new Date().toISOString()
+    };
+
+    const idx = this.state.sales.findIndex(s => s.id === id);
+    if (idx >= 0) this.state.sales[idx] = updatedSale;
+
+    await this.putToStore('sales', updatedSale);
+    this.notify();
+    return updatedSale;
   }
 
   async deleteSale(id) {

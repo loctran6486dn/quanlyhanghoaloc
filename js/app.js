@@ -8,6 +8,7 @@ const MobileApp = {
   dateFilter: { startDate: '', endDate: '' },
   productStockFilter: 'all',
   salesPaymentFilter: 'all',
+  manageSubTab: 'active',
 
   init() {
     this.setupDatePillFilters();
@@ -156,8 +157,24 @@ const MobileApp = {
     this.renderCurrentView();
   },
 
+  switchManageSubTab(subTab) {
+    this.manageSubTab = subTab;
+    const btnActive = document.getElementById('btnSubtabSales');
+    const btnHistory = document.getElementById('btnSubtabHistory');
+    if (btnActive) btnActive.classList.toggle('active', subTab === 'active');
+    if (btnHistory) btnHistory.classList.toggle('active', subTab === 'history');
+
+    const wrapPills = document.getElementById('wrapPaymentFilterPills');
+    if (wrapPills) {
+      wrapPills.style.display = subTab === 'active' ? 'flex' : 'none';
+    }
+
+    this.renderSales();
+  },
+
   renderCurrentView() {
     this.updateLowStockBadge();
+    this.updatePendingSalesBadge();
     switch (this.activeTab) {
       case 'dashboard':
         this.renderDashboard();
@@ -202,6 +219,19 @@ const MobileApp = {
         alertBadge.style.display = 'inline-block';
       } else {
         alertBadge.style.display = 'none';
+      }
+    }
+  },
+
+  updatePendingSalesBadge() {
+    const activeSalesCount = (window.appStore?.state?.sales || []).filter(s => s.status !== 'completed').length;
+    const badge = document.getElementById('mobileSalesBadge');
+    if (badge) {
+      if (activeSalesCount > 0) {
+        badge.textContent = activeSalesCount;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
       }
     }
   },
@@ -399,35 +429,6 @@ const MobileApp = {
             </div>
           `;
         }).join('');
-      }
-    }
-
-    // Đơn hàng gần đây dạng Cards
-    const recentSalesContainer = document.getElementById('dashboardRecentSalesList');
-    if (recentSalesContainer) {
-      const recent = state.sales.slice(0, 4);
-      if (recent.length === 0) {
-        recentSalesContainer.innerHTML = `
-          <div style="background: #fff; padding: 14px; border-radius: 12px; text-align: center; color: #94a3b8; font-size: 13px; border: 1px solid #e2e8f0;">
-            Chưa có đơn bán hàng nào phát sinh
-          </div>
-        `;
-      } else {
-        recentSalesContainer.innerHTML = recent.map(s => `
-          <div class="m-card" onclick="MobileApp.printSaleInvoice('${s.id}')">
-            <div class="m-card-header">
-              <div>
-                <div class="m-card-title">${s.customerName}</div>
-                <div class="m-card-subtitle">${s.code} • ${Calculations.formatDate(s.date)} (${s.channel})</div>
-              </div>
-              <span class="badge badge-success">+${Calculations.formatNumber(s.grossProfit)} đ lãi</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 13px;">
-              <span style="color: #64748b;">Tổng bill:</span>
-              <strong style="font-size: 15px; color: #0f172a;">${Calculations.formatCurrency(s.totalAmount)}</strong>
-            </div>
-          </div>
-        `).join('');
       }
     }
   },
@@ -1321,7 +1322,7 @@ const MobileApp = {
       }
     });
 
-    // Form submit bán hàng
+    // Form submit bán hàng (Tạo mới hoặc Cập nhật đơn)
     document.getElementById('formSale')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const rows = document.querySelectorAll('#saleItemsContainer .mobile-item-row');
@@ -1329,6 +1330,9 @@ const MobileApp = {
         alert('Vui lòng chọn ít nhất 1 sản phẩm bán.');
         return;
       }
+
+      const editId = (document.getElementById('saleEditId')?.value || '').trim();
+      const oldSale = editId ? window.appStore.state.sales.find(s => s.id === editId) : null;
 
       const items = [];
       let isValid = true;
@@ -1349,7 +1353,15 @@ const MobileApp = {
           isValid = false;
         } else {
           const prod = window.appStore.getProductById(productId);
-          if (prod && quantity > Number(prod.stock || 0)) {
+          let availableStock = prod ? Number(prod.stock || 0) : 0;
+          if (oldSale && Array.isArray(oldSale.items)) {
+            const oldItem = oldSale.items.find(it => it.productId === productId && (it.color || '').trim().toLowerCase() === color.toLowerCase());
+            if (oldItem) {
+              availableStock += Number(oldItem.quantity || 0);
+            }
+          }
+
+          if (prod && quantity > availableStock) {
             outOfStockWarning = true;
           }
           items.push({
@@ -1370,7 +1382,7 @@ const MobileApp = {
       }
 
       if (outOfStockWarning) {
-        if (!confirm('Số lượng bán vượt quá tồn kho hiện có. Bạn có chắc muốn tạo đơn?')) {
+        if (!confirm('Số lượng bán vượt quá tồn kho hiện có. Bạn có chắc muốn tiếp tục lưu đơn?')) {
           return;
         }
       }
@@ -1386,7 +1398,7 @@ const MobileApp = {
       const shippingPayer = document.getElementById('saleShippingPayer').value;
       const notes = document.getElementById('saleNotes').value.trim();
 
-      await window.appStore.createSale({
+      const salePayload = {
         date,
         customerName,
         customerPhone,
@@ -1398,14 +1410,21 @@ const MobileApp = {
         shippingPayer,
         items,
         notes
-      });
+      };
 
-      this.closeModal('modalSale');
-      this.showToast('Đã lưu đơn bán và trừ tồn kho!');
+      if (editId) {
+        await window.appStore.updateSale(editId, salePayload);
+        this.closeModal('modalSale');
+        this.showToast('Đã cập nhật đơn hàng thành công!');
+      } else {
+        await window.appStore.createSale(salePayload);
+        this.closeModal('modalSale');
+        this.showToast('Đã lưu đơn bán và trừ tồn kho!');
+      }
     });
   },
 
-  openAddSaleModal() {
+  openAddSaleModal(sale = null) {
     try {
       if (!window.appStore.state.products || window.appStore.state.products.length === 0) {
         alert('Kho chưa có sản phẩm nào. Vui lòng thêm sản phẩm trước khi tạo đơn bán.');
@@ -1418,33 +1437,72 @@ const MobileApp = {
         if (el) el.value = val;
       };
 
-      setVal('saleDate', new Date().toISOString().slice(0, 10));
-      setVal('saleCustomerName', 'Khách lẻ');
-      setVal('saleCustomerPhone', '');
-      setVal('saleChannel', 'Trực tiếp');
-      setVal('salePaymentStatus', 'paid');
-      const divPaid = document.getElementById('divPaidAmount');
-      if (divPaid) divPaid.style.display = 'none';
-      setVal('salePaidAmount', 0);
-      setVal('saleDiscount', 0);
-      setVal('saleShippingFee', 0);
-      setVal('saleShippingPayer', window.appStore.state.settings?.defaultShippingPayer || 'customer');
-      setVal('saleNotes', '');
+      const titleEl = document.querySelector('#modalSale .modal-title');
+      const editInput = document.getElementById('saleEditId');
 
-      const container = document.getElementById('saleItemsContainer');
-      if (container) {
-        container.innerHTML = '';
-        this.addSaleRow();
+      if (sale && sale.id) {
+        if (editInput) editInput.value = sale.id;
+        if (titleEl) titleEl.textContent = `✏️ Sửa Đơn Bán (${sale.code})`;
+
+        setVal('saleDate', sale.date ? sale.date.slice(0, 10) : new Date().toISOString().slice(0, 10));
+        setVal('saleCustomerName', sale.customerName || 'Khách lẻ');
+        setVal('saleCustomerPhone', sale.customerPhone || '');
+        setVal('saleChannel', sale.channel || 'Trực tiếp');
+        setVal('salePaymentStatus', sale.paymentStatus || 'paid');
+
+        const divPaid = document.getElementById('divPaidAmount');
+        if (divPaid) divPaid.style.display = sale.paymentStatus === 'partial' ? 'block' : 'none';
+        setVal('salePaidAmount', sale.paidAmount || 0);
+        setVal('saleDiscount', sale.discount || 0);
+        setVal('saleShippingFee', sale.shippingFee || 0);
+        setVal('saleShippingPayer', sale.shippingPayer || 'customer');
+        setVal('saleNotes', sale.notes || '');
+
+        const container = document.getElementById('saleItemsContainer');
+        if (container) {
+          container.innerHTML = '';
+          if (Array.isArray(sale.items) && sale.items.length > 0) {
+            sale.items.forEach(it => this.addSaleRow(it));
+          } else {
+            this.addSaleRow();
+          }
+        }
+      } else {
+        if (editInput) editInput.value = '';
+        if (titleEl) titleEl.textContent = '🛒 Tạo Đơn Bán Hàng';
+
+        setVal('saleDate', new Date().toISOString().slice(0, 10));
+        setVal('saleCustomerName', 'Khách lẻ');
+        setVal('saleCustomerPhone', '');
+        setVal('saleChannel', 'Trực tiếp');
+        setVal('salePaymentStatus', 'paid');
+
+        const divPaid = document.getElementById('divPaidAmount');
+        if (divPaid) divPaid.style.display = 'none';
+        setVal('salePaidAmount', 0);
+        setVal('saleDiscount', 0);
+        setVal('saleShippingFee', 0);
+        setVal('saleShippingPayer', window.appStore.state.settings?.defaultShippingPayer || 'customer');
+        setVal('saleNotes', '');
+
+        const container = document.getElementById('saleItemsContainer');
+        if (container) {
+          container.innerHTML = '';
+          this.addSaleRow();
+        }
       }
     } catch (err) {
       console.warn('Lỗi chuẩn bị form bán hàng:', err);
     }
 
     this.openModal('modalSale');
+    this.updateSaleLiveCalc();
   },
 
-  addSaleRow() {
+  addSaleRow(itemData = null) {
     const container = document.getElementById('saleItemsContainer');
+    if (!container) return;
+
     const div = document.createElement('div');
     div.className = 'mobile-item-row bento-dynamic-row';
 
@@ -1491,28 +1549,43 @@ const MobileApp = {
     const colorWrap = div.querySelector('.sale-color-wrap');
     const colorSelect = div.querySelector('.sale-color-select');
 
-    prodSelect.addEventListener('change', () => {
-      const selected = prodSelect.options[prodSelect.selectedIndex];
-      const price = selected.getAttribute('data-price');
-      if (price) priceInput.value = price;
-
-      const prod = window.appStore.getProductById(prodSelect.value);
+    const updateColorOptions = (prod, selectedColor = '') => {
       if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
         colorWrap.style.display = 'block';
         colorSelect.innerHTML = `<option value="">-- Chọn màu xuất kho (${prod.colors.length} màu) --</option>` +
           prod.colors.map(c => `
-            <option value="${c.name}">Màu ${c.name} (Kho còn: ${c.quantity})</option>
+            <option value="${c.name}" ${c.name.toLowerCase() === (selectedColor || '').toLowerCase() ? 'selected' : ''}>Màu ${c.name} (Kho còn: ${c.quantity})</option>
           `).join('');
       } else {
         colorWrap.style.display = 'none';
         colorSelect.innerHTML = `<option value="">-- Mặc định --</option>`;
       }
+    };
 
+    prodSelect.addEventListener('change', () => {
+      const selected = prodSelect.options[prodSelect.selectedIndex];
+      const price = selected?.getAttribute('data-price');
+      if (price !== undefined && price !== null && price !== '') {
+        priceInput.value = price;
+      }
+
+      const prod = window.appStore.getProductById(prodSelect.value);
+      updateColorOptions(prod);
       this.updateSaleLiveCalc();
     });
 
     priceInput.addEventListener('input', () => this.updateSaleLiveCalc());
     qtyInput.addEventListener('input', () => this.updateSaleLiveCalc());
+
+    if (itemData) {
+      if (itemData.productId) {
+        prodSelect.value = itemData.productId;
+        const prod = window.appStore.getProductById(itemData.productId);
+        updateColorOptions(prod, itemData.color || '');
+      }
+      if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
+      if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;
+    }
 
     this.updateSaleLiveCalc();
   },
@@ -1574,11 +1647,35 @@ const MobileApp = {
 
   renderSales() {
     const state = window.appStore.state;
+    const allSales = [...(state.sales || [])].sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0));
+
+    // Phân loại: Đơn bán đang xử lý và Lịch sử mua bán hoàn thành
+    const activeSales = allSales.filter(s => s.status !== 'completed');
+    const historySales = allSales.filter(s => s.status === 'completed');
+
+    // Cập nhật số lượng đếm trên 2 Sub-tabs
+    const badgeActive = document.getElementById('badgeActiveSalesCount');
+    if (badgeActive) badgeActive.textContent = activeSales.length;
+
+    const badgeHistory = document.getElementById('badgeHistorySalesCount');
+    if (badgeHistory) badgeHistory.textContent = historySales.length;
+
+    // Cập nhật badge báo đơn chờ trên thanh Bottom Navigation "Quản lý"
+    this.updatePendingSalesBadge();
+
+    const currentSubTab = this.manageSubTab || 'active';
+    const baseList = currentSubTab === 'active' ? activeSales : historySales;
+
     const search = (document.getElementById('mobileSalesSearch')?.value || '').toLowerCase().trim();
 
-    let filtered = state.sales.filter(s => {
-      const matchSearch = !search || s.code.toLowerCase().includes(search) || s.customerName.toLowerCase().includes(search) || (s.customerPhone && s.customerPhone.includes(search));
-      const matchPay = this.salesPaymentFilter === 'all' || s.paymentStatus === this.salesPaymentFilter;
+    let filtered = baseList.filter(s => {
+      const matchSearch = !search 
+        || (s.code && s.code.toLowerCase().includes(search)) 
+        || (s.customerName && s.customerName.toLowerCase().includes(search)) 
+        || (s.customerPhone && s.customerPhone.includes(search))
+        || ((s.items || []).some(it => it.productName && it.productName.toLowerCase().includes(search)));
+
+      const matchPay = currentSubTab === 'history' || this.salesPaymentFilter === 'all' || s.paymentStatus === this.salesPaymentFilter;
       return matchSearch && matchPay;
     });
 
@@ -1586,68 +1683,139 @@ const MobileApp = {
     if (!container) return;
 
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div style="background: #fff; padding: 24px; border-radius: 14px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1px solid #e2e8f0;">
-          Không tìm thấy đơn bán hàng nào
-        </div>
-      `;
+      if (currentSubTab === 'active') {
+        container.innerHTML = `
+          <div style="background: #fff; padding: 32px 16px; border-radius: 16px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1.5px dashed #cbd5e1;">
+            <div style="font-size: 34px; margin-bottom: 8px;">🛒</div>
+            <div style="font-weight: 800; color: #334155; margin-bottom: 4px; font-size: 15px;">Chưa có đơn bán nào đang chờ</div>
+            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">Bấm nút bên dưới để tạo đơn bán hàng mới</div>
+            <button type="button" class="btn-dark-pill" onclick="MobileApp.openAddSaleModal()" style="margin: 0 auto; display: inline-flex;">+ Tạo Đơn Bán Mới</button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div style="background: #fff; padding: 32px 16px; border-radius: 16px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1.5px dashed #cbd5e1;">
+            <div style="font-size: 34px; margin-bottom: 8px;">📜</div>
+            <div style="font-weight: 800; color: #334155; margin-bottom: 4px; font-size: 15px;">Chưa có đơn hàng nào hoàn thành</div>
+            <div style="font-size: 12px; color: #94a3b8;">Khi bạn bấm "Xác nhận thành công" ở tab Đơn Bán, đơn sẽ được lưu vào lịch sử tại đây.</div>
+          </div>
+        `;
+      }
       return;
     }
 
     container.innerHTML = filtered.map(s => {
-      const itemsList = (s.items || []).map(i => `${i.productName}${i.color ? ` (Màu: ${i.color})` : ''} (x${i.quantity})`).join(', ');
-
-      let statusBadge = '<span class="badge badge-success">Đã thu đủ</span>';
-      if (s.paymentStatus === 'unpaid') {
-        statusBadge = '<span class="badge badge-danger">Chưa thu (Nợ)</span>';
-      } else if (s.paymentStatus === 'partial') {
-        statusBadge = `<span class="badge badge-warning">Đã cọc: ${Calculations.formatNumber(s.paidAmount)} đ</span>`;
-      }
+      const itemsList = (s.items || []).map(i => `
+        <span style="display: inline-block; margin-right: 6px;">
+          • <strong>${i.productName}</strong>${i.color ? ` (Màu: ${i.color})` : ''} <span style="color: #64748b;">(x${i.quantity})</span>
+        </span>
+      `).join('');
 
       let shipInfo = '';
       if (s.shippingFee > 0) {
         shipInfo = s.shippingPayer === 'shop' 
-          ? `<span style="color: #ef4444; font-size: 11px;">🚚 Shop freeship: -${Calculations.formatNumber(s.shippingFee)} đ</span>`
-          : `<span style="color: #64748b; font-size: 11px;">🚚 Ship khách trả: +${Calculations.formatNumber(s.shippingFee)} đ</span>`;
+          ? `<span style="color: #ef4444; font-size: 11px; font-weight: 600;">🚚 Shop freeship: -${Calculations.formatNumber(s.shippingFee)} đ</span>`
+          : `<span style="color: #64748b; font-size: 11px; font-weight: 600;">🚚 Ship khách trả: +${Calculations.formatNumber(s.shippingFee)} đ</span>`;
       }
 
-      return `
-        <div class="m-card">
-          <div class="m-card-header">
-            <div>
-              <div class="m-card-title">${s.customerName}</div>
-              <div class="m-card-subtitle">${s.code} • ${Calculations.formatDate(s.date)} • ${s.channel}</div>
-            </div>
-            ${statusBadge}
-          </div>
+      if (currentSubTab === 'active') {
+        let statusBadge = '<span class="badge badge-success">Đã thu đủ</span>';
+        if (s.paymentStatus === 'unpaid') {
+          statusBadge = '<span class="badge badge-danger">Chưa thu (Nợ)</span>';
+        } else if (s.paymentStatus === 'partial') {
+          statusBadge = `<span class="badge badge-warning">Đã cọc: ${Calculations.formatNumber(s.paidAmount)} đ</span>`;
+        }
 
-          <div style="font-size: 12.5px; color: #475569; margin: 6px 0; background: #f8fafc; padding: 8px 10px; border-radius: 8px;">
-            ${itemsList}
-          </div>
-
-          <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0;">
-            <div>
-              <span style="font-size: 11px; color: #64748b;">Tổng bill:</span>
-              <div style="font-size: 17px; font-weight: 800; color: #0f172a;">${Calculations.formatCurrency(s.totalAmount)}</div>
+        return `
+          <div class="m-card">
+            <div class="m-card-header">
+              <div>
+                <div class="m-card-title">${s.customerName || 'Khách lẻ'}</div>
+                <div class="m-card-subtitle">${s.code} • ${Calculations.formatDate(s.date)} (${s.channel})</div>
+              </div>
+              <span class="badge ${s.grossProfit >= 0 ? 'badge-success' : 'badge-danger'}" style="font-size: 12px; font-weight: 800;">
+                ${s.grossProfit >= 0 ? '+' : ''}${Calculations.formatNumber(s.grossProfit)} đ lãi
+              </span>
             </div>
-            <div style="text-align: right;">
-              <span style="font-size: 11px; color: #64748b;">Lợi nhuận gộp:</span>
-              <div style="font-size: 16px; font-weight: 800; color: #10b981;">+${Calculations.formatCurrency(s.grossProfit)}</div>
+
+            <div style="font-size: 12.5px; color: #334155; margin: 8px 0; background: #f8fafc; padding: 9px 12px; border-radius: 10px; border: 1px solid #f1f5f9; line-height: 1.45;">
+              ${itemsList}
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 8px 0;">
+              <div style="display: flex; align-items: baseline; gap: 6px;">
+                <span style="font-size: 12px; color: #64748b;">Tổng bill:</span>
+                <span style="font-size: 17px; font-weight: 800; color: #0f172a;">${Calculations.formatCurrency(s.totalAmount)}</span>
+              </div>
+              <div>
+                ${statusBadge}
+              </div>
+            </div>
+
+            ${shipInfo ? `<div style="margin-bottom: 8px;">${shipInfo}</div>` : ''}
+
+            <!-- Nút Xác nhận thành công (Đã thu tiền) -->
+            <button type="button" class="btn-confirm-success" style="width: 100%; margin: 6px 0 10px 0;" onclick="MobileApp.markSaleCompleted('${s.id}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>Xác nhận thành công (Đã thu tiền)</span>
+            </button>
+
+            <div class="m-card-footer" style="padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+              <span style="font-size: 11.5px; color: #64748b;">${s.customerPhone ? '📞 ' + s.customerPhone : (s.notes ? '📝 ' + s.notes : '')}</span>
+              <div class="m-card-actions">
+                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">✏️ Sửa</button>
+                <button class="btn-flat-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In</button>
+                <button class="btn-flat-action" title="Đổi trạng thái thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">💳 Thu tiền</button>
+                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
+              </div>
             </div>
           </div>
+        `;
+      } else {
+        // Tab Lịch Sử Mua Bán
+        return `
+          <div class="m-card" style="border-left: 4px solid #10b981;">
+            <div class="m-card-header">
+              <div>
+                <div class="m-card-title">${s.customerName || 'Khách lẻ'}</div>
+                <div class="m-card-subtitle">${s.code} • ${Calculations.formatDate(s.date)} (${s.channel})</div>
+              </div>
+              <span class="badge badge-success" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 800;">
+                ✅ Đã hoàn thành
+              </span>
+            </div>
 
-          ${shipInfo ? `<div style="margin-bottom: 8px;">${shipInfo}</div>` : ''}
+            <div style="font-size: 12.5px; color: #334155; margin: 8px 0; background: #f8fafc; padding: 9px 12px; border-radius: 10px; border: 1px solid #f1f5f9; line-height: 1.45;">
+              ${itemsList}
+            </div>
 
-          <div class="m-card-footer">
-            <span style="font-size: 11px; color: #94a3b8;">${s.customerPhone ? '📞 ' + s.customerPhone : ''}</span>
-            <div class="m-card-actions">
-              <button class="btn-flat-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In</button>
-              <button class="btn-flat-dark" title="Thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">💳 Thu tiền</button>
-              <button class="btn-icon-circle-danger" title="Xóa" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin: 8px 0;">
+              <div style="display: flex; align-items: baseline; gap: 6px;">
+                <span style="font-size: 12px; color: #64748b;">Tổng bill:</span>
+                <span style="font-size: 17px; font-weight: 800; color: #0f172a;">${Calculations.formatCurrency(s.totalAmount)}</span>
+              </div>
+              <div style="text-align: right;">
+                <span style="font-size: 11px; color: #64748b;">Lãi:</span>
+                <span style="font-size: 15px; font-weight: 800; color: #10b981;">+${Calculations.formatCurrency(s.grossProfit)}</span>
+              </div>
+            </div>
+
+            ${shipInfo ? `<div style="margin-bottom: 8px;">${shipInfo}</div>` : ''}
+
+            <div class="m-card-footer" style="padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+              <span style="font-size: 11.5px; color: #64748b;">${s.customerPhone ? '📞 ' + s.customerPhone : (s.notes ? '📝 ' + s.notes : '')}</span>
+              <div class="m-card-actions">
+                <button class="btn-flat-action" title="In bill" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In bill</button>
+                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">✏️ Sửa</button>
+                <button class="btn-flat-action" title="Mở lại đơn" onclick="MobileApp.reopenSale('${s.id}')">↩️ Mở lại</button>
+                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
+              </div>
             </div>
           </div>
-        </div>
-      `;
+        `;
+      }
     }).join('');
   },
 
@@ -1683,6 +1851,39 @@ const MobileApp = {
         this.showToast('Đã cập nhật tiền thanh toán!');
       }
     }
+  },
+
+  editSale(id) {
+    const sale = window.appStore.state.sales.find(s => s.id === id);
+    if (!sale) {
+      alert('Không tìm thấy thông tin đơn hàng cần sửa.');
+      return;
+    }
+    this.openAddSaleModal(sale);
+  },
+
+  async markSaleCompleted(id) {
+    const sale = window.appStore.state.sales.find(s => s.id === id);
+    if (!sale) return;
+
+    if (!confirm(`Xác nhận đơn hàng [${sale.code}] đã hoàn thành và đã thu đủ số tiền ${Calculations.formatCurrency(sale.totalAmount)}?`)) {
+      return;
+    }
+
+    await window.appStore.updateSaleStatus(id, 'completed', 'paid', sale.totalAmount);
+    this.showToast(`Đơn ${sale.code} đã hoàn thành và lưu vào Lịch Sử!`);
+  },
+
+  async reopenSale(id) {
+    const sale = window.appStore.state.sales.find(s => s.id === id);
+    if (!sale) return;
+
+    if (!confirm(`Chuyển đơn hàng [${sale.code}] về lại danh sách "Đơn Bán" để tiếp tục xử lý?`)) {
+      return;
+    }
+
+    await window.appStore.updateSaleStatus(id, 'pending');
+    this.showToast(`Đã chuyển đơn ${sale.code} về Đơn Bán!`);
   },
 
   async deleteSale(id) {
@@ -2166,6 +2367,10 @@ window.openAddSaleModal = () => MobileApp.openAddSaleModal();
 window.openAddPurchaseModal = () => MobileApp.openAddPurchaseModal();
 window.openAddCashflowModal = () => MobileApp.openAddCashflowModal();
 window.closeModal = (id = null) => MobileApp.closeModal(id);
+window.switchManageSubTab = (subTab) => MobileApp.switchManageSubTab(subTab);
+window.editSale = (id) => MobileApp.editSale(id);
+window.markSaleCompleted = (id) => MobileApp.markSaleCompleted(id);
+window.reopenSale = (id) => MobileApp.reopenSale(id);
 
 document.addEventListener('DOMContentLoaded', async () => {
   if (window.appStore && typeof window.appStore.init === 'function') {

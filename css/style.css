@@ -1185,6 +1185,94 @@ input, textarea, select {
   transform: scale(0.95);
 }
 
+/* =================== QUẢN LÝ TAB (SUBTABS & CONFIRM BTN) =================== */
+.manage-subtabs-dock {
+  display: flex;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  gap: 4px;
+  border: 1px solid #e2e8f0;
+}
+
+.manage-subtab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: #64748b;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.manage-subtab-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+}
+
+.subtab-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.manage-subtab-btn.active .subtab-badge.badge-active-tab {
+  background: #ef4444;
+  color: #ffffff;
+}
+
+.manage-subtab-btn:not(.active) .subtab-badge.badge-active-tab {
+  background: #fecaca;
+  color: #b91c1c;
+}
+
+.manage-subtab-btn.active .subtab-badge.badge-history-tab {
+  background: #334155;
+  color: #f8fafc;
+}
+
+.manage-subtab-btn:not(.active) .subtab-badge.badge-history-tab {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.btn-confirm-success {
+  background: #10b981;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 12.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-confirm-success:active {
+  background: #059669;
+  transform: scale(0.97);
+}
+
 .btn-icon-circle-danger {
   width: 32px;
   height: 32px;
