@@ -1929,6 +1929,15 @@ const MobileApp = {
       });
     });
 
+    // Reset Metrics
+    document.getElementById('menuRowResetMetrics')?.addEventListener('click', async () => {
+      if (confirm('Bạn có chắc muốn đặt lại toàn bộ chỉ số doanh thu, lợi nhuận, đơn bán hàng và thu chi về 0 để bắt đầu kinh doanh thực tế?\n\n(Danh mục hàng hóa và số lượng tồn trong Kho Hàng vẫn được giữ nguyên)')) {
+        await window.appStore.resetTransactions();
+        this.showToast('Đã reset toàn bộ chỉ số về 0!');
+        this.switchTab('dashboard');
+      }
+    });
+
     // Demo Data
     document.getElementById('menuRowDemoData')?.addEventListener('click', async () => {
       if (confirm('Nạp bộ dữ liệu mẫu thực tế để trải nghiệm ngay?')) {

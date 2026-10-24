@@ -59,6 +59,23 @@ const ChartsManager = {
       }
     });
 
+    // Kiểm tra nếu chưa có bất kỳ giao dịch nào
+    const hasTrendData = revenueData.some(v => v !== 0) || expenseData.some(v => v !== 0) || profitData.some(v => v !== 0);
+    if (!hasTrendData) {
+      if (this.chartInstances[containerId]) {
+        this.chartInstances[containerId].destroy();
+        delete this.chartInstances[containerId];
+      }
+      container.innerHTML = `
+        <div style="height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 13.5px; text-align: center; padding: 20px;">
+          <div style="font-size: 32px; margin-bottom: 8px;">📊</div>
+          <div>Chưa có dữ liệu giao dịch trong 7 ngày qua</div>
+          <div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">Số liệu sẽ tự động hiển thị khi bạn tạo đơn bán hàng đầu tiên</div>
+        </div>
+      `;
+      return;
+    }
+
     // Kiểm tra nếu có Chart.js
     if (window.Chart) {
       if (this.chartInstances[containerId]) {

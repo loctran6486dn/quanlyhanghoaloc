@@ -181,6 +181,15 @@ class DataStore {
         this.state.settings = { ...this.state.settings, ...settingsList[0] };
       }
 
+      // Tự động dọn sạch các giao dịch thử nghiệm cũ 1 lần duy nhất để người dùng bắt đầu làm việc thực tế
+      if (!localStorage.getItem('app_metrics_reset_clean_20261024')) {
+        localStorage.setItem('app_metrics_reset_clean_20261024', 'true');
+        this.state.sales = [];
+        this.state.purchases = [];
+        this.state.cashflow = [];
+        await this.persistAll();
+      }
+
       // Nếu lần đầu hoàn toàn trống, kiểm tra xem có trong LocalStorage không
       if (this.state.products.length === 0 && this.state.sales.length === 0) {
         const lsData = localStorage.getItem('QLHH_DATA');
@@ -899,6 +908,20 @@ class DataStore {
         defaultAllocationMethod: 'by_quantity'
       }
     });
+  }
+
+  /**
+   * Đặt lại toàn bộ chỉ số tài chính & giao dịch về 0 (xóa sạch sales, purchases, cashflow, giữ nguyên danh mục hàng hóa trong kho)
+   */
+  async resetTransactions(shouldNotify = true) {
+    this.state.sales = [];
+    this.state.purchases = [];
+    this.state.cashflow = [];
+    await this.persistAll();
+    if (shouldNotify) this.notify();
+    if (window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
+      window.CloudSync.triggerAutoPush();
+    }
   }
 
   /**

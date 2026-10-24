@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=3.2">
+  <link rel="stylesheet" href="css/style.css?v=3.3">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -408,6 +408,18 @@
               <div class="menu-item-text">
                 <strong>Khôi Phục Dữ Liệu Từ File</strong>
                 <span>Chọn file sao lưu đã tải trước đó</span>
+              </div>
+            </div>
+            <div class="menu-item-chevron">›</div>
+          </div>
+
+          <!-- Reset chỉ số Tổng quan (Xóa giao dịch thử nghiệm, giữ nguyên hàng hóa) -->
+          <div class="menu-item-row" id="menuRowResetMetrics">
+            <div class="menu-item-left">
+              <div class="menu-item-icon" style="background: #fff7ed; color: #ea580c;">🔄</div>
+              <div class="menu-item-text">
+                <strong style="color: #ea580c;">Reset Chỉ Số Tổng Quan (Về 0)</strong>
+                <span>Xóa sạch đơn bán, nhập hàng, thu chi mẫu để bán hàng thực tế</span>
               </div>
             </div>
             <div class="menu-item-chevron">›</div>
@@ -1225,11 +1237,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=3.2"></script>
-  <script src="js/cloud-sync.js?v=3.2"></script>
-  <script src="js/store.js?v=3.2"></script>
-  <script src="js/export.js?v=3.2"></script>
-  <script src="js/charts.js?v=3.2"></script>
-  <script src="js/app.js?v=3.2"></script>
+  <script src="js/calculations.js?v=3.3"></script>
+  <script src="js/cloud-sync.js?v=3.3"></script>
+  <script src="js/store.js?v=3.3"></script>
+  <script src="js/export.js?v=3.3"></script>
+  <script src="js/charts.js?v=3.3"></script>
+  <script src="js/app.js?v=3.3"></script>
 </body>
 </html>
