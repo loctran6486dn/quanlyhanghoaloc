@@ -2,6 +2,23 @@
  * app.js - Trình Điều Khiển Mobile-First Tối Ưu Cho Điện Thoại Di Động
  */
 
+// Bảng Vector Line Icons đồng bộ 100% với phong cách Menu Dưới
+const Icons = {
+  edit: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
+  trash: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
+  print: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
+  card: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>`,
+  reopen: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>`,
+  phone: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>`,
+  note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+  check: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
+  checkCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+  alertCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+  infoCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
+  folder: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>`,
+  tag: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>`
+};
+
 // Đảm bảo đối tượng MobileApp và các hàm mở modal luôn sẵn sàng trên phạm vi toàn cục (Global Scope)
 const MobileApp = {
   activeTab: 'dashboard',
@@ -42,7 +59,7 @@ const MobileApp = {
     // Gợi ý demo nếu trống
     if (window.appStore.state.products.length === 0 && window.appStore.state.sales.length === 0) {
       setTimeout(() => {
-        this.showToast('Chào bạn! Vào Menu ⚙️ để nạp Dữ liệu mẫu trải nghiệm ngay.', 'info');
+        this.showToast('Chào bạn! Vào Cài Đặt để nạp Dữ liệu mẫu trải nghiệm ngay.', 'info');
       }, 600);
     }
   },
@@ -54,8 +71,8 @@ const MobileApp = {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    const icon = type === 'success' ? '✅' : (type === 'danger' ? '⚠️' : 'ℹ️');
-    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    const icon = type === 'success' ? Icons.checkCircle : (type === 'danger' ? Icons.alertCircle : Icons.infoCircle);
+    toast.innerHTML = `<span style="display:inline-flex;align-items:center;">${icon}</span><span>${message}</span>`;
 
     container.appendChild(toast);
     setTimeout(() => {
@@ -404,8 +421,9 @@ const MobileApp = {
       const lowStockProds = state.products.filter(p => Number(p.stock || 0) <= Number(p.minStock || 5));
       if (lowStockProds.length === 0) {
         lowStockContainer.innerHTML = `
-          <div style="background: #fff; padding: 14px; border-radius: 12px; text-align: center; color: #10b981; font-size: 13px; border: 1px solid #e2e8f0;">
-            ✅ Kho an toàn, không có món nào sắp hết!
+          <div style="background: #fff; padding: 14px; border-radius: 12px; text-align: center; color: #10b981; font-size: 13px; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            ${Icons.checkCircle}
+            <span>Kho an toàn, không có món nào sắp hết!</span>
           </div>
         `;
       } else {
@@ -632,13 +650,13 @@ const MobileApp = {
 
     dropdown.innerHTML = `
       <div style="padding: 6px 12px 4px 12px; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.3px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; background: #f8fafc;">
-        <span>📁 Danh mục đã dùng (${filtered.length})</span>
+        <span style="display: inline-flex; align-items: center; gap: 5px;">${Icons.folder} Danh mục đã dùng (${filtered.length})</span>
         <span style="font-size: 10px; color: #94a3b8;">Chạm để chọn</span>
       </div>
       <div style="max-height: 170px; overflow-y: auto;">
         ${filtered.map(cat => `
           <div class="category-suggest-item" data-category="${cat}">
-            <span>🏷️ ${cat}</span>
+            <span style="display: inline-flex; align-items: center; gap: 5px;">${Icons.tag} ${cat}</span>
             <span style="font-size: 11px; color: #4f46e5; font-weight: 700;">Chọn ↵</span>
           </div>
         `).join('')}
@@ -741,7 +759,7 @@ const MobileApp = {
         if (el) el.value = val;
       };
       const titleEl = document.getElementById('modalProductTitle');
-      if (titleEl) titleEl.textContent = product ? '✏️ Sửa Hàng Hóa' : '🏷️ Thêm Hàng Hóa Mới';
+      if (titleEl) titleEl.textContent = product ? 'Sửa Hàng Hóa' : 'Thêm Hàng Hóa Mới';
       setVal('prodId', product ? product.id : '');
       setVal('prodName', product ? product.name : '');
       setVal('prodSku', product ? product.sku : '');
@@ -826,7 +844,7 @@ const MobileApp = {
 
       const colorsBreakdownHtml = (Array.isArray(p.colors) && p.colors.length > 0) ? `
         <div class="prod-colors-breakdown">
-          <div style="color: #64748b; font-weight: 700; margin-bottom: 5px; font-size: 11px;">🎨 Màu sắc & tồn từng màu:</div>
+          <div style="color: #64748b; font-weight: 700; margin-bottom: 5px; font-size: 11px;">Màu sắc & tồn từng màu:</div>
           <div style="display: flex; flex-wrap: wrap; gap: 5px;">
             ${p.colors.map(c => `
               <span class="color-stock-pill ${c.quantity > 0 ? 'in-stock' : 'out'}">
@@ -837,7 +855,7 @@ const MobileApp = {
         </div>
       ` : '';
 
-      const notesHtml = p.notes ? `<div class="prod-notes-row">📝 ${p.notes}</div>` : '';
+      const notesHtml = p.notes ? `<div class="prod-notes-row" style="display: inline-flex; align-items: center; gap: 5px;">${Icons.note} <span>${p.notes}</span></div>` : '';
 
       return `
         <div class="product-accordion-card" id="prod-card-${p.id}" onclick="MobileApp.toggleProductAccordion('${p.id}')">
@@ -883,8 +901,8 @@ const MobileApp = {
             ${notesHtml}
 
             <div class="prod-card-actions-bar">
-              <button type="button" class="btn-flat-action" onclick="event.stopPropagation(); MobileApp.editProduct('${p.id}')">✏️ Sửa sản phẩm</button>
-              <button type="button" class="btn-flat-danger" onclick="event.stopPropagation(); MobileApp.deleteProduct('${p.id}')">🗑️ Xóa</button>
+              <button type="button" class="btn-flat-action" onclick="event.stopPropagation(); MobileApp.editProduct('${p.id}')">${Icons.edit} <span>Sửa</span></button>
+              <button type="button" class="btn-flat-danger" onclick="event.stopPropagation(); MobileApp.deleteProduct('${p.id}')">${Icons.trash} <span>Xóa</span></button>
             </div>
           </div>
         </div>
@@ -1104,7 +1122,7 @@ const MobileApp = {
       </div>
       <div class="form-row" style="margin-top: 8px;">
         <div>
-          <label style="font-size: 11px; color: #15803d; font-weight: 700;">⚖️ Khối lượng (kg/cái):</label>
+          <label style="font-size: 11px; color: #15803d; font-weight: 700;">Khối lượng (kg/cái):</label>
           <input type="text" class="form-control po-weight-input" value="0.2" placeholder="0.2 hoặc 0,2" inputmode="decimal" style="font-weight: 700; border-radius: 12px; background: #f0fdf4; border-color: #86efac; color: #166534;">
         </div>
         <div>
@@ -1233,9 +1251,9 @@ const MobileApp = {
         </div>
       `).join('');
 
-      let shipDetails = `🚚 Tiền ship: +${Calculations.formatNumber(p.shippingCost)} đ`;
+      let shipDetails = `Tiền ship: +${Calculations.formatNumber(p.shippingCost)} đ`;
       if (p.pricePerKg > 0) {
-        shipDetails = `⚖️ ${p.totalWeight || 0} kg (${Calculations.formatNumber(p.pricePerKg)} đ/kg) &bull; Ship: +${Calculations.formatNumber(p.shippingCost)} đ`;
+        shipDetails = `${p.totalWeight || 0} kg (${Calculations.formatNumber(p.pricePerKg)} đ/kg) &bull; Ship: +${Calculations.formatNumber(p.shippingCost)} đ`;
       }
 
       return `
@@ -1254,7 +1272,7 @@ const MobileApp = {
 
           <div class="m-card-footer">
             <span style="font-size: 12px; color: #8b5cf6; font-weight: 600;">${shipDetails}</span>
-            <button class="btn-flat-danger" onclick="MobileApp.deletePurchase('${p.id}')">🗑️ Xóa</button>
+            <button class="btn-flat-danger" onclick="MobileApp.deletePurchase('${p.id}')">${Icons.trash} <span>Xóa</span></button>
           </div>
         </div>
       `;
@@ -1442,7 +1460,7 @@ const MobileApp = {
 
       if (sale && sale.id) {
         if (editInput) editInput.value = sale.id;
-        if (titleEl) titleEl.textContent = `✏️ Sửa Đơn Bán (${sale.code})`;
+        if (titleEl) titleEl.textContent = `Sửa Đơn Bán (${sale.code})`;
 
         setVal('saleDate', sale.date ? sale.date.slice(0, 10) : new Date().toISOString().slice(0, 10));
         setVal('saleCustomerName', sale.customerName || 'Khách lẻ');
@@ -1469,7 +1487,7 @@ const MobileApp = {
         }
       } else {
         if (editInput) editInput.value = '';
-        if (titleEl) titleEl.textContent = '🛒 Tạo Đơn Bán Hàng';
+        if (titleEl) titleEl.textContent = 'Tạo Đơn Bán Hàng';
 
         setVal('saleDate', new Date().toISOString().slice(0, 10));
         setVal('saleCustomerName', 'Khách lẻ');
@@ -1520,7 +1538,7 @@ const MobileApp = {
         <button type="button" class="btn-icon-remove" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
       </div>
       <div class="sale-color-wrap" style="display: none; margin-bottom: 8px; background: #faf5ff; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #ddd6fe;">
-        <label style="font-size: 11px; color: #6d28d9; font-weight: 700; margin-bottom: 4px; display: block;">🎨 Chọn màu xuất kho:</label>
+        <label style="font-size: 11px; color: #6d28d9; font-weight: 700; margin-bottom: 4px; display: block;">Chọn màu xuất kho:</label>
         <select class="form-control sale-color-select" style="font-size: 13px; height: 38px; background: #ffffff; border-radius: 10px; font-weight: 600;">
           <option value="">-- Mặc định --</option>
         </select>
@@ -1686,7 +1704,13 @@ const MobileApp = {
       if (currentSubTab === 'active') {
         container.innerHTML = `
           <div style="background: #fff; padding: 32px 16px; border-radius: 16px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1.5px dashed #cbd5e1;">
-            <div style="font-size: 34px; margin-bottom: 8px;">🛒</div>
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="21" r="1"/>
+                <circle cx="19" cy="21" r="1"/>
+                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+              </svg>
+            </div>
             <div style="font-weight: 800; color: #334155; margin-bottom: 4px; font-size: 15px;">Chưa có đơn bán nào đang chờ</div>
             <div style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">Bấm nút bên dưới để tạo đơn bán hàng mới</div>
             <button type="button" class="btn-dark-pill" onclick="MobileApp.openAddSaleModal()" style="margin: 0 auto; display: inline-flex;">+ Tạo Đơn Bán Mới</button>
@@ -1695,7 +1719,12 @@ const MobileApp = {
       } else {
         container.innerHTML = `
           <div style="background: #fff; padding: 32px 16px; border-radius: 16px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1.5px dashed #cbd5e1;">
-            <div style="font-size: 34px; margin-bottom: 8px;">📜</div>
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 14 14"/>
+              </svg>
+            </div>
             <div style="font-weight: 800; color: #334155; margin-bottom: 4px; font-size: 15px;">Chưa có đơn hàng nào hoàn thành</div>
             <div style="font-size: 12px; color: #94a3b8;">Khi bạn bấm "Xác nhận thành công" ở tab Đơn Bán, đơn sẽ được lưu vào lịch sử tại đây.</div>
           </div>
@@ -1714,8 +1743,8 @@ const MobileApp = {
       let shipInfo = '';
       if (s.shippingFee > 0) {
         shipInfo = s.shippingPayer === 'shop' 
-          ? `<span style="color: #ef4444; font-size: 11px; font-weight: 600;">🚚 Shop freeship: -${Calculations.formatNumber(s.shippingFee)} đ</span>`
-          : `<span style="color: #64748b; font-size: 11px; font-weight: 600;">🚚 Ship khách trả: +${Calculations.formatNumber(s.shippingFee)} đ</span>`;
+          ? `<span style="color: #ef4444; font-size: 11px; font-weight: 600;">Shop freeship: -${Calculations.formatNumber(s.shippingFee)} đ</span>`
+          : `<span style="color: #64748b; font-size: 11px; font-weight: 600;">Ship khách trả: +${Calculations.formatNumber(s.shippingFee)} đ</span>`;
       }
 
       if (currentSubTab === 'active') {
@@ -1763,12 +1792,14 @@ const MobileApp = {
             </button>
 
             <div class="m-card-footer" style="padding-top: 8px; border-top: 1px dashed #e2e8f0;">
-              <span style="font-size: 11.5px; color: #64748b;">${s.customerPhone ? '📞 ' + s.customerPhone : (s.notes ? '📝 ' + s.notes : '')}</span>
+              <span style="font-size: 11.5px; color: #64748b; display: inline-flex; align-items: center; gap: 4px;">
+                ${s.customerPhone ? `${Icons.phone} <span>${s.customerPhone}</span>` : (s.notes ? `${Icons.note} <span>${s.notes}</span>` : '')}
+              </span>
               <div class="m-card-actions">
-                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">✏️ Sửa</button>
-                <button class="btn-flat-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In</button>
-                <button class="btn-flat-action" title="Đổi trạng thái thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">💳 Thu tiền</button>
-                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
+                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">${Icons.edit} <span>Sửa</span></button>
+                <button class="btn-flat-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">${Icons.print} <span>In</span></button>
+                <button class="btn-flat-action" title="Đổi trạng thái thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">${Icons.card} <span>Thu tiền</span></button>
+                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">${Icons.trash}</button>
               </div>
             </div>
           </div>
@@ -1782,8 +1813,8 @@ const MobileApp = {
                 <div class="m-card-title">${s.customerName || 'Khách lẻ'}</div>
                 <div class="m-card-subtitle">${s.code} • ${Calculations.formatDate(s.date)} (${s.channel})</div>
               </div>
-              <span class="badge badge-success" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 800;">
-                ✅ Đã hoàn thành
+              <span class="badge badge-success" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-size: 11.5px; font-weight: 800; display: inline-flex; align-items: center; gap: 4px;">
+                ${Icons.check} <span>Đã hoàn thành</span>
               </span>
             </div>
 
@@ -1805,12 +1836,14 @@ const MobileApp = {
             ${shipInfo ? `<div style="margin-bottom: 8px;">${shipInfo}</div>` : ''}
 
             <div class="m-card-footer" style="padding-top: 8px; border-top: 1px dashed #e2e8f0;">
-              <span style="font-size: 11.5px; color: #64748b;">${s.customerPhone ? '📞 ' + s.customerPhone : (s.notes ? '📝 ' + s.notes : '')}</span>
+              <span style="font-size: 11.5px; color: #64748b; display: inline-flex; align-items: center; gap: 4px;">
+                ${s.customerPhone ? `${Icons.phone} <span>${s.customerPhone}</span>` : (s.notes ? `${Icons.note} <span>${s.notes}</span>` : '')}
+              </span>
               <div class="m-card-actions">
-                <button class="btn-flat-action" title="In bill" onclick="MobileApp.printSaleInvoice('${s.id}')">🖨️ In bill</button>
-                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">✏️ Sửa</button>
-                <button class="btn-flat-action" title="Mở lại đơn" onclick="MobileApp.reopenSale('${s.id}')">↩️ Mở lại</button>
-                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">🗑️</button>
+                <button class="btn-flat-action" title="In bill" onclick="MobileApp.printSaleInvoice('${s.id}')">${Icons.print} <span>In bill</span></button>
+                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">${Icons.edit} <span>Sửa</span></button>
+                <button class="btn-flat-action" title="Mở lại đơn" onclick="MobileApp.reopenSale('${s.id}')">${Icons.reopen} <span>Mở lại</span></button>
+                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">${Icons.trash}</button>
               </div>
             </div>
           </div>
@@ -1972,7 +2005,7 @@ const MobileApp = {
             <span style="font-size: 16px; font-weight: 800; color: ${isExp ? '#ef4444' : '#10b981'};">
               ${isExp ? '-' : '+'}${Calculations.formatCurrency(c.amount)}
             </span>
-            <button class="btn-flat-danger" onclick="MobileApp.deleteCashflow('${c.id}')">🗑️ Xóa</button>
+            <button class="btn-flat-danger" onclick="MobileApp.deleteCashflow('${c.id}')">${Icons.trash} <span>Xóa</span></button>
           </div>
         </div>
       `;
@@ -2150,7 +2183,7 @@ const MobileApp = {
 
     // Clear Data
     document.getElementById('menuRowClearData')?.addEventListener('click', async () => {
-      if (confirm('⚠️ CẢNH BÁO: Xóa trắng toàn bộ dữ liệu? Thao tác này không thể hoàn tác.')) {
+      if (confirm('CẢNH BÁO: Xóa trắng toàn bộ dữ liệu? Thao tác này không thể hoàn tác.')) {
         await window.appStore.clearAllData();
         this.showToast('Đã xóa sạch dữ liệu.');
         this.switchTab('dashboard');
@@ -2226,9 +2259,9 @@ const MobileApp = {
         return;
       }
       const btn = document.getElementById('btnManualSyncNow');
-      if (btn) btn.textContent = '⏳ Đang kéo...';
+      if (btn) btn.textContent = 'Đang kéo...';
       const res = await window.CloudSync.pull(true);
-      if (btn) btn.textContent = '🔄 Đồng bộ ngay';
+      if (btn) btn.textContent = 'Đồng bộ ngay';
 
       if (res.needsKVSetup) {
         this.showToast('Vui lòng kích hoạt Vercel KV!', 'danger');
@@ -2302,7 +2335,7 @@ const MobileApp = {
     const menuBadge = document.getElementById('menuSyncBadge');
     if (menuBadge) {
       if (status.isConnected) {
-        menuBadge.textContent = `🟢 ${status.storeCode}`;
+        menuBadge.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;margin-right:5px;"></span>${status.storeCode}`;
         menuBadge.style.background = '#dcfce7';
         menuBadge.style.color = '#15803d';
       } else {
@@ -2328,7 +2361,9 @@ const MobileApp = {
 
     if (status.isConnected) {
       if (liveBadge) {
-        liveBadge.textContent = status.isSyncing ? '⏳ Đang đồng bộ...' : '🟢 Đang đồng bộ tự động';
+        liveBadge.innerHTML = status.isSyncing 
+          ? `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px;"></span>Đang đồng bộ...` 
+          : `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#16a34a;margin-right:5px;"></span>Đang đồng bộ tự động`;
         liveBadge.style.background = '#dcfce7';
         liveBadge.style.color = '#15803d';
       }
@@ -2346,7 +2381,7 @@ const MobileApp = {
       }
     } else {
       if (liveBadge) {
-        liveBadge.textContent = '⚪ Chưa kết nối';
+        liveBadge.innerHTML = `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#94a3b8;margin-right:5px;"></span>Chưa kết nối`;
         liveBadge.style.background = '#f1f5f9';
         liveBadge.style.color = '#64748b';
       }

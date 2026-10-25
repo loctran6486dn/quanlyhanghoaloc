@@ -68,9 +68,15 @@ const ChartsManager = {
       }
       container.innerHTML = `
         <div style="height: 240px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #94a3b8; font-size: 13.5px; text-align: center; padding: 20px;">
-          <div style="font-size: 32px; margin-bottom: 8px;">📊</div>
-          <div>Chưa có dữ liệu giao dịch trong 7 ngày qua</div>
-          <div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">Số liệu sẽ tự động hiển thị khi bạn tạo đơn bán hàng đầu tiên</div>
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #f1f5f9; color: #94a3b8; display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10"/>
+              <line x1="12" y1="20" x2="12" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="14"/>
+            </svg>
+          </div>
+          <div style="font-weight: 700; color: #475569;">Chưa có dữ liệu giao dịch trong 7 ngày qua</div>
+          <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Số liệu sẽ tự động hiển thị khi bạn tạo đơn bán hàng đầu tiên</div>
         </div>
       `;
       return;
