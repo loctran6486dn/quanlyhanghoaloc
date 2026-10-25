@@ -2700,6 +2700,75 @@ body.theme-wordsy .size-pill-tag {
   padding-left: 2px;
 }
 
+/* =================== WORDSY: MÀU SẮC & SIZE TRONG TẠO ĐƠN BÁN HÀNG =================== */
+
+.sale-color-select {
+  background: #faf5ff;
+  border: 1.5px solid #ddd6fe;
+  color: #5b21b6;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.sale-color-select:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.sale-size-select {
+  background: #f0f9ff;
+  border: 1.5px solid #bae6fd;
+  color: #0369a1;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.sale-size-select:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.sale-color-custom {
+  background: #ffffff;
+  border: 1.5px solid #c4b5fd;
+  color: #1e1b4b;
+}
+
+.sale-size-custom {
+  background: #ffffff;
+  border: 1.5px solid #7dd3fc;
+  color: #082f49;
+}
+
+body.theme-wordsy .sale-color-select {
+  background: #ffffff !important;
+  border: 1.5px solid #e4e4e7 !important;
+  color: #18181b !important;
+  border-radius: 12px !important;
+}
+
+body.theme-wordsy .sale-color-select:focus {
+  border-color: #8b5cf6 !important;
+}
+
+body.theme-wordsy .sale-size-select {
+  background: #ffffff !important;
+  border: 1.5px solid #e4e4e7 !important;
+  color: #18181b !important;
+  border-radius: 12px !important;
+}
+
+body.theme-wordsy .sale-size-select:focus {
+  border-color: #38bdf8 !important;
+}
+
+body.theme-wordsy .sale-color-custom,
+body.theme-wordsy .sale-size-custom {
+  background: #ffffff !important;
+  border: 1.5px solid #18181b !important;
+  border-radius: 10px !important;
+}
+
 /* =================== WORDSY: TẠO ĐƠN BÁN HÀNG & NHẬP HÀNG MODALS =================== */
 
 body.theme-wordsy .modal-dialog {

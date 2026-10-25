@@ -1539,9 +1539,16 @@ const MobileApp = {
         const quantity = parseFloat(qtyInput.value) || 0;
         const sellingPrice = Calculations.parseDecimal(priceInput.value, 0);
         const colorSelect = row.querySelector('.sale-color-select');
-        const color = (colorSelect ? colorSelect.value : '').trim();
+        const colorCustom = row.querySelector('.sale-color-custom');
+        const color = (colorSelect && colorSelect.value === '__custom__')
+          ? (colorCustom ? colorCustom.value : '').trim()
+          : (colorSelect ? colorSelect.value : '').trim();
+
         const sizeSelect = row.querySelector('.sale-size-select');
-        const size = (sizeSelect ? sizeSelect.value : '').trim();
+        const sizeCustom = row.querySelector('.sale-size-custom');
+        const size = (sizeSelect && sizeSelect.value === '__custom__')
+          ? (sizeCustom ? sizeCustom.value : '').trim()
+          : (sizeSelect ? sizeSelect.value : '').trim();
 
         if (!productId || quantity <= 0) {
           isValid = false;
@@ -1712,20 +1719,34 @@ const MobileApp = {
           <option value="">-- Chọn món bán --</option>
           ${optionsHtml}
         </select>
-        <button type="button" class="btn-icon-remove" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
+        <button type="button" class="btn-icon-remove btn-remove-row" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
       </div>
-      <div class="sale-color-wrap" style="display: none; margin-bottom: 8px; background: #faf5ff; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #ddd6fe;">
-        <label style="font-size: 11px; color: #6d28d9; font-weight: 700; margin-bottom: 4px; display: block;">Chọn màu xuất kho:</label>
-        <select class="form-control sale-color-select" style="font-size: 13px; height: 38px; background: #ffffff; border-radius: 10px; font-weight: 600;">
-          <option value="">-- Mặc định --</option>
-        </select>
+
+      <!-- KHU VỰC CHỌN MÀU SẮC VÀ SIZE (LUÔN HIỂN THỊ RÕ RÀNG) -->
+      <div class="form-row sale-variant-row" style="margin-bottom: 8px;">
+        <div class="sale-color-col">
+          <label style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span>🎨 Màu sắc:</span>
+            <span class="sale-color-badge" style="font-size: 10px; color: #7c3aed; font-weight: 600;"></span>
+          </label>
+          <select class="form-control sale-color-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+            <option value="">-- Mặc định --</option>
+          </select>
+          <input type="text" class="form-control sale-color-custom" placeholder="Nhập tên màu..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+        </div>
+
+        <div class="sale-size-col">
+          <label style="font-size: 11px; color: #0284c7; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span>📏 Kích cỡ (Size):</span>
+            <span class="sale-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
+          </label>
+          <select class="form-control sale-size-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+            <option value="">-- Mặc định --</option>
+          </select>
+          <input type="text" class="form-control sale-size-custom" placeholder="Nhập kích cỡ..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+        </div>
       </div>
-      <div class="sale-size-wrap" style="display: none; margin-bottom: 8px; background: #f0fdf4; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #bbf7d0;">
-        <label style="font-size: 11px; color: #15803d; font-weight: 700; margin-bottom: 4px; display: block;">Chọn kích cỡ (Size):</label>
-        <select class="form-control sale-size-select" style="font-size: 13px; height: 38px; background: #ffffff; border-radius: 10px; font-weight: 600;">
-          <option value="">-- Mặc định --</option>
-        </select>
-      </div>
+
       <div class="form-row">
         <div>
           <label style="font-size: 11px; color: #64748b; font-weight: 700;">Số lượng bán:</label>
@@ -1747,36 +1768,111 @@ const MobileApp = {
     const prodSelect = div.querySelector('.sale-product-select');
     const priceInput = div.querySelector('.sale-price-input');
     const qtyInput = div.querySelector('.sale-qty-input');
-    const colorWrap = div.querySelector('.sale-color-wrap');
     const colorSelect = div.querySelector('.sale-color-select');
-    const sizeWrap = div.querySelector('.sale-size-wrap');
+    const colorCustom = div.querySelector('.sale-color-custom');
+    const colorBadge = div.querySelector('.sale-color-badge');
     const sizeSelect = div.querySelector('.sale-size-select');
+    const sizeCustom = div.querySelector('.sale-size-custom');
+    const sizeBadge = div.querySelector('.sale-size-badge');
 
     const updateColorOptions = (prod, selectedColor = '') => {
+      let options = `<option value="">-- Mặc định --</option>`;
+      const cleanSelected = (selectedColor || '').trim();
+      let isFound = false;
+
       if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
-        colorWrap.style.display = 'block';
-        colorSelect.innerHTML = `<option value="">-- Chọn màu xuất kho (${prod.colors.length} màu) --</option>` +
-          prod.colors.map(c => `
-            <option value="${c.name}" ${c.name.toLowerCase() === (selectedColor || '').toLowerCase() ? 'selected' : ''}>Màu ${c.name} (Kho còn: ${c.quantity})</option>
-          `).join('');
+        if (colorBadge) colorBadge.textContent = `(${prod.colors.length} màu kho)`;
+        options += prod.colors.map(c => {
+          const match = c.name.toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${c.name}" ${match ? 'selected' : ''}>Màu ${c.name} (${c.quantity})</option>`;
+        }).join('');
       } else {
-        colorWrap.style.display = 'none';
-        colorSelect.innerHTML = `<option value="">-- Mặc định --</option>`;
+        if (colorBadge) colorBadge.textContent = '';
+        const commonColors = ['Đen', 'Trắng', 'Xám', 'Xanh', 'Đỏ', 'Vàng', 'Hồng', 'Be', 'Nâu'];
+        options += commonColors.map(c => {
+          const match = c.toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${c}" ${match ? 'selected' : ''}>Màu ${c}</option>`;
+        }).join('');
+      }
+
+      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Màu khác (tự gõ)...</option>`;
+      colorSelect.innerHTML = options;
+
+      if (!isFound && cleanSelected) {
+        colorSelect.value = '__custom__';
+        colorCustom.style.display = 'block';
+        colorCustom.value = cleanSelected;
+      } else if (colorSelect.value === '__custom__') {
+        colorCustom.style.display = 'block';
+      } else {
+        colorCustom.style.display = 'none';
+        colorCustom.value = '';
       }
     };
 
     const updateSizeOptions = (prod, selectedSize = '') => {
+      let options = `<option value="">-- Mặc định --</option>`;
+      const cleanSelected = (selectedSize || '').trim();
+      let isFound = false;
+
       if (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
-        sizeWrap.style.display = 'block';
-        sizeSelect.innerHTML = `<option value="">-- Chọn kích cỡ (${prod.sizes.length} size) --</option>` +
-          prod.sizes.map(s => `
-            <option value="${s}" ${String(s).toLowerCase() === String(selectedSize || '').toLowerCase() ? 'selected' : ''}>Size ${s}</option>
-          `).join('');
+        if (sizeBadge) sizeBadge.textContent = `(${prod.sizes.length} size)`;
+        options += prod.sizes.map(s => {
+          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
+        }).join('');
       } else {
-        sizeWrap.style.display = 'none';
-        sizeSelect.innerHTML = `<option value="">-- Mặc định --</option>`;
+        if (sizeBadge) sizeBadge.textContent = '';
+        const commonSizes = ['S', 'M', 'L', 'XL', '2XL', 'Freesize', '36', '37', '38', '39', '40', '41', '42', '43'];
+        options += commonSizes.map(s => {
+          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
+        }).join('');
+      }
+
+      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Size khác (tự gõ)...</option>`;
+      sizeSelect.innerHTML = options;
+
+      if (!isFound && cleanSelected) {
+        sizeSelect.value = '__custom__';
+        sizeCustom.style.display = 'block';
+        sizeCustom.value = cleanSelected;
+      } else if (sizeSelect.value === '__custom__') {
+        sizeCustom.style.display = 'block';
+      } else {
+        sizeCustom.style.display = 'none';
+        sizeCustom.value = '';
       }
     };
+
+    colorSelect.addEventListener('change', () => {
+      if (colorSelect.value === '__custom__') {
+        colorCustom.style.display = 'block';
+        colorCustom.focus();
+      } else {
+        colorCustom.style.display = 'none';
+        colorCustom.value = '';
+      }
+    });
+
+    sizeSelect.addEventListener('change', () => {
+      if (sizeSelect.value === '__custom__') {
+        sizeCustom.style.display = 'block';
+        sizeCustom.focus();
+      } else {
+        sizeCustom.style.display = 'none';
+        sizeCustom.value = '';
+      }
+    });
+
+    // Khởi tạo trạng thái màu và size ban đầu
+    const initialProd = itemData && itemData.productId ? window.appStore.getProductById(itemData.productId) : null;
+    updateColorOptions(initialProd, itemData?.color || '');
+    updateSizeOptions(initialProd, itemData?.size || '');
 
     prodSelect.addEventListener('change', () => {
       const selected = prodSelect.options[prodSelect.selectedIndex];
@@ -1797,9 +1893,6 @@ const MobileApp = {
     if (itemData) {
       if (itemData.productId) {
         prodSelect.value = itemData.productId;
-        const prod = window.appStore.getProductById(itemData.productId);
-        updateColorOptions(prod, itemData.color || '');
-        updateSizeOptions(prod, itemData.size || '');
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;

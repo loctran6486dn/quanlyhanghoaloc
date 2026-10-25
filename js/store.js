@@ -467,6 +467,7 @@ class DataStore {
         productName: item.productName || (prod ? prod.name : 'Sản phẩm'),
         sku: prod ? prod.sku : '',
         color: (item.color || '').trim(),
+        size: (item.size || '').trim(),
         quantity: Number(item.quantity || 1),
         sellingPrice,
         costPrice
@@ -580,6 +581,7 @@ class DataStore {
         productName: item.productName || (prod ? prod.name : 'Sản phẩm'),
         sku: prod ? prod.sku : '',
         color: (item.color || '').trim(),
+        size: (item.size || '').trim(),
         quantity: Number(item.quantity || 1),
         sellingPrice,
         costPrice
@@ -777,6 +779,7 @@ class DataStore {
           { name: 'Đen', quantity: 15 },
           { name: 'Xám', quantity: 5 }
         ],
+        sizes: ['S', 'M', 'L', 'XL'],
         costPrice: 53000,
         sellingPrice: 120000,
         stock: 45,
@@ -794,6 +797,7 @@ class DataStore {
           { name: 'Đen', quantity: 18 },
           { name: 'Xanh', quantity: 10 }
         ],
+        sizes: ['M', 'L', 'XL', '2XL'],
         costPrice: 85000,
         sellingPrice: 185000,
         stock: 28,
@@ -807,6 +811,11 @@ class DataStore {
         category: 'Thời trang',
         unit: 'Cái',
         weight: 0.55, // 550g
+        colors: [
+          { name: 'Xanh nhạt', quantity: 8 },
+          { name: 'Xanh đậm', quantity: 7 }
+        ],
+        sizes: ['29', '30', '31', '32'],
         costPrice: 155000,
         sellingPrice: 290000,
         stock: 15,
@@ -820,6 +829,7 @@ class DataStore {
         category: 'Phụ kiện',
         unit: 'Chiếc',
         weight: 0.85, // 850g
+        sizes: ['Tiêu chuẩn'],
         costPrice: 130000,
         sellingPrice: 260000,
         stock: 4,
@@ -833,6 +843,7 @@ class DataStore {
         category: 'Phụ kiện',
         unit: 'Set',
         weight: 0.1, // 100g
+        sizes: ['Freesize'],
         costPrice: 32000,
         sellingPrice: 75000,
         stock: 60,
