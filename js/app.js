@@ -581,6 +581,28 @@ const MobileApp = {
       });
     });
 
+    // Chạm chọn size nhanh (Quần áo / Giày dép)
+    const sizeChips = document.querySelectorAll('#modalProduct .size-chip');
+    sizeChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        const size = chip.getAttribute('data-size');
+        if (size) {
+          MobileApp.toggleSize(size);
+        }
+      });
+    });
+
+    const sizesInput = document.getElementById('prodSizes');
+    if (sizesInput) {
+      sizesInput.addEventListener('input', () => {
+        MobileApp.renderSizeChipsState();
+      });
+    }
+
+    document.getElementById('btnClearSizes')?.addEventListener('click', () => {
+      MobileApp.setSelectedSizes([]);
+    });
+
     // Form submit sản phẩm
     document.getElementById('formProduct')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -606,6 +628,9 @@ const MobileApp = {
         }
       });
 
+      // Đọc danh sách kích cỡ (size)
+      const sizes = this.getSelectedSizes();
+
       // Nếu có phân loại màu thì lấy tổng số lượng các màu làm tồn kho, ngược lại lấy ô prodStock
       let stock = parseInt(document.getElementById('prodStock').value, 10) || 0;
       if (colors.length > 0) {
@@ -620,6 +645,7 @@ const MobileApp = {
         unit,
         weight,
         colors,
+        sizes,
         costPrice,
         sellingPrice,
         stock,
@@ -710,6 +736,78 @@ const MobileApp = {
   hideCategorySuggestions() {
     const dropdown = document.getElementById('categorySuggestionsDropdown');
     if (dropdown) dropdown.classList.remove('show');
+  },
+
+  /* =================== QUẢN LÝ KÍCH CỠ (SIZE) =================== */
+  getSelectedSizes() {
+    const input = document.getElementById('prodSizes');
+    if (!input || !input.value) return [];
+    return input.value
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+  },
+
+  setSelectedSizes(sizesArray = []) {
+    const input = document.getElementById('prodSizes');
+    const clean = Array.isArray(sizesArray)
+      ? sizesArray.map(s => String(s).trim()).filter(Boolean)
+      : (sizesArray ? String(sizesArray).split(',').map(s => s.trim()).filter(Boolean) : []);
+
+    if (input) {
+      input.value = clean.join(', ');
+    }
+    this.renderSizeChipsState();
+  },
+
+  toggleSize(size) {
+    if (!size) return;
+    const current = this.getSelectedSizes();
+    const index = current.findIndex(s => s.toLowerCase() === size.toLowerCase());
+    if (index >= 0) {
+      current.splice(index, 1);
+    } else {
+      current.push(size);
+    }
+    this.setSelectedSizes(current);
+  },
+
+  renderSizeChipsState() {
+    const selected = this.getSelectedSizes();
+    const selectedLower = selected.map(s => s.toLowerCase());
+
+    // Cập nhật trạng thái active của các chip size gợi ý
+    const sizeChips = document.querySelectorAll('#modalProduct .size-chip');
+    sizeChips.forEach(chip => {
+      const s = chip.getAttribute('data-size') || '';
+      chip.classList.toggle('active', selectedLower.includes(s.toLowerCase()));
+    });
+
+    // Cập nhật preview pills
+    const previewContainer = document.getElementById('selectedSizesPreview');
+    const countBadge = document.getElementById('selectedSizesCount');
+    const clearBtn = document.getElementById('btnClearSizes');
+
+    if (previewContainer) {
+      if (selected.length === 0) {
+        previewContainer.innerHTML = '';
+      } else {
+        previewContainer.innerHTML = selected.map(s => `
+          <span class="size-preview-item">
+            <span>Size ${s}</span>
+            <span class="remove-size-btn" onclick="MobileApp.toggleSize('${s}')" title="Bỏ size">&times;</span>
+          </span>
+        `).join('');
+      }
+    }
+
+    if (countBadge) {
+      countBadge.textContent = selected.length > 0 ? `(${selected.length} size)` : '';
+    }
+
+    if (clearBtn) {
+      clearBtn.style.display = selected.length > 0 ? 'inline-block' : 'none';
+    }
   },
 
   addColorRow(colorName = '', qty = 1) {
@@ -809,6 +907,7 @@ const MobileApp = {
         }
       }
       MobileApp.syncColorStockSum();
+      MobileApp.setSelectedSizes(product && product.sizes ? product.sizes : []);
       MobileApp.hideCategorySuggestions();
     } catch (err) {
       console.warn('Lỗi chuẩn bị form sản phẩm:', err);
@@ -891,6 +990,17 @@ const MobileApp = {
         </div>
       ` : '';
 
+      const sizesBreakdownHtml = (Array.isArray(p.sizes) && p.sizes.length > 0) ? `
+        <div class="prod-sizes-breakdown" style="margin-top: 8px;">
+          <div style="color: #64748b; font-weight: 700; margin-bottom: 5px; font-size: 11px;">Kích cỡ (Size):</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+            ${p.sizes.map(s => `
+              <span class="size-pill-tag">Size ${s}</span>
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+
       const notesHtml = p.notes ? `<div class="prod-notes-row" style="display: inline-flex; align-items: center; gap: 5px;">${Icons.note} <span>${p.notes}</span></div>` : '';
 
       return `
@@ -935,6 +1045,7 @@ const MobileApp = {
             </div>
 
             ${colorsBreakdownHtml}
+            ${sizesBreakdownHtml}
             ${notesHtml}
 
             <div class="prod-card-actions-bar">
@@ -1429,6 +1540,8 @@ const MobileApp = {
         const sellingPrice = Calculations.parseDecimal(priceInput.value, 0);
         const colorSelect = row.querySelector('.sale-color-select');
         const color = (colorSelect ? colorSelect.value : '').trim();
+        const sizeSelect = row.querySelector('.sale-size-select');
+        const size = (sizeSelect ? sizeSelect.value : '').trim();
 
         if (!productId || quantity <= 0) {
           isValid = false;
@@ -1436,7 +1549,7 @@ const MobileApp = {
           const prod = window.appStore.getProductById(productId);
           let availableStock = prod ? Number(prod.stock || 0) : 0;
           if (oldSale && Array.isArray(oldSale.items)) {
-            const oldItem = oldSale.items.find(it => it.productId === productId && (it.color || '').trim().toLowerCase() === color.toLowerCase());
+            const oldItem = oldSale.items.find(it => it.productId === productId && (it.color || '').trim().toLowerCase() === color.toLowerCase() && (it.size || '').trim().toLowerCase() === size.toLowerCase());
             if (oldItem) {
               availableStock += Number(oldItem.quantity || 0);
             }
@@ -1450,6 +1563,7 @@ const MobileApp = {
             productName: prod ? prod.name : 'Sản phẩm',
             sku: prod ? prod.sku : '',
             color,
+            size,
             quantity,
             sellingPrice,
             costPrice: prod ? prod.costPrice : 0
@@ -1606,6 +1720,12 @@ const MobileApp = {
           <option value="">-- Mặc định --</option>
         </select>
       </div>
+      <div class="sale-size-wrap" style="display: none; margin-bottom: 8px; background: #f0fdf4; padding: 8px 12px; border-radius: 12px; border: 1.5px solid #bbf7d0;">
+        <label style="font-size: 11px; color: #15803d; font-weight: 700; margin-bottom: 4px; display: block;">Chọn kích cỡ (Size):</label>
+        <select class="form-control sale-size-select" style="font-size: 13px; height: 38px; background: #ffffff; border-radius: 10px; font-weight: 600;">
+          <option value="">-- Mặc định --</option>
+        </select>
+      </div>
       <div class="form-row">
         <div>
           <label style="font-size: 11px; color: #64748b; font-weight: 700;">Số lượng bán:</label>
@@ -1629,6 +1749,8 @@ const MobileApp = {
     const qtyInput = div.querySelector('.sale-qty-input');
     const colorWrap = div.querySelector('.sale-color-wrap');
     const colorSelect = div.querySelector('.sale-color-select');
+    const sizeWrap = div.querySelector('.sale-size-wrap');
+    const sizeSelect = div.querySelector('.sale-size-select');
 
     const updateColorOptions = (prod, selectedColor = '') => {
       if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
@@ -1643,6 +1765,19 @@ const MobileApp = {
       }
     };
 
+    const updateSizeOptions = (prod, selectedSize = '') => {
+      if (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
+        sizeWrap.style.display = 'block';
+        sizeSelect.innerHTML = `<option value="">-- Chọn kích cỡ (${prod.sizes.length} size) --</option>` +
+          prod.sizes.map(s => `
+            <option value="${s}" ${String(s).toLowerCase() === String(selectedSize || '').toLowerCase() ? 'selected' : ''}>Size ${s}</option>
+          `).join('');
+      } else {
+        sizeWrap.style.display = 'none';
+        sizeSelect.innerHTML = `<option value="">-- Mặc định --</option>`;
+      }
+    };
+
     prodSelect.addEventListener('change', () => {
       const selected = prodSelect.options[prodSelect.selectedIndex];
       const price = selected?.getAttribute('data-price');
@@ -1652,6 +1787,7 @@ const MobileApp = {
 
       const prod = window.appStore.getProductById(prodSelect.value);
       updateColorOptions(prod);
+      updateSizeOptions(prod);
       this.updateSaleLiveCalc();
     });
 
@@ -1663,6 +1799,7 @@ const MobileApp = {
         prodSelect.value = itemData.productId;
         const prod = window.appStore.getProductById(itemData.productId);
         updateColorOptions(prod, itemData.color || '');
+        updateSizeOptions(prod, itemData.size || '');
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;
@@ -1804,7 +1941,7 @@ const MobileApp = {
     container.innerHTML = filtered.map(s => {
       const itemsList = (s.items || []).map(i => `
         <span style="display: inline-block; margin-right: 6px;">
-          • <strong>${i.productName}</strong>${i.color ? ` (Màu: ${i.color})` : ''} <span style="color: #64748b;">(x${i.quantity})</span>
+          • <strong>${i.productName}</strong>${i.color ? ` (Màu: ${i.color})` : ''}${i.size ? ` (Size: ${i.size})` : ''} <span style="color: #64748b;">(x${i.quantity})</span>
         </span>
       `).join('');
 

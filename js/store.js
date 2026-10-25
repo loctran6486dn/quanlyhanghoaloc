@@ -317,6 +317,11 @@ class DataStore {
       }))
       .filter(c => c.name.length > 0) : [];
 
+    // Xử lý mảng kích cỡ (Size cho quần áo, giày dép...)
+    const cleanedSizes = Array.isArray(product.sizes)
+      ? product.sizes.map(s => String(s).trim()).filter(Boolean)
+      : (product.sizes ? String(product.sizes).split(',').map(s => s.trim()).filter(Boolean) : []);
+
     // Nếu có danh sách màu, tồn kho sẽ tự động đồng bộ là tổng số lượng các màu
     let finalStock = Number(product.stock || 0);
     if (cleanedColors.length > 0) {
@@ -331,6 +336,7 @@ class DataStore {
       unit: product.unit || 'Cái',
       weight: Calculations.parseDecimal(product.weight, 0.2), // Khối lượng kg/đơn vị (hỗ trợ cả dấu phẩy)
       colors: cleanedColors,
+      sizes: cleanedSizes,
       costPrice: Number(product.costPrice || 0),
       sellingPrice: Number(product.sellingPrice || 0),
       stock: finalStock,

@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=4.4">
+  <link rel="stylesheet" href="css/style.css?v=4.5">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1177,6 +1177,56 @@
             </div>
           </div>
 
+          <!-- BENTO CARD 5: KÍCH CỠ (SIZE CHO GIÀY DÉP, ÁO QUẦN) -->
+          <div class="bento-modal-card bento-modal-card-blue product-sizes-box" style="margin-top: 12px;">
+            <div class="bento-card-title">
+              <span class="bento-tag-pill tag-blue">Kích cỡ (Size sản phẩm)</span>
+              <button type="button" id="btnClearSizes" class="bento-pill-btn" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 3px 10px; border: 1px solid #cbd5e1; display: none;">Xóa size</button>
+            </div>
+
+            <!-- Gợi ý chọn size nhanh theo loại hàng (1 chạm trên điện thoại) -->
+            <div style="font-size: 11.5px; color: #0284c7; margin-bottom: 6px; font-weight: 700;">
+              Chạm nhanh để chọn size (Áo quần / Giày dép):
+            </div>
+
+            <!-- Nhóm size Áo quần -->
+            <div style="font-size: 10.5px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">• Quần áo:</div>
+            <div class="quick-size-chips-wrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+              <button type="button" class="size-chip" data-size="S">S</button>
+              <button type="button" class="size-chip" data-size="M">M</button>
+              <button type="button" class="size-chip" data-size="L">L</button>
+              <button type="button" class="size-chip" data-size="XL">XL</button>
+              <button type="button" class="size-chip" data-size="2XL">2XL</button>
+              <button type="button" class="size-chip" data-size="3XL">3XL</button>
+              <button type="button" class="size-chip" data-size="Freesize">Freesize</button>
+            </div>
+
+            <!-- Nhóm size Giày dép -->
+            <div style="font-size: 10.5px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">• Giày dép:</div>
+            <div class="quick-size-chips-wrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
+              <button type="button" class="size-chip" data-size="35">35</button>
+              <button type="button" class="size-chip" data-size="36">36</button>
+              <button type="button" class="size-chip" data-size="37">37</button>
+              <button type="button" class="size-chip" data-size="38">38</button>
+              <button type="button" class="size-chip" data-size="39">39</button>
+              <button type="button" class="size-chip" data-size="40">40</button>
+              <button type="button" class="size-chip" data-size="41">41</button>
+              <button type="button" class="size-chip" data-size="42">42</button>
+              <button type="button" class="size-chip" data-size="43">43</button>
+              <button type="button" class="size-chip" data-size="44">44</button>
+            </div>
+
+            <!-- Ô nhập liệu và hiển thị các size đã chọn -->
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span>Danh sách size đã chọn (hoặc tự gõ thêm):</span>
+                <span id="selectedSizesCount" style="font-size: 10.5px; color: #0284c7; font-weight: 700;"></span>
+              </label>
+              <input type="text" id="prodSizes" class="form-control" placeholder="VD: S, M, L, XL hoặc 38, 39, 40 (cách nhau dấu phẩy)" style="font-weight: 700;">
+              <div id="selectedSizesPreview" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;"></div>
+            </div>
+          </div>
+
           <!-- GHI CHÚ -->
           <div class="bento-modal-card" style="margin-bottom: 0;">
             <div class="form-group" style="margin-bottom: 0;">
@@ -1441,11 +1491,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=4.3"></script>
-  <script src="js/cloud-sync.js?v=4.3"></script>
-  <script src="js/store.js?v=4.3"></script>
-  <script src="js/export.js?v=4.3"></script>
-  <script src="js/charts.js?v=4.3"></script>
-  <script src="js/app.js?v=4.3"></script>
+  <script src="js/calculations.js?v=4.5"></script>
+  <script src="js/cloud-sync.js?v=4.5"></script>
+  <script src="js/store.js?v=4.5"></script>
+  <script src="js/export.js?v=4.5"></script>
+  <script src="js/charts.js?v=4.5"></script>
+  <script src="js/app.js?v=4.5"></script>
 </body>
 </html>

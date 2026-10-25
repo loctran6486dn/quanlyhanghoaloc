@@ -52,6 +52,7 @@ const ExportManager = {
         'Đơn vị tính': p.unit,
         'Khối lượng (kg)': p.weight !== undefined ? p.weight : 0.2,
         'Phân loại màu': Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(c => `${c.name} (${c.quantity})`).join(', ') : '',
+        'Kích cỡ (Size)': Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes.join(', ') : '',
         'Tồn kho': p.stock,
         'Cảnh báo tồn tối thiểu': p.minStock,
         'Giá vốn (VNĐ)': p.costPrice,
@@ -68,7 +69,7 @@ const ExportManager = {
     }
 
     // Fallback sang CSV chuẩn UTF-8
-    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Phân loại màu', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
+    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Phân loại màu', 'Kích cỡ (Size)', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
     const rows = products.map((p, idx) => [
       idx + 1,
       p.sku,
@@ -77,6 +78,7 @@ const ExportManager = {
       p.unit,
       p.weight !== undefined ? p.weight : 0.2,
       Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(c => `${c.name} (${c.quantity})`).join(', ') : '',
+      Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes.join(', ') : '',
       p.stock,
       p.minStock,
       p.costPrice,
@@ -97,7 +99,7 @@ const ExportManager = {
 
     if (window.XLSX) {
       const data = sales.map((s, idx) => {
-        const itemNames = (s.items || []).map(i => `${i.productName}${i.color ? ` [Màu ${i.color}]` : ''} (x${i.quantity})`).join(', ');
+        const itemNames = (s.items || []).map(i => `${i.productName}${i.color ? ` [Màu ${i.color}]` : ''}${i.size ? ` [Size ${i.size}]` : ''} (x${i.quantity})`).join(', ');
         return {
           'STT': idx + 1,
           'Mã đơn hàng': s.code,
@@ -133,7 +135,7 @@ const ExportManager = {
       s.customerName,
       s.customerPhone || '',
       s.channel,
-      (s.items || []).map(i => `${i.productName}${i.color ? ` [Màu ${i.color}]` : ''} (x${i.quantity})`).join('; '),
+      (s.items || []).map(i => `${i.productName}${i.color ? ` [Màu ${i.color}]` : ''}${i.size ? ` [Size ${i.size}]` : ''} (x${i.quantity})`).join('; '),
       s.shippingFee,
       s.shippingPayer === 'shop' ? 'Shop chịu' : 'Khách trả',
       s.discount,
@@ -230,6 +232,8 @@ const ExportManager = {
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${idx + 1}</td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd;">
           <strong>${it.productName}</strong>
+          ${it.color ? `<span style="font-size: 11px; color: #6d28d9; margin-left: 4px;">[Màu: ${it.color}]</span>` : ''}
+          ${it.size ? `<span style="font-size: 11px; color: #15803d; margin-left: 4px;">[Size: ${it.size}]</span>` : ''}
           ${it.sku ? `<div style="font-size: 11px; color: #666;">SKU: ${it.sku}</div>` : ''}
         </td>
         <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">${it.quantity}</td>
