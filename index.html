@@ -15,7 +15,7 @@
   <link rel="manifest" href="manifest.json">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=3.7">
+  <link rel="stylesheet" href="css/style.css?v=3.8">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -306,7 +306,15 @@
       <!-- ================= TAB 2: HÀNG HÓA & TỒN KHO ================= -->
       <section id="tab-products" class="tab-panel">
         <div class="search-header-row">
-          <input type="text" id="mobileProductSearch" class="form-control" placeholder="Tìm tên sản phẩm, mã SKU..." style="border-radius: 14px;">
+          <div class="search-input-wrapper">
+            <input type="text" id="mobileProductSearch" class="form-control" placeholder="Tìm tên sản phẩm, mã SKU..." style="border-radius: 14px;">
+            <button type="button" class="btn-clear-search" id="btnClearProductSearch" title="Xóa nhanh tìm kiếm" aria-label="Xóa nhanh tìm kiếm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
           <button type="button" class="btn-dark-pill" id="btnMobileAddProduct" onclick="if(window.MobileApp){MobileApp.openAddProductModal(event);}else if(window.openAddProductModal){window.openAddProductModal(event);}" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
         </div>
 
@@ -348,7 +356,15 @@
       <!-- ================= TAB 4: QUẢN LÝ (ĐƠN BÁN & LỊCH SỬ MUA BÁN) ================= -->
       <section id="tab-sales" class="tab-panel">
         <div class="search-header-row">
-          <input type="text" id="mobileSalesSearch" class="form-control" placeholder="Tìm mã đơn, tên khách, SĐT..." style="border-radius: 14px;">
+          <div class="search-input-wrapper">
+            <input type="text" id="mobileSalesSearch" class="form-control" placeholder="Tìm mã đơn, tên khách, SĐT..." style="border-radius: 14px;">
+            <button type="button" class="btn-clear-search" id="btnClearSalesSearch" title="Xóa nhanh tìm kiếm" aria-label="Xóa nhanh tìm kiếm">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
           <button type="button" class="btn-dark-pill" id="btnMobileAddSale" onclick="if(window.MobileApp){MobileApp.openAddSaleModal(event);}else if(window.openAddSaleModal){window.openAddSaleModal(event);}" style="flex-shrink: 0; padding: 0 18px;">+ Tạo Đơn</button>
         </div>
 
@@ -1420,11 +1436,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=3.7"></script>
-  <script src="js/cloud-sync.js?v=3.7"></script>
-  <script src="js/store.js?v=3.7"></script>
-  <script src="js/export.js?v=3.7"></script>
-  <script src="js/charts.js?v=3.7"></script>
-  <script src="js/app.js?v=3.7"></script>
+  <script src="js/calculations.js?v=3.8"></script>
+  <script src="js/cloud-sync.js?v=3.8"></script>
+  <script src="js/store.js?v=3.8"></script>
+  <script src="js/export.js?v=3.8"></script>
+  <script src="js/charts.js?v=3.8"></script>
+  <script src="js/app.js?v=3.8"></script>
 </body>
 </html>

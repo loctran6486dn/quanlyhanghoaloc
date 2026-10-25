@@ -476,7 +476,33 @@ const MobileApp = {
       this.showToast('Đã tải danh sách hàng hóa ra Excel!');
     });
 
-    document.getElementById('mobileProductSearch')?.addEventListener('input', () => this.renderProducts());
+    const prodSearchInput = document.getElementById('mobileProductSearch');
+    const prodClearBtn = document.getElementById('btnClearProductSearch');
+
+    const updateProdClearBtn = () => {
+      if (prodClearBtn) {
+        prodClearBtn.classList.toggle('visible', !!(prodSearchInput && prodSearchInput.value.length > 0));
+      }
+    };
+
+    prodSearchInput?.addEventListener('input', () => {
+      updateProdClearBtn();
+      this.renderProducts();
+    });
+
+    prodClearBtn?.addEventListener('pointerdown', (e) => {
+      e.preventDefault(); // Tránh làm mất focus bàn phím trên điện thoại
+    });
+
+    prodClearBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (prodSearchInput) {
+        prodSearchInput.value = '';
+        updateProdClearBtn();
+        prodSearchInput.focus();
+        this.renderProducts();
+      }
+    });
 
     // Pills lọc tồn kho
     const stockPills = document.querySelectorAll('.prod-stock-pill');
@@ -800,7 +826,12 @@ const MobileApp = {
 
   renderProducts() {
     const state = window.appStore.state;
-    const search = (document.getElementById('mobileProductSearch')?.value || '').toLowerCase().trim();
+    const searchInput = document.getElementById('mobileProductSearch');
+    const clearBtn = document.getElementById('btnClearProductSearch');
+    if (clearBtn && searchInput) {
+      clearBtn.classList.toggle('visible', searchInput.value.length > 0);
+    }
+    const search = (searchInput?.value || '').toLowerCase().trim();
 
     let filtered = state.products.filter(p => {
       const matchSearch = !search || p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
@@ -1315,7 +1346,33 @@ const MobileApp = {
       this.showToast('Đã xuất lịch sử bán hàng ra Excel!');
     });
 
-    document.getElementById('mobileSalesSearch')?.addEventListener('input', () => this.renderSales());
+    const salesSearchInput = document.getElementById('mobileSalesSearch');
+    const salesClearBtn = document.getElementById('btnClearSalesSearch');
+
+    const updateSalesClearBtn = () => {
+      if (salesClearBtn) {
+        salesClearBtn.classList.toggle('visible', !!(salesSearchInput && salesSearchInput.value.length > 0));
+      }
+    };
+
+    salesSearchInput?.addEventListener('input', () => {
+      updateSalesClearBtn();
+      this.renderSales();
+    });
+
+    salesClearBtn?.addEventListener('pointerdown', (e) => {
+      e.preventDefault(); // Tránh làm mất focus bàn phím trên điện thoại
+    });
+
+    salesClearBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (salesSearchInput) {
+        salesSearchInput.value = '';
+        updateSalesClearBtn();
+        salesSearchInput.focus();
+        this.renderSales();
+      }
+    });
 
     // Pills lọc thanh toán
     const payPills = document.querySelectorAll('.sale-pay-pill');
@@ -1684,7 +1741,12 @@ const MobileApp = {
     const currentSubTab = this.manageSubTab || 'active';
     const baseList = currentSubTab === 'active' ? activeSales : historySales;
 
-    const search = (document.getElementById('mobileSalesSearch')?.value || '').toLowerCase().trim();
+    const searchInput = document.getElementById('mobileSalesSearch');
+    const clearBtn = document.getElementById('btnClearSalesSearch');
+    if (clearBtn && searchInput) {
+      clearBtn.classList.toggle('visible', searchInput.value.length > 0);
+    }
+    const search = (searchInput?.value || '').toLowerCase().trim();
 
     let filtered = baseList.filter(s => {
       const matchSearch = !search 
