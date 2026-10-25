@@ -918,6 +918,11 @@ const MobileApp = {
     const container = document.getElementById('productsCardsList');
     if (!container) return;
 
+    const countAllEl = document.getElementById('prodCountAll');
+    if (countAllEl) {
+      countAllEl.textContent = `(${state.products.length})`;
+    }
+
     if (filtered.length === 0) {
       container.innerHTML = `
         <div style="background: #fff; padding: 24px; border-radius: 14px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1px solid #e2e8f0;">
@@ -927,7 +932,7 @@ const MobileApp = {
       return;
     }
 
-    container.innerHTML = filtered.map(p => {
+    container.innerHTML = filtered.map((p, index) => {
       const stock = Number(p.stock || 0);
       const minStock = Number(p.minStock || 5);
       const cost = Number(p.costPrice || 0);
@@ -960,6 +965,7 @@ const MobileApp = {
       return `
         <div class="product-accordion-card" id="prod-card-${p.id}" onclick="MobileApp.toggleProductAccordion('${p.id}')">
           <div class="prod-compact-summary">
+            <div class="prod-index-badge">#${index + 1}</div>
             <div class="prod-summary-left">
               <div class="prod-summary-title">${p.name}</div>
               <div class="prod-summary-meta">

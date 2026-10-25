@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=4.0">
+  <link rel="stylesheet" href="css/style.css?v=4.1">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -335,7 +335,7 @@
 
         <!-- Bộ lọc nhanh trạng thái kho -->
         <div style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; scrollbar-width: none;">
-          <button type="button" class="pill-item active prod-stock-pill" data-stock="all">Tất cả</button>
+          <button type="button" class="pill-item active prod-stock-pill" data-stock="all">Tất cả <span id="prodCountAll" style="font-size: 11px; opacity: 0.85; margin-left: 2px;"></span></button>
           <button type="button" class="pill-item prod-stock-pill" data-stock="in_stock">Còn hàng</button>
           <button type="button" class="pill-item prod-stock-pill" data-stock="low_stock">Sắp hết</button>
           <button type="button" class="pill-item prod-stock-pill" data-stock="out_of_stock">Hết hàng</button>
@@ -1504,11 +1504,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=4.0"></script>
-  <script src="js/cloud-sync.js?v=4.0"></script>
-  <script src="js/store.js?v=4.0"></script>
-  <script src="js/export.js?v=4.0"></script>
-  <script src="js/charts.js?v=4.0"></script>
-  <script src="js/app.js?v=4.0"></script>
+  <script src="js/calculations.js?v=4.1"></script>
+  <script src="js/cloud-sync.js?v=4.1"></script>
+  <script src="js/store.js?v=4.1"></script>
+  <script src="js/export.js?v=4.1"></script>
+  <script src="js/charts.js?v=4.1"></script>
+  <script src="js/app.js?v=4.1"></script>
 </body>
 </html>
