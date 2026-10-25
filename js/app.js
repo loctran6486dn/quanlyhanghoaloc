@@ -965,7 +965,7 @@ const MobileApp = {
       return `
         <div class="product-accordion-card" id="prod-card-${p.id}" onclick="MobileApp.toggleProductAccordion('${p.id}')">
           <div class="prod-compact-summary">
-            <div class="prod-index-badge">#${index + 1}</div>
+            <div class="prod-index-badge">${index + 1}</div>
             <div class="prod-summary-left">
               <div class="prod-summary-title">${p.name}</div>
               <div class="prod-summary-meta">
