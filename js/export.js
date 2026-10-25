@@ -113,7 +113,7 @@ const ExportManager = {
           'Tổng giá vốn (COGS)': s.totalCOGS,
           'Lợi nhuận gộp (VNĐ)': s.grossProfit,
           'Biên lợi nhuận': Calculations.formatPercent(s.grossMargin),
-          'Trạng thái thanh toán': s.paymentStatus === 'paid' ? 'Đã thanh toán' : (s.paymentStatus === 'partial' ? 'Thu một phần' : 'Chưa thanh toán'),
+          'Trạng thái thanh toán': s.paymentStatus === 'paid' ? 'Đã thanh toán đủ' : (s.paymentStatus === 'partial' ? 'Khách cọc' : 'Nhận hàng thanh toán'),
           'Ghi chú': s.notes || ''
         };
       });
@@ -141,7 +141,7 @@ const ExportManager = {
       s.totalCOGS,
       s.grossProfit,
       Calculations.formatPercent(s.grossMargin),
-      s.paymentStatus === 'paid' ? 'Đã thanh toán' : (s.paymentStatus === 'partial' ? 'Thu một phần' : 'Chưa thu'),
+      s.paymentStatus === 'paid' ? 'Đã thanh toán đủ' : (s.paymentStatus === 'partial' ? 'Khách cọc' : 'Nhận hàng thanh toán'),
       s.notes || ''
     ]);
 
@@ -277,7 +277,7 @@ const ExportManager = {
           </div>
           <div style="text-align: right;">
             <div><strong>Kênh bán:</strong> ${sale.channel}</div>
-            <div><strong>Thanh toán:</strong> ${sale.paymentStatus === 'paid' ? 'Đã thanh toán' : (sale.paymentStatus === 'partial' ? 'Thu một phần' : 'Chưa thanh toán')}</div>
+            <div><strong>Thanh toán:</strong> ${sale.paymentStatus === 'paid' ? 'Đã thanh toán đủ' : (sale.paymentStatus === 'partial' ? `Khách cọc (${Calculations.formatNumber(sale.paidAmount)} đ)` : 'Nhận hàng thanh toán')}</div>
           </div>
         </div>
 

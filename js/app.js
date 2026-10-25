@@ -1448,7 +1448,7 @@ const MobileApp = {
         setVal('saleCustomerName', sale.customerName || 'Khách lẻ');
         setVal('saleCustomerPhone', sale.customerPhone || '');
         setVal('saleChannel', sale.channel || 'Trực tiếp');
-        setVal('salePaymentStatus', sale.paymentStatus || 'paid');
+        setVal('salePaymentStatus', sale.paymentStatus || 'unpaid');
 
         const divPaid = document.getElementById('divPaidAmount');
         if (divPaid) divPaid.style.display = sale.paymentStatus === 'partial' ? 'block' : 'none';
@@ -1475,7 +1475,7 @@ const MobileApp = {
         setVal('saleCustomerName', 'Khách lẻ');
         setVal('saleCustomerPhone', '');
         setVal('saleChannel', 'Trực tiếp');
-        setVal('salePaymentStatus', 'paid');
+        setVal('salePaymentStatus', 'unpaid');
 
         const divPaid = document.getElementById('divPaidAmount');
         if (divPaid) divPaid.style.display = 'none';
@@ -1719,11 +1719,11 @@ const MobileApp = {
       }
 
       if (currentSubTab === 'active') {
-        let statusBadge = '<span class="badge badge-success">Đã thu đủ</span>';
+        let statusBadge = '<span class="badge badge-success">Đã thanh toán đủ</span>';
         if (s.paymentStatus === 'unpaid') {
-          statusBadge = '<span class="badge badge-danger">Chưa thu (Nợ)</span>';
+          statusBadge = '<span class="badge badge-warning" style="background: #fef3c7; color: #92400e; border: 1px solid #fde68a;">Nhận hàng thanh toán</span>';
         } else if (s.paymentStatus === 'partial') {
-          statusBadge = `<span class="badge badge-warning">Đã cọc: ${Calculations.formatNumber(s.paidAmount)} đ</span>`;
+          statusBadge = `<span class="badge badge-warning" style="background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd;">Khách cọc: ${Calculations.formatNumber(s.paidAmount)} đ</span>`;
         }
 
         return `
@@ -1830,25 +1830,25 @@ const MobileApp = {
 
     const opt = prompt(
       `Cập nhật thanh toán cho đơn ${sale.code}:\n` +
-      `1: Đã thanh toán đủ (${Calculations.formatCurrency(sale.totalAmount)})\n` +
-      `2: Chưa thanh toán (Khách nợ)\n` +
-      `3: Nhập số tiền thu một phần`,
-      sale.paymentStatus === 'paid' ? '1' : (sale.paymentStatus === 'unpaid' ? '2' : '3')
+      `1: Nhận hàng thanh toán\n` +
+      `2: Đã thanh toán đủ (${Calculations.formatCurrency(sale.totalAmount)})\n` +
+      `3: Khách cọc (Nhập số tiền cọc)`,
+      sale.paymentStatus === 'unpaid' ? '1' : (sale.paymentStatus === 'paid' ? '2' : '3')
     );
 
     if (opt === '1') {
-      await window.appStore.updateSalePayment(id, 'paid', sale.totalAmount);
-      this.showToast('Đã đánh dấu: Đã thanh toán!');
-    } else if (opt === '2') {
       await window.appStore.updateSalePayment(id, 'unpaid', 0);
-      this.showToast('Đã chuyển sang: Chưa thanh toán!');
+      this.showToast('Đã chuyển sang: Nhận hàng thanh toán!');
+    } else if (opt === '2') {
+      await window.appStore.updateSalePayment(id, 'paid', sale.totalAmount);
+      this.showToast('Đã đánh dấu: Đã thanh toán đủ!');
     } else if (opt === '3') {
-      const amtStr = prompt('Nhập số tiền đã nhận:', sale.paidAmount || '0');
+      const amtStr = prompt('Nhập số tiền khách cọc:', sale.paidAmount || '0');
       if (amtStr !== null) {
         const amt = parseFloat(amtStr) || 0;
         const status = amt >= sale.totalAmount ? 'paid' : (amt > 0 ? 'partial' : 'unpaid');
         await window.appStore.updateSalePayment(id, status, amt);
-        this.showToast('Đã cập nhật tiền thanh toán!');
+        this.showToast(status === 'paid' ? 'Đã thu đủ toàn bộ đơn!' : 'Đã cập nhật tiền khách cọc!');
       }
     }
   },

@@ -489,7 +489,7 @@ class DataStore {
       totalCOGS: financials.totalCOGS,
       grossProfit: financials.grossProfit,
       grossMargin: financials.grossMargin,
-      paymentStatus: saleData.paymentStatus || 'paid', // 'paid', 'unpaid', 'partial'
+      paymentStatus: saleData.paymentStatus || 'unpaid', // 'unpaid' (Nhận hàng thanh toán), 'paid' (Đã thanh toán đủ), 'partial' (Khách cọc)
       paidAmount: saleData.paymentStatus === 'paid' ? financials.totalCustomerPayment : Number(saleData.paidAmount || 0),
       status: saleData.status || 'pending', // 'pending' (Đơn bán đang xử lý), 'completed' (Đã hoàn thành)
       notes: saleData.notes || '',
