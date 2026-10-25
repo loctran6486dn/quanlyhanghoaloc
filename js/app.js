@@ -26,8 +26,10 @@ const MobileApp = {
   productStockFilter: 'all',
   salesPaymentFilter: 'all',
   manageSubTab: 'active',
+  currentTheme: 'wordsy',
 
   init() {
+    this.initTheme();
     this.setupDatePillFilters();
     this.setupBottomNav();
     this.setupModalEvents();
@@ -62,6 +64,73 @@ const MobileApp = {
         this.showToast('Chào bạn! Vào Cài Đặt để nạp Dữ liệu mẫu trải nghiệm ngay.', 'info');
       }, 600);
     }
+  },
+
+  /* =================== QUẢN LÝ GIAO DIỆN & ROLLBACK (WORDSY NEO-POP VS BENTO CLASSIC) =================== */
+  initTheme() {
+    let saved = 'wordsy';
+    try {
+      saved = localStorage.getItem('app_ui_theme') || 'wordsy';
+    } catch (e) {
+      saved = 'wordsy';
+    }
+    this.applyTheme(saved, false);
+  },
+
+  applyTheme(theme, notify = true) {
+    const target = theme === 'classic' ? 'classic' : 'wordsy';
+    this.currentTheme = target;
+    try {
+      localStorage.setItem('app_ui_theme', target);
+    } catch (e) {
+      console.warn('Cannot write localStorage:', e);
+    }
+
+    if (target === 'classic') {
+      document.body.classList.remove('theme-wordsy');
+      document.body.classList.add('theme-classic');
+    } else {
+      document.body.classList.remove('theme-classic');
+      document.body.classList.add('theme-wordsy');
+    }
+
+    // Cập nhật trạng thái card lựa chọn trong Cài Đặt (nếu có)
+    const cardWordsy = document.getElementById('themeCardWordsy');
+    const cardClassic = document.getElementById('themeCardClassic');
+    if (cardWordsy && cardClassic) {
+      if (target === 'wordsy') {
+        cardWordsy.classList.add('active');
+        cardClassic.classList.remove('active');
+      } else {
+        cardClassic.classList.add('active');
+        cardWordsy.classList.remove('active');
+      }
+    }
+
+    // Cập nhật tooltip / title của nút header
+    const headerBtn = document.getElementById('btnHeaderThemeToggle');
+    if (headerBtn) {
+      headerBtn.setAttribute('title', target === 'wordsy' 
+        ? 'Đang dùng: Wordsy Neo-Pop (Bấm để rollback Classic)' 
+        : 'Đang dùng: Bento Classic (Bấm để bật Wordsy Neo-Pop)');
+    }
+
+    if (notify) {
+      if (target === 'wordsy') {
+        this.showToast('Đã kích hoạt phong cách Wordsy Neo-Pop (Cyan & Charcoal)!', 'success');
+      } else {
+        this.showToast('Đã hoàn tác (rollback) về giao diện Classic Bento ban đầu!', 'info');
+      }
+    }
+  },
+
+  toggleTheme() {
+    const next = this.currentTheme === 'wordsy' ? 'classic' : 'wordsy';
+    this.applyTheme(next, true);
+  },
+
+  setTheme(theme) {
+    this.applyTheme(theme, true);
   },
 
   /* =================== TOAST THÔNG BÁO =================== */

@@ -2101,3 +2101,496 @@ input[type="date"].form-control {
   color: var(--primary);
   word-break: break-all;
 }
+
+/* ==========================================================================
+   THEME SWITCHER COMPONENT (ROLLBACK & ACTIVE THEME SELECTOR)
+   ========================================================================== */
+
+.theme-switcher-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.theme-choice-card {
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 14px 12px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.theme-choice-card:active {
+  transform: scale(0.97);
+}
+
+.theme-choice-card.active {
+  border-color: #38bdf8;
+  background: #f0f9ff;
+  box-shadow: 0 6px 18px rgba(56, 189, 248, 0.2);
+}
+
+body.theme-classic .theme-choice-card.active {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.18);
+}
+
+.theme-choice-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.theme-choice-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  background: #38bdf8;
+  color: #09090b;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+}
+
+.theme-choice-badge.classic-badge {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.theme-choice-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.theme-choice-card.active .theme-choice-check {
+  background: #0284c7;
+  color: #ffffff;
+}
+
+body.theme-classic .theme-choice-card.active .theme-choice-check {
+  background: #4f46e5;
+  color: #ffffff;
+}
+
+.theme-choice-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.theme-choice-desc {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.35;
+  margin-bottom: 10px;
+  flex: 1;
+}
+
+.theme-palette-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-palette-dots span {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   WORDSY NEO-POP THEME (CYAN & CHARCOAL AESTHETIC)
+   ========================================================================== */
+
+/* Typography & Page Canvas */
+body.theme-wordsy {
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #f8fafc;
+  color: #09090b;
+}
+
+body.theme-wordsy .mobile-app-wrapper {
+  background-color: #f8fafc;
+}
+
+/* Top Header Bar */
+body.theme-wordsy .mobile-header {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1.5px solid #f1f5f9;
+}
+
+body.theme-wordsy .header-avatar {
+  background: #18181b;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(24, 24, 27, 0.25);
+}
+
+body.theme-wordsy .header-greeting {
+  color: #71717a;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+body.theme-wordsy .header-title {
+  color: #09090b;
+  font-weight: 900;
+}
+
+body.theme-wordsy .btn-icon-header {
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  color: #18181b;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.15s ease;
+}
+
+body.theme-wordsy .btn-icon-header:hover,
+body.theme-wordsy .btn-icon-header:active {
+  background: #f4f4f5;
+  border-color: #d4d4d8;
+  transform: scale(0.95);
+}
+
+/* Horizontal Filter Pills */
+body.theme-wordsy .filter-pills-bar {
+  background: #ffffff;
+  border-bottom: 1.5px solid #f1f5f9;
+  padding: 10px 16px;
+}
+
+body.theme-wordsy .pill-item {
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 7px 16px;
+  background: #ffffff;
+  color: #71717a;
+  border: 1.5px solid #e4e4e7;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.theme-wordsy .pill-item.active {
+  background: #18181b;
+  color: #ffffff;
+  border-color: #18181b;
+  box-shadow: 0 4px 14px rgba(24, 24, 27, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Hero Progress & Profit Card (Neo-Pop Vibrant Sky Cyan) */
+body.theme-wordsy .bento-hero-card {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 55%, #0284c7 100%);
+  border: none;
+  border-radius: 28px;
+  padding: 22px;
+  box-shadow: 0 14px 34px -4px rgba(14, 165, 233, 0.38);
+  color: #ffffff;
+}
+
+body.theme-wordsy .bento-tag {
+  background: #18181b !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  border-radius: 9999px;
+  padding: 4px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+body.theme-wordsy .bento-period-pill {
+  background: rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: blur(8px);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  font-weight: 700;
+  border-radius: 9999px;
+}
+
+body.theme-wordsy .hero-margin-value {
+  color: #ffffff;
+  font-weight: 900;
+  letter-spacing: -1.4px;
+}
+
+body.theme-wordsy .hero-margin-label {
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 700;
+}
+
+body.theme-wordsy #kpiNetProfit {
+  color: #ffffff !important;
+  font-weight: 900;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+body.theme-wordsy .gauge-track {
+  stroke: rgba(255, 255, 255, 0.25);
+}
+
+body.theme-wordsy .gauge-fill {
+  stroke: #ffffff;
+}
+
+body.theme-wordsy .hero-gauge-center svg {
+  stroke: #ffffff;
+}
+
+body.theme-wordsy .hero-gauge-center span {
+  color: #ffffff !important;
+  font-weight: 900;
+}
+
+body.theme-wordsy .hero-subgrid {
+  gap: 12px;
+}
+
+body.theme-wordsy .hero-sub-box {
+  background: #ffffff;
+  border: none;
+  border-radius: 18px;
+  padding: 12px 16px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+body.theme-wordsy .hero-sub-box span {
+  color: #71717a;
+  font-weight: 700;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+body.theme-wordsy .hero-sub-box strong {
+  font-size: 16px;
+  font-weight: 900;
+  color: #09090b;
+}
+
+/* Quick Action Tiles */
+body.theme-wordsy .bento-action-tile {
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 20px;
+  padding: 12px 10px;
+  box-shadow: 0 4px 14px -2px rgba(24, 24, 27, 0.04);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.theme-wordsy .bento-action-tile:active {
+  border-color: #38bdf8;
+  transform: scale(0.96);
+}
+
+body.theme-wordsy .tile-sale .action-tile-icon { background: #ffe4e6; color: #e11d48; border-color: #fecdd3; }
+body.theme-wordsy .tile-purchase .action-tile-icon { background: #dcfce7; color: #059669; border-color: #bbf7d0; }
+body.theme-wordsy .tile-product .action-tile-icon { background: #e0f2fe; color: #0284c7; border-color: #bae6fd; }
+body.theme-wordsy .tile-cashflow .action-tile-icon { background: #f3e8ff; color: #7c3aed; border-color: #e9d5ff; }
+
+/* Bento 2x2 Metric Cards (Neo-Pop Screen 3 & 4 Style) */
+body.theme-wordsy .bento-metric-card {
+  background: #ffffff !important;
+  border: 1.5px solid #e4e4e7 !important;
+  border-radius: 24px !important;
+  padding: 16px !important;
+  box-shadow: 0 4px 16px -2px rgba(24, 24, 27, 0.04) !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.theme-wordsy .bento-metric-card:active {
+  border-color: #38bdf8 !important;
+  transform: scale(0.97);
+}
+
+body.theme-wordsy .bento-card-arrow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #18181b;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  opacity: 1;
+  box-shadow: 0 2px 6px rgba(24, 24, 27, 0.2);
+  transition: transform 0.18s ease;
+}
+
+body.theme-wordsy .bento-metric-card:active .bento-card-arrow {
+  transform: translate(2px, -2px);
+}
+
+body.theme-wordsy .bento-card-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: #71717a;
+  letter-spacing: 0.3px;
+}
+
+body.theme-wordsy .bento-card-value {
+  font-size: 19px;
+  font-weight: 900;
+  color: #09090b;
+  letter-spacing: -0.4px;
+}
+
+body.theme-wordsy .bento-card-desc {
+  color: #a1a1aa;
+  font-weight: 600;
+  font-size: 10.5px;
+}
+
+/* Pill Buttons */
+body.theme-wordsy .btn-dark-pill {
+  background: #18181b;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  box-shadow: 0 6px 16px rgba(24, 24, 27, 0.24);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.theme-wordsy .btn-dark-pill:hover,
+body.theme-wordsy .btn-dark-pill:active {
+  background: #27272a;
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px rgba(24, 24, 27, 0.18);
+}
+
+body.theme-wordsy .btn-white-pill {
+  background: #ffffff;
+  color: #18181b;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 9999px;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.18s ease;
+}
+
+body.theme-wordsy .btn-white-pill:active {
+  background: #f4f4f5;
+  border-color: #d4d4d8;
+  transform: scale(0.96);
+}
+
+body.theme-wordsy .manage-subtabs {
+  background: #f4f4f5;
+  border-radius: 9999px;
+  padding: 4px;
+  border: 1px solid #e4e4e7;
+}
+
+body.theme-wordsy .manage-subtab-btn {
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #71717a;
+  transition: all 0.18s ease;
+}
+
+body.theme-wordsy .manage-subtab-btn.active {
+  background: #18181b;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(24, 24, 27, 0.22);
+}
+
+/* Search Input & Cards */
+body.theme-wordsy .search-input-wrapper .form-control {
+  border-radius: 9999px !important;
+  border: 1.5px solid #e4e4e7 !important;
+  background: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02) !important;
+  font-weight: 600;
+}
+
+body.theme-wordsy .search-input-wrapper .form-control:focus {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 0 3.5px rgba(56, 189, 248, 0.22) !important;
+}
+
+body.theme-wordsy .product-accordion-card,
+body.theme-wordsy .m-card {
+  background: #ffffff;
+  border: 1.5px solid #e4e4e7;
+  border-radius: 22px;
+  box-shadow: 0 4px 16px -2px rgba(24, 24, 27, 0.04);
+}
+
+body.theme-wordsy .product-accordion-card:active {
+  border-color: #38bdf8;
+}
+
+/* Floating Island Bottom Navigation Dock (Wordsy Screen 2 Style) */
+body.theme-wordsy .bottom-nav {
+  background: #18181b;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 20px 42px -4px rgba(0, 0, 0, 0.48);
+}
+
+body.theme-wordsy .nav-tab-btn {
+  color: #a1a1aa;
+}
+
+body.theme-wordsy .nav-tab-btn.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+}
+
+/* Center FAB Button: Electric Sky Cyan with deep charcoal '+' */
+body.theme-wordsy .nav-fab-btn {
+  background: #38bdf8;
+  color: #09090b;
+  box-shadow: 0 10px 24px rgba(56, 189, 248, 0.5), 0 0 0 4px #18181b;
+}
+
+body.theme-wordsy .nav-fab-btn:active {
+  background: #0ea5e9;
+  transform: translateY(-6px) scale(0.92);
+}
+
+/* Modals & Dialogs */
+body.theme-wordsy .bento-modal-content {
+  border-radius: 28px;
+  border: 1.5px solid #e4e4e7;
+  box-shadow: 0 24px 60px -8px rgba(0, 0, 0, 0.35);
+}
+
+body.theme-wordsy .btn-primary {
+  background: #18181b;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(24, 24, 27, 0.22);
+}
+
+body.theme-wordsy .btn-primary:hover,
+body.theme-wordsy .btn-primary:active {
+  background: #27272a;
+}
+
