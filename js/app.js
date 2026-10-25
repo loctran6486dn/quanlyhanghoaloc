@@ -986,8 +986,8 @@ const MobileApp = {
       const divTotalWeight = document.getElementById('divPoTotalWeight');
       const costInput = document.getElementById('poShippingCost');
 
-      if (divPricePerKg) divPricePerKg.style.display = isWeight ? 'block' : 'none';
-      if (divTotalWeight) divTotalWeight.style.display = isWeight ? 'block' : 'none';
+      if (divPricePerKg) divPricePerKg.style.display = isWeight ? 'flex' : 'none';
+      if (divTotalWeight) divTotalWeight.style.display = isWeight ? 'flex' : 'none';
       if (costInput) {
         costInput.readOnly = isWeight;
         costInput.style.background = isWeight ? '#f1f5f9' : '#fff';
