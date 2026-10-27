@@ -423,6 +423,26 @@ class DataStore {
 
         prod.stock = newStock;
         prod.costPrice = newAverageCost;
+
+        // Cập nhật tồn kho màu sắc tương ứng (nếu có)
+        if (it.color) {
+          if (!Array.isArray(prod.colors)) prod.colors = [];
+          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
+          if (colorObj) {
+            colorObj.quantity = Number(colorObj.quantity || 0) + addedQty;
+          } else {
+            prod.colors.push({ name: it.color, quantity: addedQty });
+          }
+        }
+
+        // Cập nhật kích cỡ vào danh sách size sản phẩm (nếu có size mới)
+        if (it.size) {
+          if (!Array.isArray(prod.sizes)) prod.sizes = [];
+          if (!prod.sizes.some(s => String(s).toLowerCase() === String(it.size).toLowerCase())) {
+            prod.sizes.push(it.size);
+          }
+        }
+
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -443,6 +463,12 @@ class DataStore {
       const prod = this.getProductById(it.productId);
       if (prod) {
         prod.stock = Math.max(0, Number(prod.stock || 0) - Number(it.quantity || 0));
+        if (it.color && Array.isArray(prod.colors)) {
+          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
+          if (colorObj) {
+            colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
+          }
+        }
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }

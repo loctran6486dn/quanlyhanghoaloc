@@ -1151,6 +1151,18 @@ const MobileApp = {
         const priceInput = row.querySelector('.po-price-input');
         const weightInput = row.querySelector('.po-weight-input');
 
+        const colorSelect = row.querySelector('.po-color-select');
+        const colorCustom = row.querySelector('.po-color-custom');
+        const color = (colorSelect && colorSelect.value === '__custom__')
+          ? (colorCustom ? colorCustom.value : '').trim()
+          : (colorSelect ? colorSelect.value : '').trim();
+
+        const sizeSelect = row.querySelector('.po-size-select');
+        const sizeCustom = row.querySelector('.po-size-custom');
+        const size = (sizeSelect && sizeSelect.value === '__custom__')
+          ? (sizeCustom ? sizeCustom.value : '').trim()
+          : (sizeSelect ? sizeSelect.value : '').trim();
+
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
         const purchasePrice = Calculations.parseDecimal(priceInput.value, 0);
@@ -1163,6 +1175,8 @@ const MobileApp = {
           items.push({
             productId,
             productName: prod ? prod.name : 'Sản phẩm',
+            color,
+            size,
             quantity,
             purchasePrice,
             weight
@@ -1240,8 +1254,10 @@ const MobileApp = {
     this.openModal('modalPurchase');
   },
 
-  addPurchaseRow() {
+  addPurchaseRow(itemData = null) {
     const container = document.getElementById('purchaseItemsContainer');
+    if (!container) return;
+
     const div = document.createElement('div');
     div.className = 'mobile-item-row bento-dynamic-row';
 
@@ -1253,11 +1269,37 @@ const MobileApp = {
     div.innerHTML = `
       <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
         <select class="form-control po-product-select" style="flex: 1; font-weight: 700; border-radius: 12px;" required>
-          <option value="">-- Chọn sản phẩm --</option>
+          <option value="">-- Chọn sản phẩm nhập --</option>
           ${optionsHtml}
         </select>
-        <button type="button" class="btn-icon-remove" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
+        <button type="button" class="btn-icon-remove btn-remove-row" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
       </div>
+
+      <!-- KHU VỰC CHỌN MÀU SẮC & KÍCH CỠ (SIZE) TRONG PHIẾU NHẬP -->
+      <div class="form-row po-variant-row" style="margin-bottom: 8px;">
+        <div class="po-color-col">
+          <label style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span>🎨 Màu sắc:</span>
+            <span class="po-color-badge" style="font-size: 10px; color: #7c3aed; font-weight: 600;"></span>
+          </label>
+          <select class="form-control po-color-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+            <option value="">-- Mặc định --</option>
+          </select>
+          <input type="text" class="form-control po-color-custom" placeholder="Nhập tên màu..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+        </div>
+
+        <div class="po-size-col">
+          <label style="font-size: 11px; color: #0284c7; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+            <span>📏 Kích cỡ (Size):</span>
+            <span class="po-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
+          </label>
+          <select class="form-control po-size-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+            <option value="">-- Mặc định --</option>
+          </select>
+          <input type="text" class="form-control po-size-custom" placeholder="Nhập kích cỡ..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+        </div>
+      </div>
+
       <div class="form-row">
         <div>
           <label style="font-size: 11px; color: #64748b; font-weight: 700;">Số lượng nhập:</label>
@@ -1292,17 +1334,125 @@ const MobileApp = {
     const priceInput = div.querySelector('.po-price-input');
     const qtyInput = div.querySelector('.po-qty-input');
     const weightInput = div.querySelector('.po-weight-input');
+    const colorSelect = div.querySelector('.po-color-select');
+    const colorCustom = div.querySelector('.po-color-custom');
+    const colorBadge = div.querySelector('.po-color-badge');
+    const sizeSelect = div.querySelector('.po-size-select');
+    const sizeCustom = div.querySelector('.po-size-custom');
+    const sizeBadge = div.querySelector('.po-size-badge');
+
+    const updateColorOptions = (prod, selectedColor = '') => {
+      let options = `<option value="">-- Mặc định --</option>`;
+      const cleanSelected = (selectedColor || '').trim();
+      let isFound = false;
+
+      if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
+        if (colorBadge) colorBadge.textContent = `(${prod.colors.length} màu kho)`;
+        options += prod.colors.map(c => {
+          const match = c.name.toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${c.name}" ${match ? 'selected' : ''}>Màu ${c.name} (Tồn: ${c.quantity})</option>`;
+        }).join('');
+      } else {
+        if (colorBadge) colorBadge.textContent = '';
+        const commonColors = ['Đen', 'Trắng', 'Xám', 'Xanh', 'Đỏ', 'Vàng', 'Hồng', 'Be', 'Nâu'];
+        options += commonColors.map(c => {
+          const match = c.toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${c}" ${match ? 'selected' : ''}>Màu ${c}</option>`;
+        }).join('');
+      }
+
+      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Màu khác (tự gõ)...</option>`;
+      colorSelect.innerHTML = options;
+
+      if (!isFound && cleanSelected) {
+        colorSelect.value = '__custom__';
+        colorCustom.style.display = 'block';
+        colorCustom.value = cleanSelected;
+      } else if (colorSelect.value === '__custom__') {
+        colorCustom.style.display = 'block';
+      } else {
+        colorCustom.style.display = 'none';
+        colorCustom.value = '';
+      }
+    };
+
+    const updateSizeOptions = (prod, selectedSize = '') => {
+      let options = `<option value="">-- Mặc định --</option>`;
+      const cleanSelected = (selectedSize || '').trim();
+      let isFound = false;
+
+      if (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
+        if (sizeBadge) sizeBadge.textContent = `(${prod.sizes.length} size)`;
+        options += prod.sizes.map(s => {
+          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
+        }).join('');
+      } else {
+        if (sizeBadge) sizeBadge.textContent = '';
+        const commonSizes = ['S', 'M', 'L', 'XL', '2XL', 'Freesize', '36', '37', '38', '39', '40', '41', '42', '43'];
+        options += commonSizes.map(s => {
+          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
+          if (match) isFound = true;
+          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
+        }).join('');
+      }
+
+      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Size khác (tự gõ)...</option>`;
+      sizeSelect.innerHTML = options;
+
+      if (!isFound && cleanSelected) {
+        sizeSelect.value = '__custom__';
+        sizeCustom.style.display = 'block';
+        sizeCustom.value = cleanSelected;
+      } else if (sizeSelect.value === '__custom__') {
+        sizeCustom.style.display = 'block';
+      } else {
+        sizeCustom.style.display = 'none';
+        sizeCustom.value = '';
+      }
+    };
+
+    colorSelect.addEventListener('change', () => {
+      if (colorSelect.value === '__custom__') {
+        colorCustom.style.display = 'block';
+        colorCustom.focus();
+      } else {
+        colorCustom.style.display = 'none';
+        colorCustom.value = '';
+      }
+    });
+
+    sizeSelect.addEventListener('change', () => {
+      if (sizeSelect.value === '__custom__') {
+        sizeCustom.style.display = 'block';
+        sizeCustom.focus();
+      } else {
+        sizeCustom.style.display = 'none';
+        sizeCustom.value = '';
+      }
+    });
+
+    // Khởi tạo trạng thái màu và size ban đầu
+    const initialProd = itemData && itemData.productId ? window.appStore.getProductById(itemData.productId) : null;
+    updateColorOptions(initialProd, itemData?.color || '');
+    updateSizeOptions(initialProd, itemData?.size || '');
 
     prodSelect.addEventListener('change', () => {
       const selected = prodSelect.options[prodSelect.selectedIndex];
-      const cost = selected.getAttribute('data-cost');
-      const w = selected.getAttribute('data-weight');
+      const cost = selected?.getAttribute('data-cost');
+      const w = selected?.getAttribute('data-weight');
       if (cost && (!priceInput.value || priceInput.value === '0')) {
         priceInput.value = cost;
       }
       if (w) {
         weightInput.value = w;
       }
+      const prod = window.appStore.getProductById(prodSelect.value);
+      updateColorOptions(prod);
+      updateSizeOptions(prod);
       this.updatePurchaseLiveCalc();
     });
 
@@ -1312,6 +1462,15 @@ const MobileApp = {
       e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
       this.updatePurchaseLiveCalc();
     });
+
+    if (itemData) {
+      if (itemData.productId) {
+        prodSelect.value = itemData.productId;
+      }
+      if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
+      if (itemData.purchasePrice !== undefined) priceInput.value = itemData.purchasePrice;
+      if (itemData.weight !== undefined) weightInput.value = itemData.weight;
+    }
 
     this.updatePurchaseLiveCalc();
   },
@@ -1391,7 +1550,7 @@ const MobileApp = {
     container.innerHTML = state.purchases.map(p => {
       const itemsHtml = (p.items || []).map(i => `
         <div style="padding: 4px 0; border-bottom: 1px dashed #e2e8f0;">
-          <div>• <strong>${i.productName}</strong>: ${i.quantity} cái x ${Calculations.formatNumber(i.purchasePrice)} đ</div>
+          <div>• <strong>${i.productName}</strong>${i.color ? ` (Màu: ${i.color})` : ''}${i.size ? ` (Size: ${i.size})` : ''}: ${i.quantity} cái x ${Calculations.formatNumber(i.purchasePrice)} đ</div>
           <div style="font-size: 11px; color: #64748b; margin-left: 8px;">
             Nặng: ${i.weight || 0} kg/cái (Tổng: ${(Number(i.quantity || 0) * Number(i.weight || 0)).toFixed(2)} kg) 
             &rarr; <span style="color: #10b981; font-weight: 700;">Giá vốn sau ship: ${Calculations.formatNumber(i.landedCostPerUnit)} đ/cái</span>
