@@ -161,55 +161,106 @@ const ChartsManager = {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    const labels = ['Giá vốn (COGS)', 'Phí ship shop chịu', 'Chi phí vận hành'];
-    const data = [
-      Math.max(0, breakdown.cogs || 0),
-      Math.max(0, breakdown.shopShipping || 0),
-      Math.max(0, breakdown.operatingExpense || 0)
+    if (!breakdown) breakdown = {};
+
+    const items = [
+      { key: 'cogs', label: 'Giá vốn (COGS)', val: Math.max(0, breakdown.cogs || 0), color: '#f59e0b', lightBg: '#fef3c7', textColor: '#b45309' },
+      { key: 'shopShipping', label: 'Phí ship shop chịu', val: Math.max(0, breakdown.shopShipping || 0), color: '#8b5cf6', lightBg: '#ede9fe', textColor: '#6d28d9' },
+      { key: 'operatingExpense', label: 'Chi phí vận hành', val: Math.max(0, breakdown.operatingExpense || 0), color: '#ec4899', lightBg: '#fce7f3', textColor: '#be185d' }
     ];
-    const colors = ['#f59e0b', '#8b5cf6', '#ec4899'];
 
-    const total = data.reduce((a, b) => a + b, 0);
+    const total = items.reduce((sum, it) => sum + it.val, 0);
 
+    // Xử lý khi chưa có dữ liệu chi phí nào (0 đ)
     if (total === 0) {
       container.innerHTML = `
-        <div style="height: 240px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px;">
-          Chưa có phát sinh chi phí trong kỳ
+        <div style="padding: 24px 16px; text-align: center; color: #94a3b8;">
+          <div style="width: 100px; height: 100px; margin: 0 auto 12px; border-radius: 50%; border: 12px solid #f1f5f9; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: #cbd5e1;">
+            0 đ
+          </div>
+          <div style="font-weight: 700; color: #475569; font-size: 13.5px; margin-bottom: 4px;">Chưa phát sinh chi phí</div>
+          <div style="font-size: 12px; color: #94a3b8;">Khi có đơn bán hoặc chi phí trong kỳ, biểu đồ sẽ tự động phân tích tại đây.</div>
         </div>
       `;
       return;
     }
+
+    const activeCount = items.filter(it => it.val > 0).length;
+
+    // Danh sách chú thích chi tiết hiển thị bên dưới biểu đồ kèm số tiền và %
+    const legendListHtml = `
+      <div class="cost-breakdown-list" style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+        ${items.map(it => {
+          const pctVal = total > 0 ? ((it.val / total) * 100).toFixed(1) : '0';
+          const isZero = it.val === 0;
+          return `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: ${isZero ? '#f8fafc' : '#ffffff'}; border-radius: 12px; border: 1.5px solid ${isZero ? '#f1f5f9' : '#e2e8f0'}; transition: all 0.15s ease;">
+              <div style="display: flex; align-items: center; gap: 9px;">
+                <span style="width: 12px; height: 12px; border-radius: 50%; background: ${it.color}; display: inline-block; flex-shrink: 0; box-shadow: 0 1px 3px ${it.color}44;"></span>
+                <span style="font-size: 13px; font-weight: 700; color: ${isZero ? '#64748b' : '#1e293b'};">${it.label}</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 13px; font-weight: 800; color: ${isZero ? '#94a3b8' : '#0f172a'};">${Calculations.formatCurrency(it.val)}</span>
+                <span style="font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: ${isZero ? '#f1f5f9' : it.lightBg}; color: ${isZero ? '#94a3b8' : it.textColor}; min-width: 44px; text-align: center;">
+                  ${pctVal}%
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
 
     if (window.Chart) {
       if (this.chartInstances[containerId]) {
         this.chartInstances[containerId].destroy();
       }
 
-      container.innerHTML = '<canvas id="breakdownChartCanvas" style="width: 100%; height: 260px;"></canvas>';
+      container.innerHTML = `
+        <div style="position: relative; width: 100%; height: 210px; margin: 0 auto;">
+          <canvas id="breakdownChartCanvas"></canvas>
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; width: 130px;">
+            <div style="font-size: 10.5px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">Tổng chi phí</div>
+            <div style="font-size: 17px; font-weight: 900; color: #09090b; line-height: 1.2;">${Calculations.formatCurrency(total)}</div>
+          </div>
+        </div>
+        ${legendListHtml}
+      `;
+
       const ctx = document.getElementById('breakdownChartCanvas').getContext('2d');
+
+      // Khi chỉ có 1 thành phần duy nhất (100%), bỏ hoàn toàn viền trắng (borderWidth = 0) để không tạo vạch cắt đôi ở góc 12h
+      const borderWidth = activeCount > 1 ? 2.5 : 0;
 
       this.chartInstances[containerId] = new Chart(ctx, {
         type: 'doughnut',
         data: {
-          labels: labels,
+          labels: items.map(it => it.label),
           datasets: [{
-            data: data,
-            backgroundColor: colors,
-            borderWidth: 2,
-            borderColor: '#ffffff'
+            data: items.map(it => it.val),
+            backgroundColor: items.map(it => it.color),
+            borderWidth: borderWidth,
+            borderColor: '#ffffff',
+            hoverOffset: 4
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
+          cutout: '72%',
           plugins: {
-            legend: { position: 'bottom' },
+            legend: { display: false }, // Đã có danh sách chú thích thẻ đẹp phía dưới
             tooltip: {
+              backgroundColor: '#18181b',
+              titleFont: { size: 12, weight: 'bold' },
+              bodyFont: { size: 13, weight: 'bold' },
+              padding: 10,
+              cornerRadius: 10,
               callbacks: {
                 label: function(context) {
                   const val = context.raw;
                   const pct = total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
-                  return `${context.label}: ${Calculations.formatCurrency(val)} (${pct})`;
+                  return ` ${context.label}: ${Calculations.formatCurrency(val)} (${pct})`;
                 }
               }
             }
@@ -219,38 +270,22 @@ const ChartsManager = {
       return;
     }
 
-    // Fallback: Vẽ thanh tiến trình cơ cấu tỷ lệ phần trăm trực quan
-    let barsHtml = `
-      <div style="padding: 15px 0;">
-        <div style="display: flex; height: 24px; border-radius: 12px; overflow: hidden; margin-bottom: 20px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
-    `;
-
-    data.forEach((val, idx) => {
-      const pct = ((val / total) * 100).toFixed(1);
-      if (val > 0) {
-        barsHtml += `<div style="width: ${pct}%; background-color: ${colors[idx]};" title="${labels[idx]}: ${Calculations.formatCurrency(val)} (${pct}%)"></div>`;
-      }
-    });
-
-    barsHtml += `</div><div style="display: flex; flex-direction: column; gap: 10px;">`;
-
-    data.forEach((val, idx) => {
-      const pct = ((val / total) * 100).toFixed(1);
-      barsHtml += `
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 12px; height: 12px; border-radius: 3px; background-color: ${colors[idx]}; display: inline-block;"></span>
-            <span>${labels[idx]}</span>
-          </div>
-          <div style="font-weight: 600;">
-            ${Calculations.formatCurrency(val)} <span style="color: #64748b; font-weight: normal;">(${pct}%)</span>
-          </div>
+    // Fallback khi không tải được Chart.js
+    container.innerHTML = `
+      <div style="padding: 10px 0;">
+        <div style="text-align: center; margin-bottom: 12px;">
+          <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Tổng chi phí</div>
+          <div style="font-size: 18px; font-weight: 900; color: #0f172a;">${Calculations.formatCurrency(total)}</div>
         </div>
-      `;
-    });
-
-    barsHtml += `</div></div>`;
-    container.innerHTML = barsHtml;
+        <div style="display: flex; height: 20px; border-radius: 10px; overflow: hidden; margin-bottom: 16px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);">
+          ${items.filter(it => it.val > 0).map(it => {
+            const pct = ((it.val / total) * 100).toFixed(1);
+            return `<div style="width: ${pct}%; background-color: ${it.color};" title="${it.label}: ${Calculations.formatCurrency(it.val)} (${pct}%)"></div>`;
+          }).join('')}
+        </div>
+        ${legendListHtml}
+      </div>
+    `;
   },
 
   /**
