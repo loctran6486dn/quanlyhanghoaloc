@@ -658,7 +658,7 @@ const MobileApp = {
     });
   },
 
-  /* =================== GỢI Ý DANH MỤC HÀNG HÓA =================== */
+  /* =================== GỢI Ý & PHÂN LOẠI MÀU DANH MỤC HÀNG HÓA =================== */
   getCategoriesList() {
     const products = window.appStore?.state?.products || [];
     const usedCats = [];
@@ -670,7 +670,37 @@ const MobileApp = {
         }
       }
     });
-    return usedCats;
+    // Sắp xếp thứ tự danh mục theo chữ cái alpha B (A-Z)
+    return usedCats.sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base' }));
+  },
+
+  getCategoryStyle(categoryName) {
+    const raw = (categoryName || 'Mặc định').trim();
+    const normalized = raw.toLowerCase();
+
+    // Bảng 12 màu chuẩn phong cách Wordsy Neo-Pop: Nền pastel tươi + Chữ đậm tương phản + Viền mảnh + Chấm dot
+    const palettes = [
+      { bg: '#eff6ff', color: '#1d4ed8', border: '#bfdbfe', dot: '#2563eb' }, // Royal Blue
+      { bg: '#f0fdf4', color: '#15803d', border: '#bbf7d0', dot: '#16a34a' }, // Fresh Emerald
+      { bg: '#faf5ff', color: '#6d28d9', border: '#ddd6fe', dot: '#7c3aed' }, // Vivid Violet
+      { bg: '#fffbeb', color: '#b45309', border: '#fde68a', dot: '#d97706' }, // Warm Amber
+      { bg: '#fff1f2', color: '#be123c', border: '#fecdd3', dot: '#e11d48' }, // Rose Coral
+      { bg: '#ecfeff', color: '#0e7490', border: '#a5f3fc', dot: '#0891b2' }, // Cyan Aqua
+      { bg: '#fdf4ff', color: '#a21caf', border: '#f5d0fe', dot: '#c026d3' }, // Fuchsia
+      { bg: '#eef2ff', color: '#4338ca', border: '#c7d2fe', dot: '#4f46e5' }, // Indigo
+      { bg: '#f7fee7', color: '#4d7c0f', border: '#d9f99d', dot: '#65a30d' }, // Lime Green
+      { bg: '#fff7ed', color: '#c2410c', border: '#fed7aa', dot: '#ea580c' }, // Tangerine Orange
+      { bg: '#f0fdfa', color: '#0f766e', border: '#99f6e4', dot: '#0d9488' }, // Deep Teal
+      { bg: '#fdf2f8', color: '#be185d', border: '#fbcfe8', dot: '#db2777' }  // Flamingo Pink
+    ];
+
+    let hash = 0;
+    for (let i = 0; i < normalized.length; i++) {
+      hash = (hash << 5) - hash + normalized.charCodeAt(i);
+      hash |= 0;
+    }
+    const index = Math.abs(hash) % palettes.length;
+    return palettes[index];
   },
 
   renderCategorySuggestions(filterText = '') {
@@ -945,6 +975,18 @@ const MobileApp = {
       return matchSearch && matchStock;
     });
 
+    // Sắp xếp thứ tự chữ cái đầu của Danh Mục theo alpha B (A-Z)
+    filtered.sort((a, b) => {
+      const catA = (a.category || 'Mặc định').trim();
+      const catB = (b.category || 'Mặc định').trim();
+
+      const catComp = catA.localeCompare(catB, 'vi', { sensitivity: 'base' });
+      if (catComp !== 0) return catComp;
+
+      // Cùng danh mục thì sắp xếp theo tên sản phẩm A-Z
+      return (a.name || '').trim().localeCompare((b.name || '').trim(), 'vi', { sensitivity: 'base' });
+    });
+
     const container = document.getElementById('productsCardsList');
     if (!container) return;
 
@@ -969,6 +1011,7 @@ const MobileApp = {
       const sell = Number(p.sellingPrice || 0);
       const profitPerUnit = sell - cost;
       const unit = p.unit || 'cái';
+      const catTheme = this.getCategoryStyle(p.category);
 
       let stockBadge = '<span class="badge badge-success">Còn ' + stock + ' ' + unit + '</span>';
       if (stock === 0) {
@@ -1010,7 +1053,10 @@ const MobileApp = {
             <div class="prod-summary-left">
               <div class="prod-summary-title">${p.name}</div>
               <div class="prod-summary-meta">
-                <span class="prod-category-tag">${p.category || 'Mặc định'}</span>
+                <span class="prod-category-tag" style="background: ${catTheme.bg} !important; color: ${catTheme.color} !important; border-color: ${catTheme.border} !important;">
+                  <span style="width: 5.5px; height: 5.5px; border-radius: 50%; background: ${catTheme.dot}; display: inline-block;"></span>
+                  ${p.category || 'Mặc định'}
+                </span>
                 <span class="prod-sku-tag">#${p.sku}</span>
               </div>
             </div>
