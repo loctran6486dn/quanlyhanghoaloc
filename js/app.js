@@ -290,7 +290,11 @@ const MobileApp = {
 
       backdrop.addEventListener('click', (e) => {
         if (e.target === backdrop && pointerDownOnBackdrop) {
-          this.closeModal();
+          if (backdrop.id === 'modalVariantSizePicker') {
+            this.closeSizePicker();
+          } else {
+            this.closeModal(backdrop.id);
+          }
         }
         pointerDownOnBackdrop = false;
       });
@@ -787,8 +791,9 @@ const MobileApp = {
     if (dropdown) dropdown.classList.remove('show');
   },
 
-  /* =================== QUẢN LÝ PHÂN LOẠI (MẪU HÀNG, MÀU SẮC, SIZE, SỐ LƯỢNG) =================== */
+  /* =================== QUẢN LÝ PHÂN LOẠI & POPUP SIZE 2 CỘT =================== */
   currentActiveSizeRow: null,
+  currentSizePickerOptions: null,
 
   addVariantRow(model = '', color = '', size = '', qty = 1) {
     const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
@@ -843,19 +848,30 @@ const MobileApp = {
     }
   },
 
-  openSizePicker(row) {
+  openSizePicker(row = null, options = null) {
     this.currentActiveSizeRow = row;
-    const sizeInput = row.querySelector('.variant-size-input');
-    const currentSize = (sizeInput?.value || '').trim();
-    const modelVal = row.querySelector('.variant-model-input')?.value || '';
-    const colorVal = row.querySelector('.variant-color-input')?.value || '';
+    this.currentSizePickerOptions = options;
 
-    const label = document.getElementById('sizePickerTargetLabel');
-    if (label) {
+    let currentSize = '';
+    let labelText = 'Chọn Kích Cỡ';
+
+    if (options) {
+      currentSize = (options.currentSize || '').trim();
+      labelText = options.targetLabel || 'Chọn Kích Cỡ';
+    } else if (row) {
+      const sizeInput = row.querySelector('.variant-size-input');
+      currentSize = (sizeInput?.value || '').trim();
+      const modelVal = row.querySelector('.variant-model-input')?.value || '';
+      const colorVal = row.querySelector('.variant-color-input')?.value || '';
       const parts = [];
       if (modelVal) parts.push(`Mẫu: ${modelVal}`);
       if (colorVal) parts.push(`Màu: ${colorVal}`);
-      label.textContent = parts.length > 0 ? parts.join(' • ') : 'Dòng phân loại';
+      labelText = parts.length > 0 ? parts.join(' • ') : 'Dòng phân loại';
+    }
+
+    const label = document.getElementById('sizePickerTargetLabel');
+    if (label) {
+      label.textContent = labelText;
     }
 
     const customInput = document.getElementById('sizePickerCustomInput');
@@ -870,18 +886,25 @@ const MobileApp = {
 
     const modal = document.getElementById('modalVariantSizePicker');
     if (modal) {
+      modal.classList.add('active');
       modal.classList.add('show');
     }
   },
 
   closeSizePicker() {
     const modal = document.getElementById('modalVariantSizePicker');
-    if (modal) modal.classList.remove('show');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.classList.remove('show');
+    }
     this.currentActiveSizeRow = null;
+    this.currentSizePickerOptions = null;
   },
 
   selectSizeFromPicker(size) {
-    if (this.currentActiveSizeRow) {
+    if (this.currentSizePickerOptions && typeof this.currentSizePickerOptions.onSelect === 'function') {
+      this.currentSizePickerOptions.onSelect(size);
+    } else if (this.currentActiveSizeRow) {
       const sizeInput = this.currentActiveSizeRow.querySelector('.variant-size-input');
       if (sizeInput) {
         sizeInput.value = size;
@@ -892,7 +915,9 @@ const MobileApp = {
   },
 
   clearRowSizePicker() {
-    if (this.currentActiveSizeRow) {
+    if (this.currentSizePickerOptions && typeof this.currentSizePickerOptions.onSelect === 'function') {
+      this.currentSizePickerOptions.onSelect('');
+    } else if (this.currentActiveSizeRow) {
       const sizeInput = this.currentActiveSizeRow.querySelector('.variant-size-input');
       if (sizeInput) {
         sizeInput.value = '';
@@ -1280,11 +1305,10 @@ const MobileApp = {
           ? (colorCustom ? colorCustom.value : '').trim()
           : (colorSelect ? colorSelect.value : '').trim();
 
+        const poSizeInput = row.querySelector('.po-size-input');
         const sizeSelect = row.querySelector('.po-size-select');
         const sizeCustom = row.querySelector('.po-size-custom');
-        const size = (sizeSelect && sizeSelect.value === '__custom__')
-          ? (sizeCustom ? sizeCustom.value : '').trim()
-          : (sizeSelect ? sizeSelect.value : '').trim();
+        const size = (poSizeInput?.value || ((sizeSelect && sizeSelect.value === '__custom__') ? (sizeCustom ? sizeCustom.value : '') : (sizeSelect ? sizeSelect.value : '')) || '').trim();
 
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
@@ -1416,10 +1440,14 @@ const MobileApp = {
             <span>📏 Kích cỡ (Size):</span>
             <span class="po-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
           </label>
-          <select class="form-control po-size-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+          <div style="display: flex; gap: 4px;">
+            <input type="text" class="form-control po-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; flex: 1;">
+            <button type="button" class="btn btn-sm btn-open-po-size" style="height: 38px; padding: 0 10px; border-radius: 10px; background: #e0f2fe; color: #0284c7; border: 1.5px solid #bae6fd; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Size ▾</button>
+          </div>
+          <select class="form-control po-size-select" style="display: none;">
             <option value="">-- Mặc định --</option>
           </select>
-          <input type="text" class="form-control po-size-custom" placeholder="Nhập kích cỡ..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+          <input type="text" class="form-control po-size-custom" placeholder="Nhập kích cỡ..." style="display: none;">
         </div>
       </div>
 
@@ -1463,6 +1491,30 @@ const MobileApp = {
     const sizeSelect = div.querySelector('.po-size-select');
     const sizeCustom = div.querySelector('.po-size-custom');
     const sizeBadge = div.querySelector('.po-size-badge');
+    const sizeInput = div.querySelector('.po-size-input');
+    const btnOpenPoSize = div.querySelector('.btn-open-po-size');
+
+    const openPoSizePicker = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const prod = window.appStore.getProductById(prodSelect.value);
+      const prodName = prod ? prod.name : 'Sản phẩm nhập';
+      const colorVal = colorSelect.value === '__custom__' ? colorCustom.value : colorSelect.value;
+      const targetLabel = prodName + (colorVal ? ` • Màu: ${colorVal}` : '');
+      this.openSizePicker(null, {
+        currentSize: sizeInput ? sizeInput.value : '',
+        targetLabel: targetLabel,
+        onSelect: (chosenSize) => {
+          if (sizeInput) sizeInput.value = chosenSize;
+          if (sizeSelect) sizeSelect.value = chosenSize;
+          if (sizeCustom) sizeCustom.value = chosenSize;
+        }
+      });
+    };
+    sizeInput?.addEventListener('click', openPoSizePicker);
+    btnOpenPoSize?.addEventListener('click', openPoSizePicker);
 
     const updateColorOptions = (prod, selectedColor = '') => {
       let options = `<option value="">-- Mặc định --</option>`;
@@ -1502,39 +1554,14 @@ const MobileApp = {
     };
 
     const updateSizeOptions = (prod, selectedSize = '') => {
-      let options = `<option value="">-- Mặc định --</option>`;
       const cleanSelected = (selectedSize || '').trim();
-      let isFound = false;
-
+      if (cleanSelected && sizeInput) {
+        sizeInput.value = cleanSelected;
+      }
       if (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
         if (sizeBadge) sizeBadge.textContent = `(${prod.sizes.length} size)`;
-        options += prod.sizes.map(s => {
-          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
-        }).join('');
       } else {
         if (sizeBadge) sizeBadge.textContent = '';
-        const commonSizes = ['S', 'M', 'L', 'XL', '2XL', 'Freesize', '36', '37', '38', '39', '40', '41', '42', '43'];
-        options += commonSizes.map(s => {
-          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
-        }).join('');
-      }
-
-      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Size khác (tự gõ)...</option>`;
-      sizeSelect.innerHTML = options;
-
-      if (!isFound && cleanSelected) {
-        sizeSelect.value = '__custom__';
-        sizeCustom.style.display = 'block';
-        sizeCustom.value = cleanSelected;
-      } else if (sizeSelect.value === '__custom__') {
-        sizeCustom.style.display = 'block';
-      } else {
-        sizeCustom.style.display = 'none';
-        sizeCustom.value = '';
       }
     };
 
@@ -1593,6 +1620,7 @@ const MobileApp = {
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.purchasePrice !== undefined) priceInput.value = itemData.purchasePrice;
       if (itemData.weight !== undefined) weightInput.value = itemData.weight;
+      if (itemData.size && sizeInput) sizeInput.value = itemData.size;
     }
 
     this.updatePurchaseLiveCalc();
@@ -1826,11 +1854,10 @@ const MobileApp = {
           ? (colorCustom ? colorCustom.value : '').trim()
           : (colorSelect ? colorSelect.value : '').trim();
 
+        const sizeInput = row.querySelector('.sale-size-input');
         const sizeSelect = row.querySelector('.sale-size-select');
         const sizeCustom = row.querySelector('.sale-size-custom');
-        const size = (sizeSelect && sizeSelect.value === '__custom__')
-          ? (sizeCustom ? sizeCustom.value : '').trim()
-          : (sizeSelect ? sizeSelect.value : '').trim();
+        const size = (sizeInput?.value || ((sizeSelect && sizeSelect.value === '__custom__') ? (sizeCustom ? sizeCustom.value : '') : (sizeSelect ? sizeSelect.value : '')) || '').trim();
 
         if (!productId || quantity <= 0) {
           isValid = false;
@@ -2022,10 +2049,14 @@ const MobileApp = {
             <span>📏 Kích cỡ (Size):</span>
             <span class="sale-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
           </label>
-          <select class="form-control sale-size-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+          <div style="display: flex; gap: 4px;">
+            <input type="text" class="form-control sale-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; flex: 1;">
+            <button type="button" class="btn btn-sm btn-open-sale-size" style="height: 38px; padding: 0 10px; border-radius: 10px; background: #e0f2fe; color: #0284c7; border: 1.5px solid #bae6fd; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Size ▾</button>
+          </div>
+          <select class="form-control sale-size-select" style="display: none;">
             <option value="">-- Mặc định --</option>
           </select>
-          <input type="text" class="form-control sale-size-custom" placeholder="Nhập kích cỡ..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+          <input type="text" class="form-control sale-size-custom" placeholder="Nhập kích cỡ..." style="display: none;">
         </div>
       </div>
 
@@ -2056,6 +2087,30 @@ const MobileApp = {
     const sizeSelect = div.querySelector('.sale-size-select');
     const sizeCustom = div.querySelector('.sale-size-custom');
     const sizeBadge = div.querySelector('.sale-size-badge');
+    const sizeInput = div.querySelector('.sale-size-input');
+    const btnOpenSaleSize = div.querySelector('.btn-open-sale-size');
+
+    const openSaleSizePicker = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const prod = window.appStore.getProductById(prodSelect.value);
+      const prodName = prod ? prod.name : 'Mặt hàng';
+      const colorVal = colorSelect.value === '__custom__' ? colorCustom.value : colorSelect.value;
+      const targetLabel = prodName + (colorVal ? ` • Màu: ${colorVal}` : '');
+      this.openSizePicker(null, {
+        currentSize: sizeInput ? sizeInput.value : '',
+        targetLabel: targetLabel,
+        onSelect: (chosenSize) => {
+          if (sizeInput) sizeInput.value = chosenSize;
+          if (sizeSelect) sizeSelect.value = chosenSize;
+          if (sizeCustom) sizeCustom.value = chosenSize;
+        }
+      });
+    };
+    sizeInput?.addEventListener('click', openSaleSizePicker);
+    btnOpenSaleSize?.addEventListener('click', openSaleSizePicker);
 
     const updateColorOptions = (prod, selectedColor = '') => {
       let options = `<option value="">-- Mặc định --</option>`;
@@ -2095,39 +2150,14 @@ const MobileApp = {
     };
 
     const updateSizeOptions = (prod, selectedSize = '') => {
-      let options = `<option value="">-- Mặc định --</option>`;
       const cleanSelected = (selectedSize || '').trim();
-      let isFound = false;
-
+      if (cleanSelected && sizeInput) {
+        sizeInput.value = cleanSelected;
+      }
       if (prod && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
         if (sizeBadge) sizeBadge.textContent = `(${prod.sizes.length} size)`;
-        options += prod.sizes.map(s => {
-          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
-        }).join('');
       } else {
         if (sizeBadge) sizeBadge.textContent = '';
-        const commonSizes = ['S', 'M', 'L', 'XL', '2XL', 'Freesize', '36', '37', '38', '39', '40', '41', '42', '43'];
-        options += commonSizes.map(s => {
-          const match = String(s).toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${s}" ${match ? 'selected' : ''}>Size ${s}</option>`;
-        }).join('');
-      }
-
-      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Size khác (tự gõ)...</option>`;
-      sizeSelect.innerHTML = options;
-
-      if (!isFound && cleanSelected) {
-        sizeSelect.value = '__custom__';
-        sizeCustom.style.display = 'block';
-        sizeCustom.value = cleanSelected;
-      } else if (sizeSelect.value === '__custom__') {
-        sizeCustom.style.display = 'block';
-      } else {
-        sizeCustom.style.display = 'none';
-        sizeCustom.value = '';
       }
     };
 
@@ -2178,6 +2208,7 @@ const MobileApp = {
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;
+      if (itemData.size && sizeInput) sizeInput.value = itemData.size;
     }
 
     this.updateSaleLiveCalc();

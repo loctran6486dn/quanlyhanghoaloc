@@ -3563,7 +3563,34 @@ body.theme-wordsy .badge-info {
   box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
 }
 
+.sale-size-input:active,
+.po-size-input:active,
+.btn-open-sale-size:active,
+.btn-open-po-size:active {
+  background: #e0f2fe !important;
+  border-color: #38bdf8 !important;
+  transform: scale(0.97);
+}
+
 /* Modal Size Picker dialog styling */
+#modalVariantSizePicker {
+  position: fixed !important;
+  inset: 0 !important;
+  background-color: rgba(15, 23, 42, 0.78) !important;
+  display: none !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 99999 !important;
+  padding: 16px !important;
+  box-sizing: border-box !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+#modalVariantSizePicker.active,
+#modalVariantSizePicker.show {
+  display: flex !important;
+}
+
 .modal-size-picker-dialog {
   animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
