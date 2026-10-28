@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=4.9">
+  <link rel="stylesheet" href="css/style.css?v=5.0">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -34,14 +34,14 @@
     <!-- TOP HEADER BAR (Bento Modern Native iOS Style) -->
     <header class="mobile-header">
       <div class="header-left">
-        <div class="header-avatar">
+        <button type="button" class="header-avatar btn-header-avatar" id="btnHeaderAvatarMenu" title="Menu cài đặt & tiện ích" aria-label="Menu cài đặt & tiện ích">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
             <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
             <path d="M2 7h20"/>
           </svg>
-        </div>
+        </button>
         <div>
           <div class="header-greeting">Xin chào,</div>
           <div class="header-title" id="mobileStoreName">Cửa Hàng Cá Nhân</div>
@@ -55,24 +55,6 @@
             <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>
           </svg>
           <span class="nav-tab-badge" id="headerAlertBadge" style="top: -2px; right: -2px; display: none;">0</span>
-        </button>
-        <!-- Nút đồng bộ Cloud đa thiết bị -->
-        <button type="button" class="btn-icon-header" id="btnHeaderCloudSync" onclick="MobileApp.openCloudSyncModal()" title="Đồng bộ đa thiết bị" style="position: relative;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-          </svg>
-          <span class="sync-status-dot" id="headerSyncDot" style="position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: #94a3b8; border: 1.5px solid #ffffff;"></span>
-        </button>
-        <!-- Nút mở cài đặt (Icon flat stroke một màu) -->
-        <button type="button" class="btn-icon-header" id="btnHeaderSettings" title="Cài đặt">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="4" x2="20" y1="21" y2="21"/>
-            <line x1="4" x2="20" y1="14" y2="14"/>
-            <line x1="4" x2="20" y1="7" y2="7"/>
-            <circle cx="14" cy="21" r="2"/>
-            <circle cx="8" cy="14" r="2"/>
-            <circle cx="16" cy="7" r="2"/>
-          </svg>
         </button>
       </div>
     </header>
@@ -1491,11 +1473,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=4.9"></script>
-  <script src="js/cloud-sync.js?v=4.9"></script>
-  <script src="js/store.js?v=4.9"></script>
-  <script src="js/export.js?v=4.9"></script>
-  <script src="js/charts.js?v=4.9"></script>
-  <script src="js/app.js?v=4.9"></script>
+  <script src="js/calculations.js?v=5.0"></script>
+  <script src="js/cloud-sync.js?v=5.0"></script>
+  <script src="js/store.js?v=5.0"></script>
+  <script src="js/export.js?v=5.0"></script>
+  <script src="js/charts.js?v=5.0"></script>
+  <script src="js/app.js?v=5.0"></script>
 </body>
 </html>

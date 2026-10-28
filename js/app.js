@@ -346,6 +346,13 @@ const MobileApp = {
   /* =================== 1. TỔNG QUAN (DASHBOARD) =================== */
   setupDashboardEvents() {
     // Header buttons
+    document.getElementById('btnHeaderAvatarMenu')?.addEventListener('click', () => {
+      if (this.currentTab === 'more') {
+        this.switchTab('dashboard');
+      } else {
+        this.switchTab('more');
+      }
+    });
     document.getElementById('btnOpenConnectQR')?.addEventListener('click', () => {
       this.openModal('modalConnectQR');
     });
