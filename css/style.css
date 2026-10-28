@@ -1226,6 +1226,95 @@ input[type="date"].form-control {
   -webkit-tap-highlight-color: transparent !important;
 }
 
+/* =================== HÀNG 2: BỘ LỌC THẺ TAG DANH MỤC TRONG KHO HÀNG =================== */
+.category-tags-scroll-wrap {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  margin-bottom: 10px;
+  padding: 2px 2px 6px 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  align-items: center;
+}
+
+.category-tags-scroll-wrap::-webkit-scrollbar {
+  display: none;
+}
+
+.category-filter-pill {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--cat-bg, #ffffff);
+  color: var(--cat-color, #475569);
+  border: 1.5px solid var(--cat-border, #e2e8f0);
+}
+
+.category-filter-pill:active {
+  transform: scale(0.94);
+}
+
+.category-filter-pill .cat-dot {
+  width: 6.5px;
+  height: 6.5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease;
+}
+
+.category-filter-pill .cat-pill-count {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.category-filter-pill.active {
+  background: var(--cat-color, #0f172a) !important;
+  color: #ffffff !important;
+  border-color: var(--cat-color, #0f172a) !important;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.18);
+}
+
+.category-filter-pill.active .cat-dot {
+  background-color: #ffffff !important;
+}
+
+.category-filter-pill.active .cat-pill-count {
+  color: rgba(255, 255, 255, 0.9) !important;
+  opacity: 1;
+}
+
+.category-filter-pill.pill-all {
+  background: #ffffff;
+  color: #334155;
+  border-color: #cbd5e1;
+}
+
+.category-filter-pill.pill-all.active {
+  background: #0f172a !important;
+  color: #ffffff !important;
+  border-color: #0f172a !important;
+}
+
+/* Đưa time filter pills vào trong tab dashboard sạch sẽ */
+#tab-dashboard .filter-pills-bar {
+  background: transparent !important;
+  border-bottom: none !important;
+  padding: 0 0 12px 0 !important;
+  margin-bottom: 4px !important;
+}
+
 .btn-white-pill {
   background: #ffffff;
   color: #0f172a;

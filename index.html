@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=5.5">
+  <link rel="stylesheet" href="css/style.css?v=5.6">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -59,21 +59,21 @@
       </div>
     </header>
 
-    <!-- HORIZONTAL SWIPEABLE TIME FILTER PILLS -->
-    <div class="filter-pills-bar" id="mobileTimePills">
-      <button type="button" class="pill-item active" data-range="this_month">Tháng này</button>
-      <button type="button" class="pill-item" data-range="this_week">7 ngày qua</button>
-      <button type="button" class="pill-item" data-range="today">Hôm nay</button>
-      <button type="button" class="pill-item" data-range="last_month">Tháng trước</button>
-      <button type="button" class="pill-item" data-range="this_year">Năm nay</button>
-      <button type="button" class="pill-item" data-range="all">Toàn bộ</button>
-    </div>
-
     <!-- MAIN BODY -->
     <main class="mobile-content">
 
       <!-- ================= TAB 1: TỔNG QUAN (DASHBOARD) ================= -->
       <section id="tab-dashboard" class="tab-panel active">
+        <!-- HORIZONTAL SWIPEABLE TIME FILTER PILLS TRONG DASHBOARD -->
+        <div class="filter-pills-bar" id="mobileTimePills">
+          <button type="button" class="pill-item active" data-range="this_month">Tháng này</button>
+          <button type="button" class="pill-item" data-range="this_week">7 ngày qua</button>
+          <button type="button" class="pill-item" data-range="today">Hôm nay</button>
+          <button type="button" class="pill-item" data-range="last_month">Tháng trước</button>
+          <button type="button" class="pill-item" data-range="this_year">Năm nay</button>
+          <button type="button" class="pill-item" data-range="all">Toàn bộ</button>
+        </div>
+
         <!-- HERO BENTO PROGRESS CARD (Mô phỏng màn hình 5: Thẻ tròn tiến trình & Thực lãi) -->
         <div class="bento-hero-card">
           <div class="bento-hero-top">
@@ -303,6 +303,11 @@
             </button>
           </div>
           <button type="button" class="btn-dark-pill" id="btnMobileAddProduct" onclick="if(window.MobileApp){MobileApp.openAddProductModal(event);}else if(window.openAddProductModal){window.openAddProductModal(event);}" style="flex-shrink: 0; padding: 0 18px;">+ Thêm</button>
+        </div>
+
+        <!-- HÀNG THỨ 2: BỘ LỌC THẺ TAG DANH MỤC (CAMPING, PHỤ KIỆN SUP, OFFROAD... ALPHA B) -->
+        <div class="category-tags-scroll-wrap" id="productCategoryFilterBar">
+          <!-- Render động danh mục thẻ tags qua JS -->
         </div>
 
         <!-- Bộ lọc nhanh trạng thái kho -->
@@ -1504,11 +1509,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=5.5"></script>
-  <script src="js/cloud-sync.js?v=5.5"></script>
-  <script src="js/store.js?v=5.5"></script>
-  <script src="js/export.js?v=5.5"></script>
-  <script src="js/charts.js?v=5.5"></script>
-  <script src="js/app.js?v=5.5"></script>
+  <script src="js/calculations.js?v=5.6"></script>
+  <script src="js/cloud-sync.js?v=5.6"></script>
+  <script src="js/store.js?v=5.6"></script>
+  <script src="js/export.js?v=5.6"></script>
+  <script src="js/charts.js?v=5.6"></script>
+  <script src="js/app.js?v=5.6"></script>
 </body>
 </html>

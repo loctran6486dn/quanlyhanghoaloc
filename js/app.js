@@ -24,6 +24,7 @@ const MobileApp = {
   activeTab: 'dashboard',
   dateFilter: { startDate: '', endDate: '' },
   productStockFilter: 'all',
+  productCategoryFilter: 'all',
   salesPaymentFilter: 'all',
   manageSubTab: 'active',
 
@@ -722,16 +723,91 @@ const MobileApp = {
   getCategoriesList() {
     const products = window.appStore?.state?.products || [];
     const usedCats = [];
+    let hasUncategorized = false;
     products.forEach(p => {
-      if (p.category && typeof p.category === 'string') {
-        const cat = p.category.trim();
-        if (cat && !usedCats.includes(cat)) {
+      const cat = (p.category || '').trim();
+      if (cat) {
+        if (!usedCats.some(c => c.toLowerCase() === cat.toLowerCase())) {
           usedCats.push(cat);
         }
+      } else {
+        hasUncategorized = true;
       }
     });
     // Sắp xếp thứ tự danh mục theo chữ cái alpha B (A-Z)
-    return usedCats.sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base' }));
+    const sorted = usedCats.sort((a, b) => a.localeCompare(b, 'vi', { sensitivity: 'base' }));
+    if (hasUncategorized && !sorted.some(c => c.toLowerCase() === 'chưa phân loại')) {
+      sorted.push('Chưa phân loại');
+    }
+    return sorted;
+  },
+
+  renderCategoryFilterTags() {
+    const bar = document.getElementById('productCategoryFilterBar');
+    if (!bar) return;
+
+    const categories = this.getCategoriesList();
+    const products = window.appStore?.state?.products || [];
+
+    // Nếu không có sản phẩm nào và không có danh mục nào thì ẩn thanh tag
+    if (products.length === 0 && categories.length === 0) {
+      bar.style.display = 'none';
+      return;
+    }
+    bar.style.display = 'flex';
+
+    // Đếm số lượng sản phẩm cho từng danh mục
+    const counts = {};
+    products.forEach(p => {
+      const raw = (p.category || 'Chưa phân loại').trim();
+      const matchedCat = categories.find(c => c.toLowerCase() === raw.toLowerCase()) || raw;
+      counts[matchedCat] = (counts[matchedCat] || 0) + 1;
+    });
+
+    const isAllActive = !this.productCategoryFilter || this.productCategoryFilter === 'all';
+
+    let html = `
+      <button type="button" class="category-filter-pill pill-all ${isAllActive ? 'active' : ''}" data-category="all">
+        <span>Tất cả</span>
+        <span class="cat-pill-count">(${products.length})</span>
+      </button>
+    `;
+
+    categories.forEach(cat => {
+      const isActive = !isAllActive && this.productCategoryFilter.trim().toLowerCase() === cat.trim().toLowerCase();
+      const style = this.getCategoryStyle(cat);
+      const count = counts[cat] || 0;
+
+      html += `
+        <button type="button" class="category-filter-pill ${isActive ? 'active' : ''}" data-category="${cat}"
+          style="--cat-bg: ${style.bg}; --cat-color: ${style.color}; --cat-border: ${style.border}; --cat-dot: ${style.dot};">
+          <span class="cat-dot" style="background-color: ${isActive ? '#ffffff' : style.dot};"></span>
+          <span>${cat}</span>
+          <span class="cat-pill-count">(${count})</span>
+        </button>
+      `;
+    });
+
+    bar.innerHTML = html;
+
+    // Lắng nghe sự kiện click chọn thẻ tag danh mục
+    bar.querySelectorAll('.category-filter-pill').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
+        const selectedCat = btn.getAttribute('data-category') || 'all';
+        if (selectedCat === 'all') {
+          this.productCategoryFilter = 'all';
+        } else {
+          // Bấm lại chính thẻ đang chọn thì trở về Tất cả (toggle linh hoạt)
+          if (this.productCategoryFilter && this.productCategoryFilter.toLowerCase() === selectedCat.toLowerCase()) {
+            this.productCategoryFilter = 'all';
+          } else {
+            this.productCategoryFilter = selectedCat;
+          }
+        }
+        this.renderProducts();
+      });
+    });
   },
 
   getCategoryStyle(categoryName) {
@@ -1080,6 +1156,9 @@ const MobileApp = {
     }
     const search = (searchInput?.value || '').toLowerCase().trim();
 
+    // Render thanh tag danh mục ở hàng thứ 2
+    this.renderCategoryFilterTags();
+
     let filtered = state.products.filter(p => {
       const matchSearch = !search || p.name.toLowerCase().includes(search) || p.sku.toLowerCase().includes(search);
       let matchStock = true;
@@ -1090,7 +1169,13 @@ const MobileApp = {
       else if (this.productStockFilter === 'low_stock') matchStock = stock <= minStock;
       else if (this.productStockFilter === 'out_of_stock') matchStock = stock === 0;
 
-      return matchSearch && matchStock;
+      let matchCategory = true;
+      if (this.productCategoryFilter && this.productCategoryFilter !== 'all') {
+        const pCat = (p.category || 'Chưa phân loại').trim().toLowerCase();
+        matchCategory = pCat === this.productCategoryFilter.trim().toLowerCase();
+      }
+
+      return matchSearch && matchStock && matchCategory;
     });
 
     // Sắp xếp thứ tự chữ cái đầu của Danh Mục theo alpha B (A-Z)
