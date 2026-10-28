@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=5.6">
+  <link rel="stylesheet" href="css/style.css?v=5.7">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1505,15 +1505,56 @@
     </div>
   </div>
 
+  <!-- MODAL POPUP CHỌN SẢN PHẨM THEO THẺ TAG DANH MỤC CHO ĐƠN BÁN & PHIẾU NHẬP -->
+  <div class="modal-backdrop" id="modalCategoryProductPicker" role="dialog" aria-modal="true" aria-labelledby="prodPickerTitle">
+    <div class="modal-dialog modal-category-product-dialog">
+      <!-- Header -->
+      <div class="prod-picker-header">
+        <div>
+          <h4 id="prodPickerTitle" class="prod-picker-title">Chọn Sản Phẩm</h4>
+          <div id="prodPickerSubtitle" class="prod-picker-subtitle">Lọc theo thẻ tag danh mục &amp; tìm kiếm nhanh</div>
+        </div>
+        <button type="button" class="modal-close" onclick="MobileApp.closeProductPicker()" title="Đóng">&times;</button>
+      </div>
+
+      <!-- Thanh tìm kiếm nhanh -->
+      <div class="prod-picker-search-box">
+        <span class="prod-picker-search-icon">🔍</span>
+        <input type="text" id="prodPickerSearchInput" class="form-control prod-picker-search-input" placeholder="Tìm tên hàng, mã SKU..." autocomplete="off">
+        <button type="button" id="btnClearProdPickerSearch" class="btn-clear-prod-search" style="display: none;" title="Xóa tìm kiếm">&times;</button>
+      </div>
+
+      <!-- Hàng thẻ tag danh mục (Alpha B) -->
+      <div class="prod-picker-cat-container">
+        <div class="prod-picker-cat-bar" id="prodPickerCategoryBar">
+          <!-- Render dynamically by MobileApp.renderProductPickerCategories() -->
+        </div>
+      </div>
+
+      <!-- Danh sách sản phẩm (sổ ra theo tag hoặc search) -->
+      <div class="prod-picker-list-container">
+        <div class="prod-picker-list" id="prodPickerList">
+          <!-- Render dynamically by MobileApp.renderProductPickerList() -->
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="prod-picker-footer">
+        <span class="prod-picker-hint">💡 Chạm vào món hàng để chọn vào đơn</span>
+        <button type="button" class="btn btn-sm btn-outline" onclick="MobileApp.closeProductPicker()">Đóng</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=5.6"></script>
-  <script src="js/cloud-sync.js?v=5.6"></script>
-  <script src="js/store.js?v=5.6"></script>
-  <script src="js/export.js?v=5.6"></script>
-  <script src="js/charts.js?v=5.6"></script>
-  <script src="js/app.js?v=5.6"></script>
+  <script src="js/calculations.js?v=5.7"></script>
+  <script src="js/cloud-sync.js?v=5.7"></script>
+  <script src="js/store.js?v=5.7"></script>
+  <script src="js/export.js?v=5.7"></script>
+  <script src="js/charts.js?v=5.7"></script>
+  <script src="js/app.js?v=5.7"></script>
 </body>
 </html>

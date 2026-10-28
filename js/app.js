@@ -27,11 +27,15 @@ const MobileApp = {
   productCategoryFilter: 'all',
   salesPaymentFilter: 'all',
   manageSubTab: 'active',
+  currentProductPickerOptions: null,
+  currentProductPickerCategory: 'all',
+  productPickerSearchQuery: '',
 
   init() {
     this.setupDatePillFilters();
     this.setupBottomNav();
     this.setupModalEvents();
+    this.setupProductPickerEvents();
     this.setupDashboardEvents();
     this.setupProductsEvents();
     this.setupPurchasesEvents();
@@ -293,6 +297,8 @@ const MobileApp = {
         if (e.target === backdrop && pointerDownOnBackdrop) {
           if (backdrop.id === 'modalVariantSizePicker') {
             this.closeSizePicker();
+          } else if (backdrop.id === 'modalCategoryProductPicker') {
+            this.closeProductPicker();
           } else {
             this.closeModal(backdrop.id);
           }
@@ -1051,6 +1057,260 @@ const MobileApp = {
     }
   },
 
+  escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  },
+
+  /* =================== POPUP CHỌN SẢN PHẨM THEO THẺ TAG DANH MỤC =================== */
+  setupProductPickerEvents() {
+    const searchInput = document.getElementById('prodPickerSearchInput');
+    const btnClear = document.getElementById('btnClearProdPickerSearch');
+
+    searchInput?.addEventListener('input', (e) => {
+      const val = e.target.value || '';
+      this.productPickerSearchQuery = val;
+      if (btnClear) {
+        btnClear.style.display = val ? 'flex' : 'none';
+      }
+      this.renderProductPickerList();
+    });
+
+    btnClear?.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      this.productPickerSearchQuery = '';
+      if (btnClear) btnClear.style.display = 'none';
+      this.renderProductPickerList();
+      searchInput?.focus();
+    });
+  },
+
+  openProductPicker(options = {}) {
+    this.currentProductPickerOptions = options;
+    this.currentProductPickerCategory = 'all';
+    this.productPickerSearchQuery = '';
+
+    const modal = document.getElementById('modalCategoryProductPicker');
+    if (!modal) return;
+
+    const titleEl = document.getElementById('prodPickerTitle');
+    const subEl = document.getElementById('prodPickerSubtitle');
+    const searchInput = document.getElementById('prodPickerSearchInput');
+    const btnClear = document.getElementById('btnClearProdPickerSearch');
+
+    const isSale = options.mode === 'sale';
+    if (titleEl) {
+      titleEl.innerHTML = isSale ? '🛒 Chọn Mặt Hàng Bán' : '📦 Chọn Sản Phẩm Nhập';
+    }
+    if (subEl) {
+      subEl.textContent = 'Lọc theo thẻ tag danh mục & tìm kiếm nhanh';
+    }
+    if (searchInput) {
+      searchInput.value = '';
+    }
+    if (btnClear) {
+      btnClear.style.display = 'none';
+    }
+
+    this.renderProductPickerCategories();
+    this.renderProductPickerList();
+
+    modal.classList.add('active');
+    modal.classList.add('show');
+  },
+
+  closeProductPicker() {
+    const modal = document.getElementById('modalCategoryProductPicker');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.classList.remove('show');
+    }
+    this.currentProductPickerOptions = null;
+  },
+
+  renderProductPickerCategories() {
+    const bar = document.getElementById('prodPickerCategoryBar');
+    if (!bar) return;
+
+    const categories = this.getCategoriesList();
+    const products = window.appStore?.state?.products || [];
+
+    const counts = {};
+    products.forEach(p => {
+      const raw = (p.category || 'Chưa phân loại').trim();
+      const matchedCat = categories.find(c => c.toLowerCase() === raw.toLowerCase()) || raw;
+      counts[matchedCat] = (counts[matchedCat] || 0) + 1;
+    });
+
+    const activeCat = (this.currentProductPickerCategory || 'all').trim().toLowerCase();
+
+    let html = `
+      <button type="button" class="prod-picker-cat-pill ${activeCat === 'all' ? 'active' : ''}" data-category="all">
+        <span>Tất cả</span>
+        <span class="cat-count">(${products.length})</span>
+      </button>
+    `;
+
+    categories.forEach(cat => {
+      const isActive = activeCat === cat.trim().toLowerCase();
+      const style = this.getCategoryStyle(cat);
+      const count = counts[cat] || 0;
+      html += `
+        <button type="button" class="prod-picker-cat-pill ${isActive ? 'active' : ''}" data-category="${this.escapeHtml(cat)}"
+          style="--cat-bg: ${style.bg}; --cat-color: ${style.color}; --cat-border: ${style.border}; --cat-dot: ${style.dot};">
+          <span class="cat-dot" style="background-color: ${isActive ? '#38bdf8' : style.dot};"></span>
+          <span>${this.escapeHtml(cat)}</span>
+          <span class="cat-count">(${count})</span>
+        </button>
+      `;
+    });
+
+    bar.innerHTML = html;
+
+    bar.querySelectorAll('.prod-picker-cat-pill').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (e) e.preventDefault();
+        const chosenCat = btn.getAttribute('data-category') || 'all';
+        if (chosenCat === 'all') {
+          this.currentProductPickerCategory = 'all';
+        } else if (this.currentProductPickerCategory.toLowerCase() === chosenCat.toLowerCase()) {
+          this.currentProductPickerCategory = 'all';
+        } else {
+          this.currentProductPickerCategory = chosenCat;
+        }
+        this.renderProductPickerCategories();
+        this.renderProductPickerList();
+      });
+    });
+  },
+
+  renderProductPickerList() {
+    const listContainer = document.getElementById('prodPickerList');
+    if (!listContainer) return;
+
+    const products = window.appStore?.state?.products || [];
+    const activeCat = (this.currentProductPickerCategory || 'all').trim().toLowerCase();
+    const query = (this.productPickerSearchQuery || '').trim().toLowerCase();
+    const mode = this.currentProductPickerOptions?.mode || 'sale';
+    const currentSelectedId = this.currentProductPickerOptions?.currentProductId || '';
+
+    let filtered = products.filter(p => {
+      if (activeCat !== 'all') {
+        const pCat = (p.category || 'Chưa phân loại').trim().toLowerCase();
+        if (pCat !== activeCat) return false;
+      }
+      if (query) {
+        const nameMatch = (p.name || '').toLowerCase().includes(query);
+        const skuMatch = (p.sku || '').toLowerCase().includes(query);
+        const catMatch = (p.category || '').toLowerCase().includes(query);
+        if (!nameMatch && !skuMatch && !catMatch) return false;
+      }
+      return true;
+    });
+
+    // Sắp xếp thứ tự sản phẩm theo Alphabetical A-Z (tiếng Việt)
+    filtered.sort((a, b) => (a.name || '').localeCompare(b.name || '', 'vi', { sensitivity: 'base' }));
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `
+        <div class="prod-picker-empty">
+          <div class="prod-picker-empty-icon">📦</div>
+          <div class="prod-picker-empty-text">Không tìm thấy sản phẩm nào ${query ? `với từ khóa "${this.escapeHtml(query)}"` : 'trong danh mục này'}</div>
+        </div>
+      `;
+      return;
+    }
+
+    let html = '';
+    filtered.forEach(p => {
+      const isSelected = p.id === currentSelectedId;
+      const catName = (p.category || 'Chưa phân loại').trim();
+      const catStyle = this.getCategoryStyle(catName);
+      const stock = Number(p.stock) || 0;
+      const isOutOfStock = stock <= 0;
+      const priceVal = mode === 'sale' ? (p.sellingPrice || 0) : (p.costPrice || 0);
+      const priceStr = Calculations.formatCurrency(priceVal);
+
+      html += `
+        <div class="prod-picker-card ${isSelected ? 'selected' : ''}" data-product-id="${this.escapeHtml(p.id)}">
+          <div class="prod-picker-card-top">
+            <span class="prod-picker-card-cat" style="background: ${catStyle.bg}; color: ${catStyle.color}; border: 1px solid ${catStyle.border};">
+              <span class="cat-dot" style="background: ${catStyle.dot};"></span>
+              <span>${this.escapeHtml(catName)}</span>
+            </span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              ${isSelected ? '<span class="prod-picker-selected-badge">✓ Đang chọn</span>' : ''}
+              <span class="prod-picker-card-stock ${isOutOfStock ? 'out-stock' : 'in-stock'}">
+                ${isOutOfStock ? 'Hết hàng (0)' : `Còn ${stock} cái`}
+              </span>
+            </div>
+          </div>
+          <div class="prod-picker-card-name">${this.escapeHtml(p.name)}</div>
+          <div class="prod-picker-card-bottom">
+            <span class="prod-picker-card-sku">${p.sku ? `SKU: ${this.escapeHtml(p.sku)}` : ''}</span>
+            <span class="prod-picker-card-price">${mode === 'sale' ? 'Giá bán: ' : 'Giá nhập: '}${priceStr}</span>
+          </div>
+        </div>
+      `;
+    });
+
+    listContainer.innerHTML = html;
+
+    listContainer.querySelectorAll('.prod-picker-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const chosenId = card.getAttribute('data-product-id');
+        if (this.currentProductPickerOptions && typeof this.currentProductPickerOptions.onSelect === 'function') {
+          this.currentProductPickerOptions.onSelect(chosenId);
+        }
+        this.closeProductPicker();
+      });
+    });
+  },
+
+  updateProductTriggerDisplay(triggerEl, productId, mode = 'sale') {
+    if (!triggerEl) return;
+    const contentEl = triggerEl.querySelector('.product-trigger-content');
+    if (!contentEl) return;
+
+    const prod = productId ? window.appStore.getProductById(productId) : null;
+    if (!prod) {
+      const placeholder = mode === 'sale' ? '-- Chọn món bán --' : '-- Chọn sản phẩm nhập --';
+      contentEl.innerHTML = `<span class="product-trigger-placeholder">${placeholder}</span>`;
+      return;
+    }
+
+    const catName = (prod.category || 'Chưa phân loại').trim();
+    const catStyle = this.getCategoryStyle(catName);
+    const stock = Number(prod.stock) || 0;
+    const isOutOfStock = stock <= 0;
+    const stockText = mode === 'sale' ? `Kho: ${stock}` : `Tồn: ${stock}`;
+    const priceVal = mode === 'sale' ? (prod.sellingPrice || 0) : (prod.costPrice || 0);
+    const priceStr = Calculations.formatCurrency(priceVal);
+
+    contentEl.innerHTML = `
+      <div class="product-trigger-selected">
+        <div class="product-trigger-row-top">
+          <span class="product-trigger-cat-badge" style="background: ${catStyle.bg}; color: ${catStyle.color}; border: 1px solid ${catStyle.border};">
+            <span class="cat-dot" style="background: ${catStyle.dot};"></span>
+            <span>${this.escapeHtml(catName)}</span>
+          </span>
+          <span class="product-trigger-stock-badge ${isOutOfStock ? 'stock-empty' : 'stock-ok'}">
+            ${stockText}
+          </span>
+        </div>
+        <div class="product-trigger-row-name">
+          <span class="product-trigger-prod-name" title="${this.escapeHtml(prod.name)}">${this.escapeHtml(prod.name)}</span>
+          <span class="product-trigger-prod-price">${priceStr}</span>
+        </div>
+      </div>
+    `;
+  },
+
   syncVariantStockSum() {
     const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
     const rows = container ? container.querySelectorAll('.variant-row') : [];
@@ -1541,7 +1801,13 @@ const MobileApp = {
 
     div.innerHTML = `
       <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-        <select class="form-control po-product-select" style="flex: 1; font-weight: 700; border-radius: 12px;" required>
+        <div class="product-picker-trigger po-product-trigger" tabindex="0" role="button" aria-haspopup="dialog">
+          <div class="product-trigger-content">
+            <span class="product-trigger-placeholder">-- Chọn sản phẩm nhập --</span>
+          </div>
+          <span class="product-trigger-chevron">▾</span>
+        </div>
+        <select class="form-control po-product-select" style="display: none;">
           <option value="">-- Chọn sản phẩm nhập --</option>
           ${optionsHtml}
         </select>
@@ -1607,6 +1873,7 @@ const MobileApp = {
 
     container.appendChild(div);
 
+    const triggerEl = div.querySelector('.po-product-trigger');
     const prodSelect = div.querySelector('.po-product-select');
     const priceInput = div.querySelector('.po-price-input');
     const qtyInput = div.querySelector('.po-qty-input');
@@ -1619,6 +1886,41 @@ const MobileApp = {
     const sizeBadge = div.querySelector('.po-size-badge');
     const sizeInput = div.querySelector('.po-size-input');
     const btnOpenPoSize = div.querySelector('.btn-open-po-size');
+
+    const openPoProductPicker = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.openProductPicker({
+        mode: 'purchase',
+        currentProductId: prodSelect.value,
+        onSelect: (chosenId) => {
+          let opt = prodSelect.querySelector(`option[value="${chosenId}"]`);
+          if (!opt) {
+            const p = window.appStore.getProductById(chosenId);
+            if (p) {
+              opt = document.createElement('option');
+              opt.value = p.id;
+              opt.setAttribute('data-cost', p.costPrice || 0);
+              opt.setAttribute('data-weight', p.weight !== undefined ? p.weight : 0.2);
+              opt.textContent = `${p.name} (Tồn: ${p.stock})`;
+              prodSelect.appendChild(opt);
+            }
+          }
+          prodSelect.value = chosenId;
+          this.updateProductTriggerDisplay(triggerEl, chosenId, 'purchase');
+          prodSelect.dispatchEvent(new Event('change'));
+        }
+      });
+    };
+
+    triggerEl?.addEventListener('click', openPoProductPicker);
+    triggerEl?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        openPoProductPicker(e);
+      }
+    });
 
     const openPoSizePicker = (e) => {
       if (e) {
@@ -1727,6 +2029,7 @@ const MobileApp = {
         weightInput.value = w;
       }
       const prod = window.appStore.getProductById(prodSelect.value);
+      this.updateProductTriggerDisplay(triggerEl, prodSelect.value, 'purchase');
       updateColorOptions(prod);
       updateSizeOptions(prod);
       this.updatePurchaseLiveCalc();
@@ -1742,11 +2045,16 @@ const MobileApp = {
     if (itemData) {
       if (itemData.productId) {
         prodSelect.value = itemData.productId;
+        this.updateProductTriggerDisplay(triggerEl, itemData.productId, 'purchase');
+      } else {
+        this.updateProductTriggerDisplay(triggerEl, '', 'purchase');
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.purchasePrice !== undefined) priceInput.value = itemData.purchasePrice;
       if (itemData.weight !== undefined) weightInput.value = itemData.weight;
       if (itemData.size && sizeInput) sizeInput.value = itemData.size;
+    } else {
+      this.updateProductTriggerDisplay(triggerEl, '', 'purchase');
     }
 
     this.updatePurchaseLiveCalc();
@@ -2155,7 +2463,13 @@ const MobileApp = {
 
     div.innerHTML = `
       <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 8px;">
-        <select class="form-control sale-product-select" style="flex: 1; font-weight: 700; border-radius: 12px;" required>
+        <div class="product-picker-trigger sale-product-trigger" tabindex="0" role="button" aria-haspopup="dialog">
+          <div class="product-trigger-content">
+            <span class="product-trigger-placeholder">-- Chọn món bán --</span>
+          </div>
+          <span class="product-trigger-chevron">▾</span>
+        </div>
+        <select class="form-control sale-product-select" style="display: none;">
           <option value="">-- Chọn món bán --</option>
           ${optionsHtml}
         </select>
@@ -2209,6 +2523,7 @@ const MobileApp = {
 
     container.appendChild(div);
 
+    const triggerEl = div.querySelector('.sale-product-trigger');
     const prodSelect = div.querySelector('.sale-product-select');
     const priceInput = div.querySelector('.sale-price-input');
     const qtyInput = div.querySelector('.sale-qty-input');
@@ -2220,6 +2535,41 @@ const MobileApp = {
     const sizeBadge = div.querySelector('.sale-size-badge');
     const sizeInput = div.querySelector('.sale-size-input');
     const btnOpenSaleSize = div.querySelector('.btn-open-sale-size');
+
+    const openSaleProductPicker = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      this.openProductPicker({
+        mode: 'sale',
+        currentProductId: prodSelect.value,
+        onSelect: (chosenId) => {
+          let opt = prodSelect.querySelector(`option[value="${chosenId}"]`);
+          if (!opt) {
+            const p = window.appStore.getProductById(chosenId);
+            if (p) {
+              opt = document.createElement('option');
+              opt.value = p.id;
+              opt.setAttribute('data-price', p.sellingPrice || 0);
+              opt.setAttribute('data-stock', p.stock || 0);
+              opt.textContent = `${p.name} (Kho: ${p.stock})`;
+              prodSelect.appendChild(opt);
+            }
+          }
+          prodSelect.value = chosenId;
+          this.updateProductTriggerDisplay(triggerEl, chosenId, 'sale');
+          prodSelect.dispatchEvent(new Event('change'));
+        }
+      });
+    };
+
+    triggerEl?.addEventListener('click', openSaleProductPicker);
+    triggerEl?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        openSaleProductPicker(e);
+      }
+    });
 
     const openSaleSizePicker = (e) => {
       if (e) {
@@ -2325,6 +2675,7 @@ const MobileApp = {
       }
 
       const prod = window.appStore.getProductById(prodSelect.value);
+      this.updateProductTriggerDisplay(triggerEl, prodSelect.value, 'sale');
       updateColorOptions(prod);
       updateSizeOptions(prod);
       this.updateSaleLiveCalc();
@@ -2336,10 +2687,15 @@ const MobileApp = {
     if (itemData) {
       if (itemData.productId) {
         prodSelect.value = itemData.productId;
+        this.updateProductTriggerDisplay(triggerEl, itemData.productId, 'sale');
+      } else {
+        this.updateProductTriggerDisplay(triggerEl, '', 'sale');
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;
       if (itemData.size && sizeInput) sizeInput.value = itemData.size;
+    } else {
+      this.updateProductTriggerDisplay(triggerEl, '', 'sale');
     }
 
     this.updateSaleLiveCalc();
