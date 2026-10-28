@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=5.7">
+  <link rel="stylesheet" href="css/style.css?v=5.8">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1439,6 +1439,207 @@
     </div>
   </div>
 
+  <!-- MODAL POPUP CHỌN MÀU SẮC ĐỒNG BỘ UI & CÓ MINH HỌA MÀU SẮC PHONG PHÚ -->
+  <div class="modal-backdrop" id="modalVariantColorPicker">
+    <div class="modal-dialog modal-color-picker-dialog" style="max-width: 380px; width: 92%; max-height: 88vh; margin: auto; padding: 18px 16px; border-radius: 20px; background: #ffffff; border: 2px solid #a855f7; box-shadow: 0 16px 40px rgba(168, 85, 247, 0.25); display: flex; flex-direction: column;">
+      
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1.5px solid #f3e8ff; padding-bottom: 10px; flex-shrink: 0;">
+        <div>
+          <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #581c87; display: flex; align-items: center; gap: 6px;">
+            <span>🎨</span>
+            <span>Chọn Màu Sắc</span>
+          </h4>
+          <div id="colorPickerTargetLabel" style="font-size: 11.5px; color: #7c3aed; font-weight: 600; margin-top: 2px;">Dòng sản phẩm</div>
+        </div>
+        <button type="button" class="modal-close" onclick="MobileApp.closeColorPicker()" style="font-size: 22px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f3e8ff; color: #6b21a8; border: none; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Ô nhập tay màu khác nếu cần -->
+      <div style="margin-bottom: 12px; flex-shrink: 0;">
+        <label style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Tự gõ màu khác (nếu không có trong danh sách):</label>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="colorPickerCustomInput" class="form-control" placeholder="VD: Than chì, Xanh rêu khói..." style="height: 36px; font-size: 13px; font-weight: 700;">
+          <button type="button" class="btn btn-sm" onclick="MobileApp.applyCustomColorPicker()" style="background: #9333ea; color: #fff; font-weight: 700; padding: 0 14px; border-radius: 8px; font-size: 12px; white-space: nowrap;">Áp dụng</button>
+        </div>
+      </div>
+
+      <!-- Vùng cuộn danh sách màu -->
+      <div class="color-picker-scroll-area" style="overflow-y: auto; flex: 1; padding-right: 2px; margin-bottom: 12px;">
+        
+        <!-- Nhóm 1: Màu có sẵn trong kho của sản phẩm này (hiện động nếu sản phẩm có colors) -->
+        <div id="colorPickerStockGroup" style="display: none; margin-bottom: 12px; background: #faf5ff; border: 1.5px solid #e9d5ff; border-radius: 14px; padding: 10px 8px;">
+          <div style="font-size: 11px; font-weight: 800; color: #6b21a8; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+            <span>📦 Màu sẵn có trong kho:</span>
+          </div>
+          <div id="colorPickerStockList" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <!-- Render động bằng JS -->
+          </div>
+        </div>
+
+        <!-- Nhóm 2: Bảng màu phong phú thế giới thời trang & hàng hóa -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          
+          <!-- Tông Cơ Bản & Trung Tính -->
+          <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 10px 8px;">
+            <div style="font-size: 11px; font-weight: 800; color: #334155; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+              <span>Tông Cơ bản &amp; Trung tính</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button type="button" class="btn-color-choice" data-color="Đen" data-hex="#0f172a">
+                <span class="color-swatch-circle" style="background: #0f172a; border-color: #0f172a;"></span>
+                <span class="color-choice-name">Đen</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Trắng" data-hex="#ffffff">
+                <span class="color-swatch-circle" style="background: #ffffff; border-color: #cbd5e1;"></span>
+                <span class="color-choice-name">Trắng</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Than chì" data-hex="#334155">
+                <span class="color-swatch-circle" style="background: #334155; border-color: #1e293b;"></span>
+                <span class="color-choice-name">Than chì</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xám ghi" data-hex="#94a3b8">
+                <span class="color-swatch-circle" style="background: #94a3b8; border-color: #64748b;"></span>
+                <span class="color-choice-name">Xám ghi</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xám đậm" data-hex="#475569">
+                <span class="color-swatch-circle" style="background: #475569; border-color: #334155;"></span>
+                <span class="color-choice-name">Xám đậm</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Be / Kem" data-hex="#fef3c7">
+                <span class="color-swatch-circle" style="background: #fef3c7; border-color: #d97706;"></span>
+                <span class="color-choice-name">Be / Kem</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Nâu cafe" data-hex="#78350f">
+                <span class="color-swatch-circle" style="background: #78350f; border-color: #451a03;"></span>
+                <span class="color-choice-name">Nâu cafe</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Nâu bò" data-hex="#92400e">
+                <span class="color-swatch-circle" style="background: #92400e; border-color: #78350f;"></span>
+                <span class="color-choice-name">Nâu bò</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tông Xanh Dương & Xanh Lá -->
+          <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px; padding: 10px 8px;">
+            <div style="font-size: 11px; font-weight: 800; color: #166534; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+              <span>Tông Xanh Dương &amp; Xanh Lá</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button type="button" class="btn-color-choice" data-color="Xanh dương" data-hex="#2563eb">
+                <span class="color-swatch-circle" style="background: #2563eb; border-color: #1d4ed8;"></span>
+                <span class="color-choice-name">Xanh dương</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh navy" data-hex="#1e3a8a">
+                <span class="color-swatch-circle" style="background: #1e3a8a; border-color: #172554;"></span>
+                <span class="color-choice-name">Xanh navy</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh da trời" data-hex="#38bdf8">
+                <span class="color-swatch-circle" style="background: #38bdf8; border-color: #0284c7;"></span>
+                <span class="color-choice-name">Xanh da trời</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh mint" data-hex="#6ee7b7">
+                <span class="color-swatch-circle" style="background: #6ee7b7; border-color: #059669;"></span>
+                <span class="color-choice-name">Xanh mint</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh lá" data-hex="#16a34a">
+                <span class="color-swatch-circle" style="background: #16a34a; border-color: #15803d;"></span>
+                <span class="color-choice-name">Xanh lá</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh rêu" data-hex="#4d7c0f">
+                <span class="color-swatch-circle" style="background: #4d7c0f; border-color: #365314;"></span>
+                <span class="color-choice-name">Xanh rêu</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh bơ / cốm" data-hex="#84cc16">
+                <span class="color-swatch-circle" style="background: #84cc16; border-color: #4d7c0f;"></span>
+                <span class="color-choice-name">Xanh bơ / cốm</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Xanh cổ vịt" data-hex="#0f766e">
+                <span class="color-swatch-circle" style="background: #0f766e; border-color: #115e59;"></span>
+                <span class="color-choice-name">Xanh cổ vịt</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tông Đỏ, Cam & Vàng -->
+          <div style="background: #fff7ed; border: 1.5px solid #fed7aa; border-radius: 14px; padding: 10px 8px;">
+            <div style="font-size: 11px; font-weight: 800; color: #9a3412; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+              <span>Tông Đỏ, Cam &amp; Vàng</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button type="button" class="btn-color-choice" data-color="Đỏ tươi" data-hex="#dc2626">
+                <span class="color-swatch-circle" style="background: #dc2626; border-color: #b91c1c;"></span>
+                <span class="color-choice-name">Đỏ tươi</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Đỏ đô" data-hex="#881337">
+                <span class="color-swatch-circle" style="background: #881337; border-color: #4c0519;"></span>
+                <span class="color-choice-name">Đỏ đô</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Cam tươi" data-hex="#ea580c">
+                <span class="color-swatch-circle" style="background: #ea580c; border-color: #c2410c;"></span>
+                <span class="color-choice-name">Cam tươi</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Cam đất" data-hex="#c2410c">
+                <span class="color-swatch-circle" style="background: #c2410c; border-color: #9a3412;"></span>
+                <span class="color-choice-name">Cam đất</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Vàng tươi" data-hex="#facc15">
+                <span class="color-swatch-circle" style="background: #facc15; border-color: #ca8a04;"></span>
+                <span class="color-choice-name">Vàng tươi</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Vàng bò" data-hex="#d97706">
+                <span class="color-swatch-circle" style="background: #d97706; border-color: #b45309;"></span>
+                <span class="color-choice-name">Vàng bò</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tông Hồng & Tím -->
+          <div style="background: #fdf2f8; border: 1.5px solid #fbcfe8; border-radius: 14px; padding: 10px 8px;">
+            <div style="font-size: 11px; font-weight: 800; color: #9d174d; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 5px;">
+              <span>Tông Hồng &amp; Tím</span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <button type="button" class="btn-color-choice" data-color="Hồng phấn" data-hex="#f472b6">
+                <span class="color-swatch-circle" style="background: #f472b6; border-color: #db2777;"></span>
+                <span class="color-choice-name">Hồng phấn</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Hồng sen" data-hex="#ec4899">
+                <span class="color-swatch-circle" style="background: #ec4899; border-color: #be185d;"></span>
+                <span class="color-choice-name">Hồng sen</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Hồng baby" data-hex="#fbcfe8">
+                <span class="color-swatch-circle" style="background: #fbcfe8; border-color: #f472b6;"></span>
+                <span class="color-choice-name">Hồng baby</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Tím pastel" data-hex="#c084fc">
+                <span class="color-swatch-circle" style="background: #c084fc; border-color: #9333ea;"></span>
+                <span class="color-choice-name">Tím pastel</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Tím khói" data-hex="#a855f7">
+                <span class="color-swatch-circle" style="background: #a855f7; border-color: #7e22ce;"></span>
+                <span class="color-choice-name">Tím khói</span>
+              </button>
+              <button type="button" class="btn-color-choice" data-color="Tím đậm" data-hex="#7e22ce">
+                <span class="color-swatch-circle" style="background: #7e22ce; border-color: #581c87;"></span>
+                <span class="color-choice-name">Tím đậm</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div style="display: flex; gap: 8px; justify-content: space-between; flex-shrink: 0; padding-top: 8px; border-top: 1.5px solid #f3e8ff;">
+        <button type="button" class="btn btn-sm" onclick="MobileApp.clearRowColorPicker()" style="background: #f1f5f9; color: #475569; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 12px;">Bỏ màu (để trống)</button>
+        <button type="button" class="btn btn-sm" onclick="MobileApp.closeColorPicker()" style="background: #0f172a; color: #ffffff; font-weight: 700; border-radius: 8px; padding: 6px 18px; font-size: 12px;">Xong</button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL POPUP CHỌN SIZE 2 CỘT (CHỮ VÀ SỐ) CHO DÒNG PHÂN LOẠI -->
   <div class="modal-backdrop" id="modalVariantSizePicker">
     <div class="modal-dialog modal-size-picker-dialog" style="max-width: 360px; margin: auto; padding: 18px 16px; border-radius: 20px; background: #ffffff; border: 2px solid #8b5cf6; box-shadow: 0 16px 40px rgba(109, 40, 217, 0.25);">
@@ -1550,11 +1751,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=5.7"></script>
-  <script src="js/cloud-sync.js?v=5.7"></script>
-  <script src="js/store.js?v=5.7"></script>
-  <script src="js/export.js?v=5.7"></script>
-  <script src="js/charts.js?v=5.7"></script>
-  <script src="js/app.js?v=5.7"></script>
+  <script src="js/calculations.js?v=5.8"></script>
+  <script src="js/cloud-sync.js?v=5.8"></script>
+  <script src="js/store.js?v=5.8"></script>
+  <script src="js/export.js?v=5.8"></script>
+  <script src="js/charts.js?v=5.8"></script>
+  <script src="js/app.js?v=5.8"></script>
 </body>
 </html>

@@ -299,6 +299,8 @@ const MobileApp = {
             this.closeSizePicker();
           } else if (backdrop.id === 'modalCategoryProductPicker') {
             this.closeProductPicker();
+          } else if (backdrop.id === 'modalVariantColorPicker') {
+            this.closeColorPicker();
           } else {
             this.closeModal(backdrop.id);
           }
@@ -659,6 +661,28 @@ const MobileApp = {
       }
     });
 
+    // Thiết lập sự kiện cho popup Color Picker
+    document.getElementById('modalVariantColorPicker')?.addEventListener('click', (e) => {
+      if (e.target.id === 'modalVariantColorPicker') {
+        MobileApp.closeColorPicker();
+        return;
+      }
+      const btn = e.target.closest('.btn-color-choice');
+      if (btn) {
+        const color = btn.getAttribute('data-color');
+        if (color) {
+          MobileApp.selectColorFromPicker(color);
+        }
+      }
+    });
+
+    document.getElementById('colorPickerCustomInput')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        MobileApp.applyCustomColorPicker();
+      }
+    });
+
     // Form submit sản phẩm
     document.getElementById('formProduct')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -952,6 +976,11 @@ const MobileApp = {
       this.openSizePicker(row);
     });
 
+    // Mở popup color picker phong phú khi bấm vào ô màu sắc
+    colorInput.addEventListener('click', () => {
+      this.openColorPicker(row);
+    });
+
     qtyInput.addEventListener('input', () => this.syncVariantStockSum());
     modelInput.addEventListener('input', () => this.syncVariantStockSum());
     colorInput.addEventListener('input', () => this.syncVariantStockSum());
@@ -1054,6 +1083,149 @@ const MobileApp = {
     const val = (customInput?.value || '').trim();
     if (val) {
       this.selectSizeFromPicker(val);
+    }
+  },
+
+  getColorHex(colorName) {
+    if (!colorName) return '#94a3b8';
+    const c = colorName.toLowerCase().trim();
+    if (c.includes('đen') || c.includes('black')) return '#0f172a';
+    if (c.includes('trắng') || c.includes('white')) return '#ffffff';
+    if (c.includes('than chì') || c.includes('chì')) return '#334155';
+    if (c.includes('ghi') || c.includes('xám') || c.includes('gray') || c.includes('grey')) return '#64748b';
+    if (c.includes('than') || c.includes('navy')) return '#1e3a8a';
+    if (c.includes('sky') || c.includes('da trời')) return '#38bdf8';
+    if (c.includes('rêu') || c.includes('olive')) return '#4d7c0f';
+    if (c.includes('cốm') || c.includes('bơ')) return '#84cc16';
+    if (c.includes('mint') || c.includes('bạc hà')) return '#6ee7b7';
+    if (c.includes('cổ vịt') || c.includes('teal')) return '#0f766e';
+    if (c.includes('lá') || c.includes('green') || c.includes('xanh lá')) return '#16a34a';
+    if (c.includes('xanh') || c.includes('blue') || c.includes('coban')) return '#2563eb';
+    if (c.includes('đô') || c.includes('mận') || c.includes('bordeaux') || c.includes('maroon') || c.includes('rượu')) return '#881337';
+    if (c.includes('đỏ') || c.includes('red')) return '#dc2626';
+    if (c.includes('đất') || c.includes('gạch') || c.includes('ngói')) return '#c2410c';
+    if (c.includes('cam') || c.includes('orange')) return '#ea580c';
+    if (c.includes('bò') || c.includes('mustard')) return '#d97706';
+    if (c.includes('vàng') || c.includes('yellow')) return '#facc15';
+    if (c.includes('phấn') || c.includes('pastel') || c.includes('baby')) return '#f472b6';
+    if (c.includes('sen') || c.includes('cánh sen') || c.includes('fuchsia')) return '#ec4899';
+    if (c.includes('hồng') || c.includes('pink')) return '#f43f5e';
+    if (c.includes('khoai môn') || c.includes('lilac') || c.includes('lavender')) return '#c084fc';
+    if (c.includes('tím khói') || c.includes('khói')) return '#a855f7';
+    if (c.includes('tím') || c.includes('purple') || c.includes('violet')) return '#7e22ce';
+    if (c.includes('be') || c.includes('kem') || c.includes('cream') || c.includes('beige') || c.includes('sữa')) return '#fef3c7';
+    if (c.includes('nâu') || c.includes('brown') || c.includes('cafe') || c.includes('socola')) return '#78350f';
+
+    const palette = ['#6366f1', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#14b8a6'];
+    let hash = 0;
+    for (let i = 0; i < c.length; i++) hash = (hash << 5) - hash + c.charCodeAt(i);
+    return palette[Math.abs(hash) % palette.length];
+  },
+
+  openColorPicker(row = null, options = null) {
+    this.currentActiveColorRow = row;
+    this.currentColorPickerOptions = options;
+
+    let currentColor = '';
+    let labelText = 'Chọn Màu Sắc';
+    let stockColors = [];
+
+    if (options) {
+      currentColor = (options.currentColor || '').trim();
+      labelText = options.targetLabel || 'Chọn Màu Sắc';
+      stockColors = Array.isArray(options.stockColors) ? options.stockColors : [];
+    } else if (row) {
+      const colorInput = row.querySelector('.variant-color-input');
+      currentColor = (colorInput?.value || '').trim();
+      const modelVal = row.querySelector('.variant-model-input')?.value || '';
+      labelText = modelVal ? `Mẫu: ${modelVal}` : 'Dòng phân loại';
+    }
+
+    const label = document.getElementById('colorPickerTargetLabel');
+    if (label) {
+      label.textContent = labelText;
+    }
+
+    const customInput = document.getElementById('colorPickerCustomInput');
+    if (customInput) customInput.value = '';
+
+    // Render danh sách màu có sẵn trong kho nếu có
+    const stockGroupEl = document.getElementById('colorPickerStockGroup');
+    const stockListEl = document.getElementById('colorPickerStockList');
+    if (stockGroupEl && stockListEl) {
+      if (stockColors.length > 0) {
+        stockGroupEl.style.display = 'block';
+        stockListEl.innerHTML = stockColors.map(c => {
+          const hex = this.getColorHex(c.name);
+          const isSelected = (c.name.toLowerCase() === currentColor.toLowerCase());
+          return `
+            <button type="button" class="btn-color-choice ${isSelected ? 'active' : ''}" data-color="${this.escapeHtml(c.name)}" data-hex="${hex}">
+              <span class="color-swatch-circle" style="background: ${hex}; border-color: ${hex === '#ffffff' ? '#cbd5e1' : hex};"></span>
+              <span class="color-choice-name">${this.escapeHtml(c.name)} <small style="color: #6b21a8; font-weight: 700;">(${c.quantity})</small></span>
+            </button>
+          `;
+        }).join('');
+      } else {
+        stockGroupEl.style.display = 'none';
+        stockListEl.innerHTML = '';
+      }
+    }
+
+    // Highlight nút màu đang chọn
+    const choiceButtons = document.querySelectorAll('#modalVariantColorPicker .btn-color-choice');
+    choiceButtons.forEach(btn => {
+      const c = btn.getAttribute('data-color') || '';
+      btn.classList.toggle('active', c.toLowerCase() === currentColor.toLowerCase());
+    });
+
+    const modal = document.getElementById('modalVariantColorPicker');
+    if (modal) {
+      modal.classList.add('active');
+      modal.classList.add('show');
+    }
+  },
+
+  closeColorPicker() {
+    const modal = document.getElementById('modalVariantColorPicker');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.classList.remove('show');
+    }
+    this.currentActiveColorRow = null;
+    this.currentColorPickerOptions = null;
+  },
+
+  selectColorFromPicker(color) {
+    if (this.currentColorPickerOptions && typeof this.currentColorPickerOptions.onSelect === 'function') {
+      this.currentColorPickerOptions.onSelect(color);
+    } else if (this.currentActiveColorRow) {
+      const colorInput = this.currentActiveColorRow.querySelector('.variant-color-input');
+      if (colorInput) {
+        colorInput.value = color;
+      }
+      this.syncVariantStockSum();
+    }
+    this.closeColorPicker();
+  },
+
+  clearRowColorPicker() {
+    if (this.currentColorPickerOptions && typeof this.currentColorPickerOptions.onSelect === 'function') {
+      this.currentColorPickerOptions.onSelect('');
+    } else if (this.currentActiveColorRow) {
+      const colorInput = this.currentActiveColorRow.querySelector('.variant-color-input');
+      if (colorInput) {
+        colorInput.value = '';
+      }
+      this.syncVariantStockSum();
+    }
+    this.closeColorPicker();
+  },
+
+  applyCustomColorPicker() {
+    const customInput = document.getElementById('colorPickerCustomInput');
+    const val = (customInput?.value || '').trim();
+    if (val) {
+      this.selectColorFromPicker(val);
     }
   },
 
@@ -1685,11 +1857,12 @@ const MobileApp = {
         const priceInput = row.querySelector('.po-price-input');
         const weightInput = row.querySelector('.po-weight-input');
 
+        const poColorInput = row.querySelector('.po-color-input');
         const colorSelect = row.querySelector('.po-color-select');
         const colorCustom = row.querySelector('.po-color-custom');
-        const color = (colorSelect && colorSelect.value === '__custom__')
-          ? (colorCustom ? colorCustom.value : '').trim()
-          : (colorSelect ? colorSelect.value : '').trim();
+        const color = (poColorInput?.value || ((colorSelect && colorSelect.value === '__custom__')
+          ? (colorCustom ? colorCustom.value : '')
+          : (colorSelect ? colorSelect.value : '')) || '').trim();
 
         const poSizeInput = row.querySelector('.po-size-input');
         const sizeSelect = row.querySelector('.po-size-select');
@@ -1814,17 +1987,21 @@ const MobileApp = {
         <button type="button" class="btn-icon-remove btn-remove-row" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updatePurchaseLiveCalc();">&times;</button>
       </div>
 
-      <!-- KHU VỰC CHỌN MÀU SẮC & KÍCH CỠ (SIZE) TRONG PHIẾU NHẬP -->
+      <!-- KHU VỰC CHỌN MÀU SẮC & KÍCH CỠ (SIZE) TRONG PHIẾU NHẬP (CÂN BẰNG ĐỒNG BỘ) -->
       <div class="form-row po-variant-row" style="margin-bottom: 8px;">
         <div class="po-color-col">
           <label style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
             <span>🎨 Màu sắc:</span>
             <span class="po-color-badge" style="font-size: 10px; color: #7c3aed; font-weight: 600;"></span>
           </label>
-          <select class="form-control po-color-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+          <div class="variant-input-wrap">
+            <span class="color-dot-preview po-color-dot" style="display: none;"></span>
+            <input type="text" class="form-control po-color-input" placeholder="Chọn màu..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #faf5ff; border: 1.5px solid #e9d5ff; color: #6b21a8; cursor: pointer; text-align: center; width: 100%;">
+          </div>
+          <select class="form-control po-color-select" style="display: none;">
             <option value="">-- Mặc định --</option>
           </select>
-          <input type="text" class="form-control po-color-custom" placeholder="Nhập tên màu..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+          <input type="text" class="form-control po-color-custom" placeholder="Nhập tên màu..." style="display: none;">
         </div>
 
         <div class="po-size-col">
@@ -1832,10 +2009,7 @@ const MobileApp = {
             <span>📏 Kích cỡ (Size):</span>
             <span class="po-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
           </label>
-          <div style="display: flex; gap: 4px;">
-            <input type="text" class="form-control po-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; flex: 1;">
-            <button type="button" class="btn btn-sm btn-open-po-size" style="height: 38px; padding: 0 10px; border-radius: 10px; background: #e0f2fe; color: #0284c7; border: 1.5px solid #bae6fd; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Size ▾</button>
-          </div>
+          <input type="text" class="form-control po-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; width: 100%;">
           <select class="form-control po-size-select" style="display: none;">
             <option value="">-- Mặc định --</option>
           </select>
@@ -1878,6 +2052,8 @@ const MobileApp = {
     const priceInput = div.querySelector('.po-price-input');
     const qtyInput = div.querySelector('.po-qty-input');
     const weightInput = div.querySelector('.po-weight-input');
+    const colorInput = div.querySelector('.po-color-input');
+    const colorDot = div.querySelector('.po-color-dot');
     const colorSelect = div.querySelector('.po-color-select');
     const colorCustom = div.querySelector('.po-color-custom');
     const colorBadge = div.querySelector('.po-color-badge');
@@ -1885,7 +2061,25 @@ const MobileApp = {
     const sizeCustom = div.querySelector('.po-size-custom');
     const sizeBadge = div.querySelector('.po-size-badge');
     const sizeInput = div.querySelector('.po-size-input');
-    const btnOpenPoSize = div.querySelector('.btn-open-po-size');
+
+    const applyChosenColor = (chosenColor) => {
+      const clean = (chosenColor || '').trim();
+      if (colorInput) {
+        colorInput.value = clean;
+        if (clean) {
+          colorInput.classList.add('has-color-dot');
+          if (colorDot) {
+            colorDot.style.backgroundColor = MobileApp.getColorHex(clean);
+            colorDot.style.display = 'block';
+          }
+        } else {
+          colorInput.classList.remove('has-color-dot');
+          if (colorDot) colorDot.style.display = 'none';
+        }
+      }
+      if (colorSelect) colorSelect.value = clean;
+      if (colorCustom) colorCustom.value = clean;
+    };
 
     const openPoProductPicker = (e) => {
       if (e) {
@@ -1922,6 +2116,28 @@ const MobileApp = {
       }
     });
 
+    const openPoColorPicker = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const prod = window.appStore.getProductById(prodSelect.value);
+      const prodName = prod ? prod.name : 'Sản phẩm nhập';
+      const sizeVal = sizeInput ? sizeInput.value : '';
+      const targetLabel = prodName + (sizeVal ? ` • Size: ${sizeVal}` : '');
+      const stockColors = (prod && Array.isArray(prod.colors)) ? prod.colors : [];
+
+      this.openColorPicker(null, {
+        currentColor: colorInput ? colorInput.value : '',
+        targetLabel: targetLabel,
+        stockColors: stockColors,
+        onSelect: (chosenColor) => {
+          applyChosenColor(chosenColor);
+        }
+      });
+    };
+    colorInput?.addEventListener('click', openPoColorPicker);
+
     const openPoSizePicker = (e) => {
       if (e) {
         e.preventDefault();
@@ -1929,7 +2145,7 @@ const MobileApp = {
       }
       const prod = window.appStore.getProductById(prodSelect.value);
       const prodName = prod ? prod.name : 'Sản phẩm nhập';
-      const colorVal = colorSelect.value === '__custom__' ? colorCustom.value : colorSelect.value;
+      const colorVal = colorInput ? colorInput.value : '';
       const targetLabel = prodName + (colorVal ? ` • Màu: ${colorVal}` : '');
       this.openSizePicker(null, {
         currentSize: sizeInput ? sizeInput.value : '',
@@ -1942,42 +2158,16 @@ const MobileApp = {
       });
     };
     sizeInput?.addEventListener('click', openPoSizePicker);
-    btnOpenPoSize?.addEventListener('click', openPoSizePicker);
 
     const updateColorOptions = (prod, selectedColor = '') => {
-      let options = `<option value="">-- Mặc định --</option>`;
-      const cleanSelected = (selectedColor || '').trim();
-      let isFound = false;
-
+      const cleanSelected = (selectedColor || colorInput?.value || '').trim();
       if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
         if (colorBadge) colorBadge.textContent = `(${prod.colors.length} màu kho)`;
-        options += prod.colors.map(c => {
-          const match = c.name.toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${c.name}" ${match ? 'selected' : ''}>Màu ${c.name} (Tồn: ${c.quantity})</option>`;
-        }).join('');
       } else {
         if (colorBadge) colorBadge.textContent = '';
-        const commonColors = ['Đen', 'Trắng', 'Xám', 'Xanh', 'Đỏ', 'Vàng', 'Hồng', 'Be', 'Nâu'];
-        options += commonColors.map(c => {
-          const match = c.toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${c}" ${match ? 'selected' : ''}>Màu ${c}</option>`;
-        }).join('');
       }
-
-      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Màu khác (tự gõ)...</option>`;
-      colorSelect.innerHTML = options;
-
-      if (!isFound && cleanSelected) {
-        colorSelect.value = '__custom__';
-        colorCustom.style.display = 'block';
-        colorCustom.value = cleanSelected;
-      } else if (colorSelect.value === '__custom__') {
-        colorCustom.style.display = 'block';
-      } else {
-        colorCustom.style.display = 'none';
-        colorCustom.value = '';
+      if (cleanSelected) {
+        applyChosenColor(cleanSelected);
       }
     };
 
@@ -2052,6 +2242,7 @@ const MobileApp = {
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.purchasePrice !== undefined) priceInput.value = itemData.purchasePrice;
       if (itemData.weight !== undefined) weightInput.value = itemData.weight;
+      if (itemData.color) applyChosenColor(itemData.color);
       if (itemData.size && sizeInput) sizeInput.value = itemData.size;
     } else {
       this.updateProductTriggerDisplay(triggerEl, '', 'purchase');
@@ -2287,11 +2478,12 @@ const MobileApp = {
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
         const sellingPrice = Calculations.parseDecimal(priceInput.value, 0);
+        const saleColorInput = row.querySelector('.sale-color-input');
         const colorSelect = row.querySelector('.sale-color-select');
         const colorCustom = row.querySelector('.sale-color-custom');
-        const color = (colorSelect && colorSelect.value === '__custom__')
-          ? (colorCustom ? colorCustom.value : '').trim()
-          : (colorSelect ? colorSelect.value : '').trim();
+        const color = (saleColorInput?.value || ((colorSelect && colorSelect.value === '__custom__')
+          ? (colorCustom ? colorCustom.value : '')
+          : (colorSelect ? colorSelect.value : '')) || '').trim();
 
         const sizeInput = row.querySelector('.sale-size-input');
         const sizeSelect = row.querySelector('.sale-size-select');
@@ -2476,17 +2668,21 @@ const MobileApp = {
         <button type="button" class="btn-icon-remove btn-remove-row" title="Xóa món" onclick="this.closest('.mobile-item-row').remove(); MobileApp.updateSaleLiveCalc();">&times;</button>
       </div>
 
-      <!-- KHU VỰC CHỌN MÀU SẮC VÀ SIZE (LUÔN HIỂN THỊ RÕ RÀNG) -->
+      <!-- KHU VỰC CHỌN MÀU SẮC VÀ SIZE (CÂN BẰNG ĐỒNG BỘ) -->
       <div class="form-row sale-variant-row" style="margin-bottom: 8px;">
         <div class="sale-color-col">
           <label style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
             <span>🎨 Màu sắc:</span>
             <span class="sale-color-badge" style="font-size: 10px; color: #7c3aed; font-weight: 600;"></span>
           </label>
-          <select class="form-control sale-color-select" style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700;">
+          <div class="variant-input-wrap">
+            <span class="color-dot-preview sale-color-dot" style="display: none;"></span>
+            <input type="text" class="form-control sale-color-input" placeholder="Chọn màu..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #faf5ff; border: 1.5px solid #e9d5ff; color: #6b21a8; cursor: pointer; text-align: center; width: 100%;">
+          </div>
+          <select class="form-control sale-color-select" style="display: none;">
             <option value="">-- Mặc định --</option>
           </select>
-          <input type="text" class="form-control sale-color-custom" placeholder="Nhập tên màu..." style="display: none; margin-top: 5px; font-size: 12px; height: 34px; border-radius: 8px; font-weight: 600;">
+          <input type="text" class="form-control sale-color-custom" placeholder="Nhập tên màu..." style="display: none;">
         </div>
 
         <div class="sale-size-col">
@@ -2494,10 +2690,7 @@ const MobileApp = {
             <span>📏 Kích cỡ (Size):</span>
             <span class="sale-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
           </label>
-          <div style="display: flex; gap: 4px;">
-            <input type="text" class="form-control sale-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; flex: 1;">
-            <button type="button" class="btn btn-sm btn-open-sale-size" style="height: 38px; padding: 0 10px; border-radius: 10px; background: #e0f2fe; color: #0284c7; border: 1.5px solid #bae6fd; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap;">Size ▾</button>
-          </div>
+          <input type="text" class="form-control sale-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; width: 100%;">
           <select class="form-control sale-size-select" style="display: none;">
             <option value="">-- Mặc định --</option>
           </select>
@@ -2527,6 +2720,8 @@ const MobileApp = {
     const prodSelect = div.querySelector('.sale-product-select');
     const priceInput = div.querySelector('.sale-price-input');
     const qtyInput = div.querySelector('.sale-qty-input');
+    const colorInput = div.querySelector('.sale-color-input');
+    const colorDot = div.querySelector('.sale-color-dot');
     const colorSelect = div.querySelector('.sale-color-select');
     const colorCustom = div.querySelector('.sale-color-custom');
     const colorBadge = div.querySelector('.sale-color-badge');
@@ -2534,7 +2729,25 @@ const MobileApp = {
     const sizeCustom = div.querySelector('.sale-size-custom');
     const sizeBadge = div.querySelector('.sale-size-badge');
     const sizeInput = div.querySelector('.sale-size-input');
-    const btnOpenSaleSize = div.querySelector('.btn-open-sale-size');
+
+    const applyChosenColor = (chosenColor) => {
+      const clean = (chosenColor || '').trim();
+      if (colorInput) {
+        colorInput.value = clean;
+        if (clean) {
+          colorInput.classList.add('has-color-dot');
+          if (colorDot) {
+            colorDot.style.backgroundColor = MobileApp.getColorHex(clean);
+            colorDot.style.display = 'block';
+          }
+        } else {
+          colorInput.classList.remove('has-color-dot');
+          if (colorDot) colorDot.style.display = 'none';
+        }
+      }
+      if (colorSelect) colorSelect.value = clean;
+      if (colorCustom) colorCustom.value = clean;
+    };
 
     const openSaleProductPicker = (e) => {
       if (e) {
@@ -2571,6 +2784,28 @@ const MobileApp = {
       }
     });
 
+    const openSaleColorPicker = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const prod = window.appStore.getProductById(prodSelect.value);
+      const prodName = prod ? prod.name : 'Mặt hàng';
+      const sizeVal = sizeInput ? sizeInput.value : '';
+      const targetLabel = prodName + (sizeVal ? ` • Size: ${sizeVal}` : '');
+      const stockColors = (prod && Array.isArray(prod.colors)) ? prod.colors : [];
+
+      this.openColorPicker(null, {
+        currentColor: colorInput ? colorInput.value : '',
+        targetLabel: targetLabel,
+        stockColors: stockColors,
+        onSelect: (chosenColor) => {
+          applyChosenColor(chosenColor);
+        }
+      });
+    };
+    colorInput?.addEventListener('click', openSaleColorPicker);
+
     const openSaleSizePicker = (e) => {
       if (e) {
         e.preventDefault();
@@ -2578,7 +2813,7 @@ const MobileApp = {
       }
       const prod = window.appStore.getProductById(prodSelect.value);
       const prodName = prod ? prod.name : 'Mặt hàng';
-      const colorVal = colorSelect.value === '__custom__' ? colorCustom.value : colorSelect.value;
+      const colorVal = colorInput ? colorInput.value : '';
       const targetLabel = prodName + (colorVal ? ` • Màu: ${colorVal}` : '');
       this.openSizePicker(null, {
         currentSize: sizeInput ? sizeInput.value : '',
@@ -2591,42 +2826,16 @@ const MobileApp = {
       });
     };
     sizeInput?.addEventListener('click', openSaleSizePicker);
-    btnOpenSaleSize?.addEventListener('click', openSaleSizePicker);
 
     const updateColorOptions = (prod, selectedColor = '') => {
-      let options = `<option value="">-- Mặc định --</option>`;
-      const cleanSelected = (selectedColor || '').trim();
-      let isFound = false;
-
+      const cleanSelected = (selectedColor || colorInput?.value || '').trim();
       if (prod && Array.isArray(prod.colors) && prod.colors.length > 0) {
         if (colorBadge) colorBadge.textContent = `(${prod.colors.length} màu kho)`;
-        options += prod.colors.map(c => {
-          const match = c.name.toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${c.name}" ${match ? 'selected' : ''}>Màu ${c.name} (${c.quantity})</option>`;
-        }).join('');
       } else {
         if (colorBadge) colorBadge.textContent = '';
-        const commonColors = ['Đen', 'Trắng', 'Xám', 'Xanh', 'Đỏ', 'Vàng', 'Hồng', 'Be', 'Nâu'];
-        options += commonColors.map(c => {
-          const match = c.toLowerCase() === cleanSelected.toLowerCase();
-          if (match) isFound = true;
-          return `<option value="${c}" ${match ? 'selected' : ''}>Màu ${c}</option>`;
-        }).join('');
       }
-
-      options += `<option value="__custom__" ${(!isFound && cleanSelected) ? 'selected' : ''}>+ Màu khác (tự gõ)...</option>`;
-      colorSelect.innerHTML = options;
-
-      if (!isFound && cleanSelected) {
-        colorSelect.value = '__custom__';
-        colorCustom.style.display = 'block';
-        colorCustom.value = cleanSelected;
-      } else if (colorSelect.value === '__custom__') {
-        colorCustom.style.display = 'block';
-      } else {
-        colorCustom.style.display = 'none';
-        colorCustom.value = '';
+      if (cleanSelected) {
+        applyChosenColor(cleanSelected);
       }
     };
 
@@ -2693,6 +2902,7 @@ const MobileApp = {
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
       if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;
+      if (itemData.color) applyChosenColor(itemData.color);
       if (itemData.size && sizeInput) sizeInput.value = itemData.size;
     } else {
       this.updateProductTriggerDisplay(triggerEl, '', 'sale');
