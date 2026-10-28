@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=5.4">
+  <link rel="stylesheet" href="css/style.css?v=5.5">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -829,7 +829,6 @@
           <div class="bento-modal-card">
             <div class="bento-card-title">
               <span class="bento-tag-pill tag-coral">Mặt hàng bán:</span>
-              <button type="button" class="bento-pill-btn bento-pill-btn-coral" id="btnAddSaleRow">+ Thêm món</button>
             </div>
             <div id="saleItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
               <!-- Dòng sản phẩm thêm động qua JS -->
@@ -920,8 +919,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
-          <button type="submit" class="btn btn-theme-submit">Lưu Đơn & Trừ Kho</button>
+          <button type="button" class="btn btn-outline btn-footer-cancel" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
+          <button type="button" class="btn btn-footer-add-item btn-footer-add-sale" id="btnAddSaleRow">
+            <span style="font-size: 15px; font-weight: 900; margin-right: 2px;">+</span> Thêm Món
+          </button>
+          <button type="submit" class="btn btn-theme-submit btn-footer-submit">Lưu Đơn & Trừ Kho</button>
         </div>
       </form>
     </div>
@@ -961,7 +963,6 @@
           <div class="bento-modal-card">
             <div class="bento-card-title">
               <span class="bento-tag-pill tag-mint">Mặt hàng nhập:</span>
-              <button type="button" class="bento-pill-btn bento-pill-btn-mint" id="btnAddPurchaseRow">+ Thêm món</button>
             </div>
             <div id="purchaseItemsContainer" style="display: flex; flex-direction: column; gap: 8px;">
               <!-- Dòng hàng nhập thêm động qua JS -->
@@ -1035,8 +1036,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
-          <button type="submit" class="btn btn-theme-submit">Lưu Phiếu & Tăng Kho</button>
+          <button type="button" class="btn btn-outline btn-footer-cancel" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
+          <button type="button" class="btn btn-footer-add-item btn-footer-add-po" id="btnAddPurchaseRow">
+            <span style="font-size: 15px; font-weight: 900; margin-right: 2px;">+</span> Thêm Món
+          </button>
+          <button type="submit" class="btn btn-theme-submit btn-footer-submit">Lưu Phiếu & Tăng Kho</button>
         </div>
       </form>
     </div>
@@ -1131,7 +1135,6 @@
           <div class="bento-modal-card bento-modal-card-lilac product-variants-box">
             <div class="bento-card-title">
               <span class="bento-tag-pill tag-lilac">Phân Loại</span>
-              <button type="button" id="btnAddVariantRow" class="bento-pill-btn bento-pill-btn-lilac">+ Thêm phân loại</button>
             </div>
             
             <!-- Gợi ý chọn màu nhanh bằng 1 chạm trên điện thoại -->
@@ -1177,8 +1180,11 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
-          <button type="submit" class="btn btn-theme-submit">Lưu Sản Phẩm</button>
+          <button type="button" class="btn btn-outline btn-footer-cancel" data-close-modal onclick="MobileApp.closeModal()">Hủy</button>
+          <button type="button" class="btn btn-footer-add-item btn-footer-add-prod" id="btnAddVariantRow">
+            <span style="font-size: 15px; font-weight: 900; margin-right: 2px;">+</span> Thêm Dòng
+          </button>
+          <button type="submit" class="btn btn-theme-submit btn-footer-submit">Lưu Sản Phẩm</button>
         </div>
       </form>
     </div>
@@ -1498,11 +1504,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=5.4"></script>
-  <script src="js/cloud-sync.js?v=5.4"></script>
-  <script src="js/store.js?v=5.4"></script>
-  <script src="js/export.js?v=5.4"></script>
-  <script src="js/charts.js?v=5.4"></script>
-  <script src="js/app.js?v=5.4"></script>
+  <script src="js/calculations.js?v=5.5"></script>
+  <script src="js/cloud-sync.js?v=5.5"></script>
+  <script src="js/store.js?v=5.5"></script>
+  <script src="js/export.js?v=5.5"></script>
+  <script src="js/charts.js?v=5.5"></script>
+  <script src="js/app.js?v=5.5"></script>
 </body>
 </html>
