@@ -309,8 +309,19 @@ class DataStore {
   async saveProduct(product) {
     const isNew = !product.id;
 
+    // Xử lý mảng phân loại theo cột (Mẫu hàng, Màu sắc, Size, Số lượng)
+    const cleanedVariants = Array.isArray(product.variants) ? product.variants
+      .map(v => ({
+        model: String(v.model || '').trim(),
+        color: String(v.color || '').trim(),
+        size: String(v.size || '').trim(),
+        quantity: Math.max(0, parseInt(v.quantity, 10) || 0)
+      }))
+      .filter(v => v.model.length > 0 || v.color.length > 0 || v.size.length > 0 || v.quantity > 0)
+      : [];
+
     // Xử lý mảng phân loại màu sắc & số lượng từng màu
-    const cleanedColors = Array.isArray(product.colors) ? product.colors
+    let cleanedColors = Array.isArray(product.colors) ? product.colors
       .map(c => ({
         name: String(c.name || '').trim(),
         quantity: Math.max(0, parseInt(c.quantity, 10) || 0)
@@ -318,13 +329,28 @@ class DataStore {
       .filter(c => c.name.length > 0) : [];
 
     // Xử lý mảng kích cỡ (Size cho quần áo, giày dép...)
-    const cleanedSizes = Array.isArray(product.sizes)
+    let cleanedSizes = Array.isArray(product.sizes)
       ? product.sizes.map(s => String(s).trim()).filter(Boolean)
       : (product.sizes ? String(product.sizes).split(',').map(s => s.trim()).filter(Boolean) : []);
 
-    // Nếu có danh sách màu, tồn kho sẽ tự động đồng bộ là tổng số lượng các màu
+    // Nếu có variants thì tự động đồng bộ colors và sizes từ variants
+    if (cleanedVariants.length > 0) {
+      const colorMap = new Map();
+      const sizeSet = new Set();
+      cleanedVariants.forEach(v => {
+        const cName = v.color || v.model || 'Mặc định';
+        colorMap.set(cName, (colorMap.get(cName) || 0) + v.quantity);
+        if (v.size) sizeSet.add(v.size);
+      });
+      cleanedColors = Array.from(colorMap.entries()).map(([name, quantity]) => ({ name, quantity }));
+      cleanedSizes = Array.from(sizeSet);
+    }
+
+    // Nếu có danh sách phân loại (variants hoặc colors), tồn kho sẽ tự động đồng bộ
     let finalStock = Number(product.stock || 0);
-    if (cleanedColors.length > 0) {
+    if (cleanedVariants.length > 0) {
+      finalStock = cleanedVariants.reduce((sum, v) => sum + v.quantity, 0);
+    } else if (cleanedColors.length > 0) {
       finalStock = cleanedColors.reduce((sum, c) => sum + c.quantity, 0);
     }
 
@@ -335,6 +361,7 @@ class DataStore {
       category: product.category || 'Mặc định',
       unit: product.unit || 'Cái',
       weight: Calculations.parseDecimal(product.weight, 0.2), // Khối lượng kg/đơn vị (hỗ trợ cả dấu phẩy)
+      variants: cleanedVariants,
       colors: cleanedColors,
       sizes: cleanedSizes,
       costPrice: Number(product.costPrice || 0),
@@ -443,6 +470,17 @@ class DataStore {
           }
         }
 
+        // Cập nhật biến thể variants tương ứng (nếu có)
+        if (Array.isArray(prod.variants) && (it.color || it.size)) {
+          const vObj = prod.variants.find(v => 
+            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
+            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
+          );
+          if (vObj) {
+            vObj.quantity = Number(vObj.quantity || 0) + addedQty;
+          }
+        }
+
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -467,6 +505,15 @@ class DataStore {
           const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
           if (colorObj) {
             colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
+          }
+        }
+        if (Array.isArray(prod.variants) && (it.color || it.size)) {
+          const vObj = prod.variants.find(v => 
+            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
+            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
+          );
+          if (vObj) {
+            vObj.quantity = Math.max(0, Number(vObj.quantity || 0) - Number(it.quantity || 0));
           }
         }
         prod.updatedAt = new Date().toISOString();
@@ -540,6 +587,15 @@ class DataStore {
             colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
           }
         }
+        if (Array.isArray(prod.variants) && (it.color || it.size)) {
+          const vObj = prod.variants.find(v => 
+            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
+            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
+          );
+          if (vObj) {
+            vObj.quantity = Math.max(0, Number(vObj.quantity || 0) - Number(it.quantity || 0));
+          }
+        }
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -592,6 +648,15 @@ class DataStore {
           const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
           if (colorObj) colorObj.quantity = Number(colorObj.quantity || 0) + Number(it.quantity || 0);
         }
+        if (Array.isArray(prod.variants) && (it.color || it.size)) {
+          const vObj = prod.variants.find(v => 
+            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
+            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
+          );
+          if (vObj) {
+            vObj.quantity = Number(vObj.quantity || 0) + Number(it.quantity || 0);
+          }
+        }
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -630,6 +695,15 @@ class DataStore {
           const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
           if (colorObj) {
             colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
+          }
+        }
+        if (Array.isArray(prod.variants) && (it.color || it.size)) {
+          const vObj = prod.variants.find(v => 
+            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
+            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
+          );
+          if (vObj) {
+            vObj.quantity = Math.max(0, Number(vObj.quantity || 0) - Number(it.quantity || 0));
           }
         }
         prod.updatedAt = new Date().toISOString();
@@ -679,6 +753,15 @@ class DataStore {
           const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
           if (colorObj) {
             colorObj.quantity = Number(colorObj.quantity || 0) + Number(it.quantity || 0);
+          }
+        }
+        if (Array.isArray(prod.variants) && (it.color || it.size)) {
+          const vObj = prod.variants.find(v => 
+            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
+            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
+          );
+          if (vObj) {
+            vObj.quantity = Number(vObj.quantity || 0) + Number(it.quantity || 0);
           }
         }
         prod.updatedAt = new Date().toISOString();

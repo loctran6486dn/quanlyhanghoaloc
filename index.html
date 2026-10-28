@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=5.1">
+  <link rel="stylesheet" href="css/style.css?v=5.2">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1127,16 +1127,16 @@
             </div>
           </div>
 
-          <!-- BENTO CARD 4: PHÂN LOẠI MÀU SẮC & SỐ LƯỢNG (BENTO STUDIO) -->
-          <div class="bento-modal-card bento-modal-card-lilac product-colors-box">
+          <!-- BENTO CARD 4: PHÂN LOẠI HÀNG HÓA (MẪU HÀNG, MÀU SẮC, SIZE, SỐ LƯỢNG) -->
+          <div class="bento-modal-card bento-modal-card-lilac product-variants-box">
             <div class="bento-card-title">
-              <span class="bento-tag-pill tag-lilac">Phân loại theo màu sắc</span>
-              <button type="button" id="btnAddColorRow" class="bento-pill-btn bento-pill-btn-lilac">+ Thêm màu</button>
+              <span class="bento-tag-pill tag-lilac">Phân Loại</span>
+              <button type="button" id="btnAddVariantRow" class="bento-pill-btn bento-pill-btn-lilac">+ Thêm phân loại</button>
             </div>
             
             <!-- Gợi ý chọn màu nhanh bằng 1 chạm trên điện thoại -->
-            <div style="font-size: 11.5px; color: #6d28d9; margin-bottom: 8px; font-weight: 600;">Chạm nhanh để thêm màu:</div>
-            <div id="quickColorChips" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+            <div style="font-size: 11.5px; color: #6d28d9; margin-bottom: 6px; font-weight: 700;">Chạm nhanh để thêm màu:</div>
+            <div id="quickColorChips" style="display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px;">
               <button type="button" class="color-chip" data-color="Đỏ"><span class="color-dot" style="background: #ef4444;"></span> Đỏ</button>
               <button type="button" class="color-chip" data-color="Cam"><span class="color-dot" style="background: #f97316;"></span> Cam</button>
               <button type="button" class="color-chip" data-color="Đen"><span class="color-dot" style="background: #0f172a;"></span> Đen</button>
@@ -1147,65 +1147,24 @@
               <button type="button" class="color-chip" data-color="Hồng"><span class="color-dot" style="background: #ec4899;"></span> Hồng</button>
             </div>
 
-            <!-- Danh sách các dòng màu và số lượng -->
-            <div id="productColorsContainer" style="display: flex; flex-direction: column; gap: 8px;">
-              <!-- Dòng màu thêm động qua JS -->
+            <!-- Tiêu đề 4 Cột: Mẫu hàng, Màu sắc, Size, Số lượng -->
+            <div class="variant-columns-header">
+              <div class="col-head col-head-model">Mẫu hàng</div>
+              <div class="col-head col-head-color">Màu sắc</div>
+              <div class="col-head col-head-size">Size</div>
+              <div class="col-head col-head-qty">Số lượng</div>
+              <div class="col-head col-head-del"></div>
             </div>
 
-            <!-- Tổng kết số lượng màu & đồng bộ tồn kho -->
-            <div id="colorTotalSummary" style="margin-top: 10px; padding-top: 8px; border-top: 1.5px dashed #c4b5fd; display: none; justify-content: space-between; align-items: center; font-size: 12.5px;">
-              <span style="color: #5b21b6; font-weight: 600;">Tổng các màu: <strong id="colorTotalSumQty" style="color: #6d28d9; font-size: 15px;">0</strong> cái</span>
+            <!-- Danh sách các dòng phân loại thêm động qua JS -->
+            <div id="productVariantsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dòng phân loại thêm động qua JS -->
+            </div>
+
+            <!-- Tổng kết số lượng phân loại & đồng bộ tồn kho -->
+            <div id="variantTotalSummary" style="margin-top: 10px; padding-top: 8px; border-top: 1.5px dashed #c4b5fd; display: none; justify-content: space-between; align-items: center; font-size: 12px;">
+              <span style="color: #5b21b6; font-weight: 700;">Tổng tồn phân loại: <strong id="variantTotalSumQty" style="color: #6d28d9; font-size: 15px;">0</strong> cái</span>
               <span style="color: #10b981; font-size: 11px; font-weight: 700; background: #dcfce7; padding: 2px 8px; border-radius: 999px;">Đã tự đồng bộ tồn kho</span>
-            </div>
-          </div>
-
-          <!-- BENTO CARD 5: KÍCH CỠ (SIZE CHO GIÀY DÉP, ÁO QUẦN) -->
-          <div class="bento-modal-card bento-modal-card-blue product-sizes-box" style="margin-top: 12px;">
-            <div class="bento-card-title">
-              <span class="bento-tag-pill tag-blue">Kích cỡ (Size sản phẩm)</span>
-              <button type="button" id="btnClearSizes" class="bento-pill-btn" style="background: #f1f5f9; color: #475569; font-size: 11px; padding: 3px 10px; border: 1px solid #cbd5e1; display: none;">Xóa size</button>
-            </div>
-
-            <!-- Gợi ý chọn size nhanh theo loại hàng (1 chạm trên điện thoại) -->
-            <div style="font-size: 11.5px; color: #0284c7; margin-bottom: 6px; font-weight: 700;">
-              Chạm nhanh để chọn size (Áo quần / Giày dép):
-            </div>
-
-            <!-- Nhóm size Áo quần -->
-            <div style="font-size: 10.5px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">• Quần áo:</div>
-            <div class="quick-size-chips-wrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
-              <button type="button" class="size-chip" data-size="S">S</button>
-              <button type="button" class="size-chip" data-size="M">M</button>
-              <button type="button" class="size-chip" data-size="L">L</button>
-              <button type="button" class="size-chip" data-size="XL">XL</button>
-              <button type="button" class="size-chip" data-size="2XL">2XL</button>
-              <button type="button" class="size-chip" data-size="3XL">3XL</button>
-              <button type="button" class="size-chip" data-size="Freesize">Freesize</button>
-            </div>
-
-            <!-- Nhóm size Giày dép -->
-            <div style="font-size: 10.5px; color: #64748b; font-weight: 700; margin-bottom: 4px; text-transform: uppercase;">• Giày dép:</div>
-            <div class="quick-size-chips-wrap" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px;">
-              <button type="button" class="size-chip" data-size="35">35</button>
-              <button type="button" class="size-chip" data-size="36">36</button>
-              <button type="button" class="size-chip" data-size="37">37</button>
-              <button type="button" class="size-chip" data-size="38">38</button>
-              <button type="button" class="size-chip" data-size="39">39</button>
-              <button type="button" class="size-chip" data-size="40">40</button>
-              <button type="button" class="size-chip" data-size="41">41</button>
-              <button type="button" class="size-chip" data-size="42">42</button>
-              <button type="button" class="size-chip" data-size="43">43</button>
-              <button type="button" class="size-chip" data-size="44">44</button>
-            </div>
-
-            <!-- Ô nhập liệu và hiển thị các size đã chọn -->
-            <div class="form-group" style="margin-bottom: 0;">
-              <label style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span>Danh sách size đã chọn (hoặc tự gõ thêm):</span>
-                <span id="selectedSizesCount" style="font-size: 10.5px; color: #0284c7; font-weight: 700;"></span>
-              </label>
-              <input type="text" id="prodSizes" class="form-control" placeholder="VD: S, M, L, XL hoặc 38, 39, 40 (cách nhau dấu phẩy)" style="font-weight: 700;">
-              <div id="selectedSizesPreview" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;"></div>
             </div>
           </div>
 
@@ -1469,15 +1428,81 @@
     </div>
   </div>
 
+  <!-- MODAL POPUP CHỌN SIZE 2 CỘT (CHỮ VÀ SỐ) CHO DÒNG PHÂN LOẠI -->
+  <div class="modal-backdrop" id="modalVariantSizePicker" style="z-index: 10050;">
+    <div class="modal-dialog modal-size-picker-dialog" style="max-width: 360px; margin: auto; padding: 18px 16px; border-radius: 20px; background: #ffffff; border: 2px solid #8b5cf6; box-shadow: 0 16px 40px rgba(109, 40, 217, 0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; border-bottom: 1.5px solid #f3e8ff; padding-bottom: 10px;">
+        <div>
+          <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #581c87;">Chọn Kích Cỡ (Size)</h4>
+          <div id="sizePickerTargetLabel" style="font-size: 11.5px; color: #7c3aed; font-weight: 600; margin-top: 2px;">Dòng phân loại</div>
+        </div>
+        <button type="button" class="modal-close" onclick="MobileApp.closeSizePicker()" style="font-size: 22px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f3e8ff; color: #6b21a8; border: none; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Ô nhập tay size khác nếu cần -->
+      <div style="margin-bottom: 12px;">
+        <label style="font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 4px; display: block;">Tự gõ size khác (nếu không có trong danh sách):</label>
+        <div style="display: flex; gap: 6px;">
+          <input type="text" id="sizePickerCustomInput" class="form-control" placeholder="VD: 45, XS, 28, Free..." style="height: 36px; font-size: 13px; font-weight: 700;">
+          <button type="button" class="btn btn-sm" onclick="MobileApp.applyCustomSizePicker()" style="background: #7c3aed; color: #fff; font-weight: 700; padding: 0 12px; border-radius: 8px; font-size: 12px; white-space: nowrap;">Áp dụng</button>
+        </div>
+      </div>
+
+      <!-- 2 CỘT CHỌN SIZE: CHỮ (QUẦN ÁO) VÀ SỐ (GIÀY DÉP) -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+        <!-- CỘT 1: CHỮ (ÁO QUẦN) -->
+        <div style="background: #fbfbfe; border: 1.5px solid #e0e7ff; border-radius: 14px; padding: 10px 8px;">
+          <div style="font-size: 11px; font-weight: 800; color: #4338ca; text-transform: uppercase; margin-bottom: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <span>👕 Quần áo</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+            <button type="button" class="btn-size-choice" data-size="S">S</button>
+            <button type="button" class="btn-size-choice" data-size="M">M</button>
+            <button type="button" class="btn-size-choice" data-size="L">L</button>
+            <button type="button" class="btn-size-choice" data-size="XL">XL</button>
+            <button type="button" class="btn-size-choice" data-size="2XL">2XL</button>
+            <button type="button" class="btn-size-choice" data-size="3XL">3XL</button>
+            <button type="button" class="btn-size-choice" data-size="Freesize" style="grid-column: span 2;">Freesize</button>
+          </div>
+        </div>
+
+        <!-- CỘT 2: SỐ (GIÀY DÉP) -->
+        <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 14px; padding: 10px 8px;">
+          <div style="font-size: 11px; font-weight: 800; color: #15803d; text-transform: uppercase; margin-bottom: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+            <span>👟 Giày dép</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+            <button type="button" class="btn-size-choice" data-size="35">35</button>
+            <button type="button" class="btn-size-choice" data-size="36">36</button>
+            <button type="button" class="btn-size-choice" data-size="37">37</button>
+            <button type="button" class="btn-size-choice" data-size="38">38</button>
+            <button type="button" class="btn-size-choice" data-size="39">39</button>
+            <button type="button" class="btn-size-choice" data-size="40">40</button>
+            <button type="button" class="btn-size-choice" data-size="41">41</button>
+            <button type="button" class="btn-size-choice" data-size="42">42</button>
+            <button type="button" class="btn-size-choice" data-size="43">43</button>
+            <button type="button" class="btn-size-choice" data-size="44">44</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nút xóa size & Đóng -->
+      <div style="display: flex; gap: 8px; justify-content: space-between;">
+        <button type="button" class="btn btn-sm" onclick="MobileApp.clearRowSizePicker()" style="background: #f1f5f9; color: #475569; font-weight: 700; border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 12px; font-size: 12px;">Bỏ size (để trống)</button>
+        <button type="button" class="btn btn-sm" onclick="MobileApp.closeSizePicker()" style="background: #0f172a; color: #ffffff; font-weight: 700; border-radius: 8px; padding: 6px 16px; font-size: 12px;">Xong</button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=5.1"></script>
-  <script src="js/cloud-sync.js?v=5.1"></script>
-  <script src="js/store.js?v=5.1"></script>
-  <script src="js/export.js?v=5.1"></script>
-  <script src="js/charts.js?v=5.1"></script>
-  <script src="js/app.js?v=5.1"></script>
+  <script src="js/calculations.js?v=5.2"></script>
+  <script src="js/cloud-sync.js?v=5.2"></script>
+  <script src="js/store.js?v=5.2"></script>
+  <script src="js/export.js?v=5.2"></script>
+  <script src="js/charts.js?v=5.2"></script>
+  <script src="js/app.js?v=5.2"></script>
 </body>
 </html>

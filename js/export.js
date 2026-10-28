@@ -51,6 +51,7 @@ const ExportManager = {
         'Danh mục': p.category,
         'Đơn vị tính': p.unit,
         'Khối lượng (kg)': p.weight !== undefined ? p.weight : 0.2,
+        'Phân loại chi tiết': Array.isArray(p.variants) && p.variants.length > 0 ? p.variants.map(v => `${[v.model ? `Mẫu: ${v.model}` : '', v.color ? `Màu: ${v.color}` : '', v.size ? `Size: ${v.size}` : ''].filter(Boolean).join(' • ')} (${v.quantity})`).join(', ') : '',
         'Phân loại màu': Array.isArray(p.colors) && p.colors.length > 0 ? p.colors.map(c => `${c.name} (${c.quantity})`).join(', ') : '',
         'Kích cỡ (Size)': Array.isArray(p.sizes) && p.sizes.length > 0 ? p.sizes.join(', ') : '',
         'Tồn kho': p.stock,

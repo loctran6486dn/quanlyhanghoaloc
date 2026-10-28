@@ -3404,5 +3404,181 @@ body.theme-wordsy .badge-info {
   transform: scale(0.94);
 }
 
+/* =================== WORDSY: PRODUCT VARIANTS TABLE & 2-COLUMN SIZE PICKER =================== */
+
+.variant-columns-header {
+  display: flex;
+  gap: 6px;
+  padding: 0 4px 6px 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #6d28d9;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.variant-columns-header .col-head-model { flex: 1.25; min-width: 0; }
+.variant-columns-header .col-head-color { flex: 1.1; min-width: 0; }
+.variant-columns-header .col-head-size  { flex: 0.9; min-width: 0; text-align: center; }
+.variant-columns-header .col-head-qty   { flex: 0.85; min-width: 0; text-align: center; }
+.variant-columns-header .col-head-del   { width: 28px; min-width: 28px; }
+
+.variant-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  background: #ffffff;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 12px;
+  padding: 7px 8px;
+  box-shadow: 0 2px 6px rgba(109, 40, 217, 0.04);
+  transition: all 0.15s ease;
+}
+
+.variant-row:focus-within {
+  border-color: #a855f7;
+  box-shadow: 0 3px 10px rgba(109, 40, 217, 0.1);
+}
+
+.variant-row .variant-model-input {
+  flex: 1.25;
+  min-width: 0;
+  height: 38px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.variant-row .variant-color-input {
+  flex: 1.1;
+  min-width: 0;
+  height: 38px;
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.variant-row .variant-size-input {
+  flex: 0.9;
+  min-width: 0;
+  height: 38px;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 4px;
+  border-radius: 8px;
+  border: 1.5px solid #d8b4fe;
+  background: #faf5ff;
+  color: #6b21a8;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: all 0.15s ease;
+}
+
+.variant-row .variant-size-input:active {
+  background: #f3e8ff;
+  border-color: #a855f7;
+  transform: scale(0.97);
+}
+
+.variant-row .variant-qty-wrap {
+  flex: 0.85;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.variant-row .variant-qty-input {
+  width: 100%;
+  height: 38px;
+  font-size: 13.5px;
+  font-weight: 800;
+  text-align: center;
+  padding: 0 4px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+
+.variant-row .btn-remove-variant {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  border: 1px solid #fecaca;
+  background: #fee2e2;
+  color: #ef4444;
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.variant-row .btn-remove-variant:active {
+  background: #fca5a5;
+  transform: scale(0.92);
+}
+
+/* 2-Column Size Choice Buttons in Modal */
+.btn-size-choice {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 9px;
+  height: 34px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.btn-size-choice:active {
+  transform: scale(0.95);
+  background: #ede9fe;
+  border-color: #a7f3d0;
+}
+
+.btn-size-choice.active {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  border-color: #6d28d9 !important;
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+}
+
+/* Modal Size Picker dialog styling */
+.modal-size-picker-dialog {
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.93) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+
 
 
