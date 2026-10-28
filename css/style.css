@@ -1894,6 +1894,39 @@ input[type="date"].form-control {
   background: #ffffff;
 }
 
+/* Animation và scroll highlight cho card món hàng khi bấm Thêm Món */
+@keyframes rowSlideInHighlight {
+  0% {
+    opacity: 0.25;
+    transform: translateY(14px) scale(0.98);
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.35) !important;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    border-color: #38bdf8 !important;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.row-newly-added {
+  animation: rowSlideInHighlight 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+#modalSale .modal-body,
+#modalPurchase .modal-body {
+  padding-bottom: 90px;
+}
+
+.mobile-item-row {
+  scroll-margin-top: 10px;
+}
+
 /* Bento Calc Box Upgraded */
 .modal-bento-calc {
   border-radius: 20px;

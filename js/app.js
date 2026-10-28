@@ -347,6 +347,42 @@ const MobileApp = {
     }
   },
 
+  scrollToRow(rowElement) {
+    if (!rowElement) return;
+
+    rowElement.classList.add('row-newly-added');
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const modalBody = rowElement.closest('.modal-body');
+        if (modalBody) {
+          const bodyRect = modalBody.getBoundingClientRect();
+          const rowRect = rowElement.getBoundingClientRect();
+          // Cuộn sao cho đỉnh của card mới nằm sát top (cách 10px breathing room dưới header)
+          const targetScrollTop = modalBody.scrollTop + (rowRect.top - bodyRect.top) - 10;
+          try {
+            modalBody.scrollTo({
+              top: Math.max(0, targetScrollTop),
+              behavior: 'smooth'
+            });
+          } catch (e) {
+            modalBody.scrollTop = Math.max(0, targetScrollTop);
+          }
+        } else {
+          try {
+            rowElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (e) {
+            rowElement.scrollIntoView();
+          }
+        }
+      }, 50);
+    });
+
+    setTimeout(() => {
+      rowElement.classList.remove('row-newly-added');
+    }, 900);
+  },
+
   /* =================== 1. TỔNG QUAN (DASHBOARD) =================== */
   setupDashboardEvents() {
     // Header buttons
@@ -562,8 +598,9 @@ const MobileApp = {
 
     // Nút thêm dòng phân loại hàng hóa
     const btnAddVariant = document.getElementById('btnAddVariantRow') || document.getElementById('btnAddColorRow');
-    btnAddVariant?.addEventListener('click', () => {
-      this.addVariantRow('', '', '', 1);
+    btnAddVariant?.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
+      this.addVariantRow('', '', '', 1, true);
     });
 
     // Chạm các chip màu nhanh bằng 1 chạm
@@ -795,7 +832,7 @@ const MobileApp = {
   currentActiveSizeRow: null,
   currentSizePickerOptions: null,
 
-  addVariantRow(model = '', color = '', size = '', qty = 1) {
+  addVariantRow(model = '', color = '', size = '', qty = 1, autoScroll = false) {
     const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
     if (!container) return;
 
@@ -845,6 +882,9 @@ const MobileApp = {
     this.syncVariantStockSum();
     if (!model && !color) {
       modelInput.focus();
+    }
+    if (autoScroll) {
+      this.scrollToRow(row);
     }
   },
 
@@ -1240,8 +1280,9 @@ const MobileApp = {
       btnAddPo.addEventListener('click', triggerOpen);
     }
 
-    document.getElementById('btnAddPurchaseRow')?.addEventListener('click', () => {
-      this.addPurchaseRow();
+    document.getElementById('btnAddPurchaseRow')?.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
+      this.addPurchaseRow(null, true);
     });
 
     // Chuyển đổi giữa tính ship theo kg và ship trọn gói
@@ -1401,7 +1442,7 @@ const MobileApp = {
     this.openModal('modalPurchase');
   },
 
-  addPurchaseRow(itemData = null) {
+  addPurchaseRow(itemData = null, autoScroll = false) {
     const container = document.getElementById('purchaseItemsContainer');
     if (!container) return;
 
@@ -1624,6 +1665,10 @@ const MobileApp = {
     }
 
     this.updatePurchaseLiveCalc();
+
+    if (autoScroll) {
+      this.scrollToRow(div);
+    }
   },
 
   updatePurchaseLiveCalc() {
@@ -1764,8 +1809,9 @@ const MobileApp = {
       btnAddSale.addEventListener('click', triggerOpen);
     }
 
-    document.getElementById('btnAddSaleRow')?.addEventListener('click', () => {
-      this.addSaleRow();
+    document.getElementById('btnAddSaleRow')?.addEventListener('click', (e) => {
+      if (e) e.preventDefault();
+      this.addSaleRow(null, true);
     });
 
     document.getElementById('btnMobileExportSales')?.addEventListener('click', () => {
@@ -2010,7 +2056,7 @@ const MobileApp = {
     this.updateSaleLiveCalc();
   },
 
-  addSaleRow(itemData = null) {
+  addSaleRow(itemData = null, autoScroll = false) {
     const container = document.getElementById('saleItemsContainer');
     if (!container) return;
 
@@ -2212,6 +2258,10 @@ const MobileApp = {
     }
 
     this.updateSaleLiveCalc();
+
+    if (autoScroll) {
+      this.scrollToRow(div);
+    }
   },
 
   updateSaleLiveCalc() {
