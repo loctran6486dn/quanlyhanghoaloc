@@ -661,18 +661,33 @@ const MobileApp = {
       }
     });
 
-    // Thiết lập sự kiện cho popup Color Picker
+    // Thiết lập sự kiện click chọn màu trong Color Picker (dùng capture phase để không bị stopPropagation chặn)
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('#modalVariantColorPicker .btn-color-choice');
+      if (btn) {
+        e.preventDefault();
+        const color = (btn.getAttribute('data-color') || '').trim();
+        if (color) {
+          // 1. Hiển thị text màu vừa chọn lên ô tự gõ
+          const customInput = document.getElementById('colorPickerCustomInput');
+          if (customInput) customInput.value = color;
+
+          // 2. Cập nhật trạng thái active cho nút vừa chọn
+          document.querySelectorAll('#modalVariantColorPicker .btn-color-choice').forEach(b => {
+            b.classList.toggle('active', b === btn);
+          });
+
+          // 3. Áp dụng màu đã chọn vào đơn và đóng modal
+          setTimeout(() => {
+            MobileApp.selectColorFromPicker(color);
+          }, 120);
+        }
+      }
+    }, true);
+
     document.getElementById('modalVariantColorPicker')?.addEventListener('click', (e) => {
       if (e.target.id === 'modalVariantColorPicker') {
         MobileApp.closeColorPicker();
-        return;
-      }
-      const btn = e.target.closest('.btn-color-choice');
-      if (btn) {
-        const color = btn.getAttribute('data-color');
-        if (color) {
-          MobileApp.selectColorFromPicker(color);
-        }
       }
     });
 
@@ -1147,7 +1162,7 @@ const MobileApp = {
     }
 
     const customInput = document.getElementById('colorPickerCustomInput');
-    if (customInput) customInput.value = '';
+    if (customInput) customInput.value = currentColor;
 
     // Render danh sách màu có sẵn trong kho nếu có
     const stockGroupEl = document.getElementById('colorPickerStockGroup');
@@ -1208,6 +1223,16 @@ const MobileApp = {
     this.closeColorPicker();
   },
 
+  finishColorPicker() {
+    const customInput = document.getElementById('colorPickerCustomInput');
+    const val = (customInput?.value || '').trim();
+    if (val) {
+      this.selectColorFromPicker(val);
+    } else {
+      this.closeColorPicker();
+    }
+  },
+
   clearRowColorPicker() {
     if (this.currentColorPickerOptions && typeof this.currentColorPickerOptions.onSelect === 'function') {
       this.currentColorPickerOptions.onSelect('');
@@ -1218,6 +1243,8 @@ const MobileApp = {
       }
       this.syncVariantStockSum();
     }
+    const customInput = document.getElementById('colorPickerCustomInput');
+    if (customInput) customInput.value = '';
     this.closeColorPicker();
   },
 
@@ -2077,7 +2104,16 @@ const MobileApp = {
           if (colorDot) colorDot.style.display = 'none';
         }
       }
-      if (colorSelect) colorSelect.value = clean;
+      if (colorSelect) {
+        let opt = colorSelect.querySelector(`option[value="${clean}"]`);
+        if (!opt && clean) {
+          opt = document.createElement('option');
+          opt.value = clean;
+          opt.textContent = clean;
+          colorSelect.appendChild(opt);
+        }
+        colorSelect.value = clean;
+      }
       if (colorCustom) colorCustom.value = clean;
     };
 
@@ -2745,7 +2781,16 @@ const MobileApp = {
           if (colorDot) colorDot.style.display = 'none';
         }
       }
-      if (colorSelect) colorSelect.value = clean;
+      if (colorSelect) {
+        let opt = colorSelect.querySelector(`option[value="${clean}"]`);
+        if (!opt && clean) {
+          opt = document.createElement('option');
+          opt.value = clean;
+          opt.textContent = clean;
+          colorSelect.appendChild(opt);
+        }
+        colorSelect.value = clean;
+      }
       if (colorCustom) colorCustom.value = clean;
     };
 
