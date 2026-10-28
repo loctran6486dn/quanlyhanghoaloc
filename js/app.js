@@ -970,8 +970,8 @@ const MobileApp = {
     row.className = 'variant-row';
     row.innerHTML = `
       <input type="text" class="form-control variant-model-input" value="${model}" placeholder="Mẫu hàng..." style="flex: 1.25; min-width: 0;">
-      <input type="text" class="form-control variant-color-input" value="${color}" placeholder="Màu sắc..." style="flex: 1.1; min-width: 0;">
-      <input type="text" class="form-control variant-size-input" value="${size}" placeholder="Size..." readonly title="Bấm để chọn size">
+      <input type="text" class="form-control variant-color-input" value="${color}" placeholder="Màu sắc..." readonly title="Bấm để chọn màu sắc" style="flex: 1.1; min-width: 0; cursor: pointer; text-align: center;">
+      <input type="text" class="form-control variant-size-input" value="${size}" placeholder="Size..." readonly title="Bấm để chọn size" style="flex: 0.9; min-width: 0; cursor: pointer; text-align: center;">
       <div class="variant-qty-wrap">
         <input type="number" class="form-control variant-qty-input" value="${qty}" min="0" placeholder="0" inputmode="numeric">
       </div>
@@ -987,12 +987,20 @@ const MobileApp = {
     const removeBtn = row.querySelector('.btn-remove-variant');
 
     // Mở popup size 2 cột khi bấm vào ô size
-    sizeInput.addEventListener('click', () => {
+    sizeInput.addEventListener('click', (e) => {
+      if (e) e.stopPropagation();
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
       this.openSizePicker(row);
     });
 
     // Mở popup color picker phong phú khi bấm vào ô màu sắc
-    colorInput.addEventListener('click', () => {
+    colorInput.addEventListener('click', (e) => {
+      if (e) e.stopPropagation();
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
       this.openColorPicker(row);
     });
 
@@ -1006,7 +1014,7 @@ const MobileApp = {
     });
 
     this.syncVariantStockSum();
-    if (!model && !color) {
+    if (!model && !color && autoScroll) {
       modelInput.focus();
     }
     if (autoScroll) {
@@ -1015,6 +1023,9 @@ const MobileApp = {
   },
 
   openSizePicker(row = null, options = null) {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     this.currentActiveSizeRow = row;
     this.currentSizePickerOptions = options;
 
@@ -1138,6 +1149,9 @@ const MobileApp = {
   },
 
   openColorPicker(row = null, options = null) {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
     this.currentActiveColorRow = row;
     this.currentColorPickerOptions = options;
 
@@ -1588,6 +1602,9 @@ const MobileApp = {
             const sizeVal = (product.sizes && product.sizes[idx]) || (product.sizes && product.sizes[0]) || '';
             MobileApp.addVariantRow('', c.name, sizeVal, c.quantity);
           });
+        } else if (!product) {
+          // Khi thêm hàng mới: luôn hiển thị mặc định 1 hàng để điền Mẫu Hàng, Màu Sắc, Size, Số Lượng
+          MobileApp.addVariantRow('', '', '', 1);
         }
       }
       MobileApp.syncVariantStockSum();
@@ -2157,6 +2174,9 @@ const MobileApp = {
         e.preventDefault();
         e.stopPropagation();
       }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
       const prod = window.appStore.getProductById(prodSelect.value);
       const prodName = prod ? prod.name : 'Sản phẩm nhập';
       const sizeVal = sizeInput ? sizeInput.value : '';
@@ -2178,6 +2198,9 @@ const MobileApp = {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
+      }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
       }
       const prod = window.appStore.getProductById(prodSelect.value);
       const prodName = prod ? prod.name : 'Sản phẩm nhập';
@@ -2834,6 +2857,9 @@ const MobileApp = {
         e.preventDefault();
         e.stopPropagation();
       }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
       const prod = window.appStore.getProductById(prodSelect.value);
       const prodName = prod ? prod.name : 'Mặt hàng';
       const sizeVal = sizeInput ? sizeInput.value : '';
@@ -2855,6 +2881,9 @@ const MobileApp = {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
+      }
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
       }
       const prod = window.appStore.getProductById(prodSelect.value);
       const prodName = prod ? prod.name : 'Mặt hàng';
