@@ -3202,4 +3202,207 @@ body.theme-wordsy .badge-info {
   border: 1px solid #bae6fd !important;
 }
 
+/* =================== WORDSY: SALES ORDER CARD FOOTER & PHONE REDESIGN =================== */
+
+.sale-card-footer {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sale-card-contact-box {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 14px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.05);
+}
+
+.sale-phone-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sale-phone-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  gap: 10px;
+}
+
+.sale-phone-icon-box {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+  flex-shrink: 0;
+}
+
+.sale-phone-icon-box svg {
+  width: 15px;
+  height: 15px;
+}
+
+.sale-phone-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.sale-phone-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #047857;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.sale-phone-number {
+  font-size: 15px;
+  font-weight: 800;
+  color: #064e3b;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sale-phone-call-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #10b981;
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  box-shadow: 0 2px 5px rgba(16, 185, 129, 0.25);
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.sale-phone-link:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.sale-phone-link:active .sale-phone-call-badge {
+  background: #059669;
+}
+
+.sale-notes-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #475569;
+  padding-top: 6px;
+  border-top: 1px dashed #dcfce7;
+  line-height: 1.35;
+}
+
+.sale-notes-icon {
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.sale-notes-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Row 4 action buttons */
+.sale-card-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.sale-card-actions-row .btn-sale-action {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  padding: 0 6px;
+  background: #f4f4f5;
+  color: #18181b;
+  border: 1px solid #e4e4e7;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.sale-card-actions-row .btn-sale-action svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.sale-card-actions-row .btn-sale-action:active {
+  background: #e4e4e7;
+  transform: scale(0.96);
+}
+
+.sale-card-actions-row .btn-sale-action-danger {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sale-card-actions-row .btn-sale-action-danger svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sale-card-actions-row .btn-sale-action-danger:active {
+  background: #fca5a5;
+  transform: scale(0.94);
+}
+
+
 

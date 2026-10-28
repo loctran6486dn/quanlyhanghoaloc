@@ -2257,6 +2257,38 @@ const MobileApp = {
           : `<span style="color: #64748b; font-size: 11px; font-weight: 600;">Ship khách trả: +${Calculations.formatNumber(s.shippingFee)} đ</span>`;
       }
 
+      // Khối thông tin liên hệ khách hàng & ghi chú (rõ ràng, nổi bật, bấm gọi được ngay)
+      let contactHtml = '';
+      if (s.customerPhone || s.notes) {
+        contactHtml = `
+          <div class="sale-card-contact-box">
+            ${s.customerPhone ? `
+              <div class="sale-phone-row">
+                <a href="tel:${s.customerPhone}" class="sale-phone-link" title="Bấm để gọi khách: ${s.customerPhone}">
+                  <span class="sale-phone-icon-box">
+                    ${Icons.phone}
+                  </span>
+                  <div class="sale-phone-info">
+                    <span class="sale-phone-label">SĐT Khách hàng</span>
+                    <span class="sale-phone-number">${Calculations.formatPhone(s.customerPhone)}</span>
+                  </div>
+                  <span class="sale-phone-call-badge">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                    <span>Gọi</span>
+                  </span>
+                </a>
+              </div>
+            ` : ''}
+            ${s.notes ? `
+              <div class="sale-notes-row" style="${!s.customerPhone ? 'border-top: none; padding-top: 0;' : ''}" title="${s.notes}">
+                <span class="sale-notes-icon">${Icons.note}</span>
+                <span class="sale-notes-text"><strong>Ghi chú:</strong> ${s.notes}</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }
+
       if (currentSubTab === 'active') {
         let statusBadge = '<span class="badge badge-success">Đã thanh toán đủ</span>';
         if (s.paymentStatus === 'unpaid') {
@@ -2301,15 +2333,13 @@ const MobileApp = {
               <span>Xác nhận thành công (Đã thu tiền)</span>
             </button>
 
-            <div class="m-card-footer" style="padding-top: 8px; border-top: 1px dashed #e2e8f0;">
-              <span style="font-size: 11.5px; color: #64748b; display: inline-flex; align-items: center; gap: 4px;">
-                ${s.customerPhone ? `${Icons.phone} <span>${s.customerPhone}</span>` : (s.notes ? `${Icons.note} <span>${s.notes}</span>` : '')}
-              </span>
-              <div class="m-card-actions">
-                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">${Icons.edit} <span>Sửa</span></button>
-                <button class="btn-flat-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">${Icons.print} <span>In</span></button>
-                <button class="btn-flat-action" title="Đổi trạng thái thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">${Icons.card} <span>Thu tiền</span></button>
-                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">${Icons.trash}</button>
+            <div class="sale-card-footer">
+              ${contactHtml}
+              <div class="sale-card-actions-row">
+                <button type="button" class="btn-sale-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">${Icons.edit} <span>Sửa</span></button>
+                <button type="button" class="btn-sale-action" title="In hóa đơn" onclick="MobileApp.printSaleInvoice('${s.id}')">${Icons.print} <span>In</span></button>
+                <button type="button" class="btn-sale-action" title="Đổi trạng thái thanh toán" onclick="MobileApp.promptPaymentStatus('${s.id}')">${Icons.card} <span>Thu tiền</span></button>
+                <button type="button" class="btn-sale-action-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">${Icons.trash}</button>
               </div>
             </div>
           </div>
@@ -2345,15 +2375,13 @@ const MobileApp = {
 
             ${shipInfo ? `<div style="margin-bottom: 8px;">${shipInfo}</div>` : ''}
 
-            <div class="m-card-footer" style="padding-top: 8px; border-top: 1px dashed #e2e8f0;">
-              <span style="font-size: 11.5px; color: #64748b; display: inline-flex; align-items: center; gap: 4px;">
-                ${s.customerPhone ? `${Icons.phone} <span>${s.customerPhone}</span>` : (s.notes ? `${Icons.note} <span>${s.notes}</span>` : '')}
-              </span>
-              <div class="m-card-actions">
-                <button class="btn-flat-action" title="In bill" onclick="MobileApp.printSaleInvoice('${s.id}')">${Icons.print} <span>In bill</span></button>
-                <button class="btn-flat-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">${Icons.edit} <span>Sửa</span></button>
-                <button class="btn-flat-action" title="Mở lại đơn" onclick="MobileApp.reopenSale('${s.id}')">${Icons.reopen} <span>Mở lại</span></button>
-                <button class="btn-icon-circle-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">${Icons.trash}</button>
+            <div class="sale-card-footer">
+              ${contactHtml}
+              <div class="sale-card-actions-row">
+                <button type="button" class="btn-sale-action" title="In bill" onclick="MobileApp.printSaleInvoice('${s.id}')">${Icons.print} <span>In bill</span></button>
+                <button type="button" class="btn-sale-action" title="Sửa đơn" onclick="MobileApp.editSale('${s.id}')">${Icons.edit} <span>Sửa</span></button>
+                <button type="button" class="btn-sale-action" title="Mở lại đơn" onclick="MobileApp.reopenSale('${s.id}')">${Icons.reopen} <span>Mở lại</span></button>
+                <button type="button" class="btn-sale-action-danger" title="Xóa đơn" onclick="MobileApp.deleteSale('${s.id}')">${Icons.trash}</button>
               </div>
             </div>
           </div>
