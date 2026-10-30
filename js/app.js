@@ -16,7 +16,13 @@ const Icons = {
   alertCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
   infoCircle: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`,
   folder: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>`,
-  tag: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>`
+  tag: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>`,
+  shirt: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>`,
+  shoe: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h5.4a1 1 0 0 1 .8.4l3.8 5.6h5a3 3 0 0 1 3 3v3a1 1 0 0 1-1 1h-16a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1z"/><path d="M14 13l1-2"/><path d="M8 18v-1"/><path d="M4 13h16"/></svg>`,
+  palette: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z"/></svg>`,
+  ruler: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0l12.6 12.6z"/><line x1="14.5" y1="5.5" x2="16.5" y2="7.5"/><line x1="11.5" y1="8.5" x2="13.5" y2="10.5"/><line x1="8.5" y1="11.5" x2="10.5" y2="13.5"/><line x1="5.5" y1="14.5" x2="7.5" y2="16.5"/></svg>`,
+  package: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>`,
+  cart: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>`
 };
 
 // Đảm bảo đối tượng MobileApp và các hàm mở modal luôn sẵn sàng trên phạm vi toàn cục (Global Scope)
@@ -1318,7 +1324,7 @@ const MobileApp = {
 
     const isSale = options.mode === 'sale';
     if (titleEl) {
-      titleEl.innerHTML = isSale ? '🛒 Chọn Mặt Hàng Bán' : '📦 Chọn Sản Phẩm Nhập';
+      titleEl.innerHTML = `<span style="display: inline-flex; align-items: center; gap: 6px;">${isSale ? Icons.cart : Icons.package} <span>${isSale ? 'Chọn Mặt Hàng Bán' : 'Chọn Sản Phẩm Nhập'}</span></span>`;
     }
     if (subEl) {
       subEl.textContent = 'Lọc theo thẻ tag danh mục & tìm kiếm nhanh';
@@ -1432,7 +1438,14 @@ const MobileApp = {
     if (filtered.length === 0) {
       listContainer.innerHTML = `
         <div class="prod-picker-empty">
-          <div class="prod-picker-empty-icon">📦</div>
+          <div class="prod-picker-empty-icon" style="display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+            <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m7.5 4.27 9 5.15"/>
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+              <path d="m3.3 7 8.7 5 8.7-5"/>
+              <path d="M12 22V12"/>
+            </svg>
+          </div>
           <div class="prod-picker-empty-text">Không tìm thấy sản phẩm nào ${query ? `với từ khóa "${this.escapeHtml(query)}"` : 'trong danh mục này'}</div>
         </div>
       `;
@@ -1457,7 +1470,7 @@ const MobileApp = {
               <span>${this.escapeHtml(catName)}</span>
             </span>
             <div style="display: flex; align-items: center; gap: 6px;">
-              ${isSelected ? '<span class="prod-picker-selected-badge">✓ Đang chọn</span>' : ''}
+              ${isSelected ? `<span class="prod-picker-selected-badge" style="display: inline-flex; align-items: center; gap: 3px;">${Icons.check} Đang chọn</span>` : ''}
               <span class="prod-picker-card-stock ${isOutOfStock ? 'out-stock' : 'in-stock'}">
                 ${isOutOfStock ? 'Hết hàng (0)' : `Còn ${stock} cái`}
               </span>
@@ -2035,7 +2048,7 @@ const MobileApp = {
       <div class="form-row po-variant-row" style="margin-bottom: 8px;">
         <div class="po-color-col">
           <label style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <span>🎨 Màu sắc:</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">${Icons.palette} Màu sắc:</span>
             <span class="po-color-badge" style="font-size: 10px; color: #7c3aed; font-weight: 600;"></span>
           </label>
           <div class="variant-input-wrap">
@@ -2050,7 +2063,7 @@ const MobileApp = {
 
         <div class="po-size-col">
           <label style="font-size: 11px; color: #0284c7; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <span>📏 Kích cỡ (Size):</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">${Icons.ruler} Kích cỡ (Size):</span>
             <span class="po-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
           </label>
           <input type="text" class="form-control po-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; width: 100%;">
@@ -2731,7 +2744,7 @@ const MobileApp = {
       <div class="form-row sale-variant-row" style="margin-bottom: 8px;">
         <div class="sale-color-col">
           <label style="font-size: 11px; color: #6d28d9; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <span>🎨 Màu sắc:</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">${Icons.palette} Màu sắc:</span>
             <span class="sale-color-badge" style="font-size: 10px; color: #7c3aed; font-weight: 600;"></span>
           </label>
           <div class="variant-input-wrap">
@@ -2746,7 +2759,7 @@ const MobileApp = {
 
         <div class="sale-size-col">
           <label style="font-size: 11px; color: #0284c7; font-weight: 800; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-            <span>📏 Kích cỡ (Size):</span>
+            <span style="display: inline-flex; align-items: center; gap: 4px;">${Icons.ruler} Kích cỡ (Size):</span>
             <span class="sale-size-badge" style="font-size: 10px; color: #0284c7; font-weight: 600;"></span>
           </label>
           <input type="text" class="form-control sale-size-input" placeholder="Chọn size..." readonly style="font-size: 12.5px; height: 38px; border-radius: 10px; font-weight: 700; background: #f0f9ff; border: 1.5px solid #bae6fd; color: #0369a1; cursor: pointer; text-align: center; width: 100%;">
