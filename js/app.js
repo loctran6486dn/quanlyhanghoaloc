@@ -2110,14 +2110,7 @@ const MobileApp = {
       return `
         <div class="product-accordion-card" id="prod-card-${p.id}" onclick="MobileApp.toggleProductAccordion('${p.id}')">
           <div class="prod-compact-summary">
-            ${(Array.isArray(p.images) && p.images.length > 0) ? `
-              <div class="prod-thumb-avatar" onclick="event.stopPropagation(); MobileApp.openImageViewerById('${p.id}', 0)" title="Bấm xem hình lớn">
-                <img src="${p.images[0]}" alt="${this.escapeHtml(p.name)}">
-                ${p.images.length > 1 ? `<span class="prod-thumb-avatar-badge">${p.images.length}</span>` : ''}
-              </div>
-            ` : `
-              <div class="prod-index-badge">${index + 1}</div>
-            `}
+            <div class="prod-index-badge">${index + 1}</div>
             <div class="prod-summary-left">
               <div class="prod-summary-title">${p.name}</div>
               <div class="prod-summary-meta">
