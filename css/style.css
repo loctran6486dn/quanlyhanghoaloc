@@ -4472,3 +4472,291 @@ body.theme-wordsy .badge-info {
   font-size: 13px;
   font-weight: 600;
 }
+
+/* =================== PRODUCT IMAGES & THUMBNAILS (MAX 5 IMAGES) =================== */
+
+.prod-images-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 70px;
+  padding: 4px 0;
+}
+
+.prod-img-thumb {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid #cbd5e1;
+  background: #f8fafc;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.prod-img-thumb:hover {
+  transform: scale(1.03);
+  border-color: #3b82f6;
+}
+
+.prod-img-thumb:active {
+  transform: scale(0.97);
+}
+
+.prod-img-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.btn-remove-thumb {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.92);
+  color: #ffffff;
+  border: none;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  line-height: 1;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-remove-thumb:active {
+  background: #b91c1c;
+  transform: scale(0.9);
+}
+
+.btn-add-img-thumb {
+  width: 66px;
+  height: 66px;
+  border-radius: 12px;
+  border: 2px dashed #93c5fd;
+  background: #f8fafc;
+  color: #2563eb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 0;
+}
+
+.btn-add-img-thumb:hover,
+.btn-add-img-thumb:active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: scale(0.98);
+}
+
+/* Copy Button for Product Info */
+.btn-copy-prod-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: #f5f3ff;
+  color: #6d28d9;
+  border: 1.5px solid #ddd6fe;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-copy-prod-info:hover {
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+.btn-copy-prod-info:active {
+  transform: scale(0.95);
+}
+
+/* Product list thumbnail in Kho Hàng */
+.prod-thumb-avatar {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  border: 1.5px solid #cbd5e1;
+  background: #f1f5f9;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.15s;
+}
+
+.prod-thumb-avatar:hover {
+  transform: scale(1.06);
+}
+
+.prod-thumb-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.prod-thumb-avatar-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 8px;
+  font-weight: 800;
+  padding: 0 3px;
+  border-top-left-radius: 4px;
+  line-height: 10px;
+}
+
+/* =================== MODAL LIGHTBOX / IMAGE VIEWER =================== */
+
+.modal-image-viewer-backdrop {
+  background: rgba(15, 23, 42, 0.92) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100000 !important;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-image-viewer-backdrop.active {
+  display: flex !important;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-image-viewer-container {
+  position: relative;
+  max-width: 94vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+}
+
+.btn-close-image-viewer {
+  position: absolute;
+  top: -46px;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  z-index: 10;
+  line-height: 1;
+}
+
+.btn-close-image-viewer:hover,
+.btn-close-image-viewer:active {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+}
+
+.image-viewer-stage {
+  max-width: 92vw;
+  max-height: 76vh;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000000;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.image-viewer-stage img {
+  max-width: 92vw;
+  max-height: 76vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.image-viewer-bottom-bar {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 6px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.btn-nav-img {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  color: #ffffff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+}
+
+.btn-nav-img:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-nav-img:active {
+  transform: scale(0.9);
+}
+
+.image-viewer-counter {
+  user-select: none;
+  font-size: 12.5px;
+  letter-spacing: 0.3px;
+}

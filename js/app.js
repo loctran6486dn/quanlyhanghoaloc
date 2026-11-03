@@ -36,6 +36,9 @@ const MobileApp = {
   currentProductPickerOptions: null,
   currentProductPickerCategory: 'all',
   productPickerSearchQuery: '',
+  currentProductImages: [],
+  activeImageViewerList: [],
+  activeImageViewerIndex: 0,
 
   init() {
     this.setupDatePillFilters();
@@ -704,6 +707,55 @@ const MobileApp = {
       }
     });
 
+    // Sự kiện chọn hình ảnh sản phẩm (tối đa 5 hình)
+    const prodImgInput = document.getElementById('prodImageFileInput');
+    if (prodImgInput) {
+      prodImgInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        const currentCount = MobileApp.currentProductImages?.length || 0;
+        const availableSlots = 5 - currentCount;
+
+        if (availableSlots <= 0) {
+          MobileApp.showToast('Sản phẩm đã có đủ 5 hình ảnh!');
+          prodImgInput.value = '';
+          return;
+        }
+
+        const filesToProcess = files.slice(0, availableSlots);
+        if (files.length > availableSlots) {
+          MobileApp.showToast(`Chỉ có thể thêm ${availableSlots} hình nữa (tối đa 5 hình)`);
+        }
+
+        for (const file of filesToProcess) {
+          if (!file.type.startsWith('image/')) continue;
+          try {
+            const dataUrl = await MobileApp.compressImage(file);
+            MobileApp.currentProductImages.push(dataUrl);
+          } catch (err) {
+            console.warn('Lỗi xử lý nén hình ảnh:', err);
+          }
+        }
+
+        prodImgInput.value = '';
+        MobileApp.renderProductImages();
+      });
+    }
+
+    // Sự kiện phím bàn phím điều khiển Lightbox Image Viewer (ESC, mũi tên trái/phải)
+    document.addEventListener('keydown', (e) => {
+      const viewer = document.getElementById('modalImageViewer');
+      if (!viewer || !viewer.classList.contains('active')) return;
+      if (e.key === 'Escape') {
+        MobileApp.closeImageViewer();
+      } else if (e.key === 'ArrowLeft') {
+        MobileApp.navImageViewer(-1);
+      } else if (e.key === 'ArrowRight') {
+        MobileApp.navImageViewer(1);
+      }
+    });
+
     // Form submit sản phẩm
     document.getElementById('formProduct')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -758,6 +810,7 @@ const MobileApp = {
         variants,
         colors,
         sizes,
+        images: MobileApp.currentProductImages || [],
         costPrice,
         sellingPrice,
         stock,
@@ -1582,6 +1635,202 @@ const MobileApp = {
   toggleSize() {},
   renderSizeChipsState() {},
 
+  /* =================== HÌNH ẢNH SẢN PHẨM & THÔNG TIN SẢN PHẨM =================== */
+  compressImage(file, maxWidth = 900, maxHeight = 900, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith('image/')) {
+        reject(new Error('File không phải là hình ảnh'));
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        };
+        img.onerror = () => reject(new Error('Lỗi tải hình ảnh'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Lỗi đọc file'));
+      reader.readAsDataURL(file);
+    });
+  },
+
+  renderProductImages() {
+    const container = document.getElementById('prodImagesContainer');
+    const countBadge = document.getElementById('prodImageCountBadge');
+    if (!container) return;
+
+    const images = this.currentProductImages || [];
+    if (countBadge) {
+      countBadge.textContent = `(${images.length}/5)`;
+    }
+
+    let html = '';
+    images.forEach((imgSrc, idx) => {
+      html += `
+        <div class="prod-img-thumb" onclick="MobileApp.openImageViewer(${idx})" title="Bấm để xem hình lớn">
+          <img src="${imgSrc}" alt="Ảnh ${idx + 1}" />
+          <button type="button" class="btn-remove-thumb" onclick="event.stopPropagation(); MobileApp.removeProductImage(${idx})" title="Xóa hình này">&times;</button>
+        </div>
+      `;
+    });
+
+    if (images.length < 5) {
+      html += `
+        <button type="button" class="btn-add-img-thumb" onclick="document.getElementById('prodImageFileInput').click()" title="Thêm hình ảnh (tối đa 5 hình)">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Thêm ảnh</span>
+        </button>
+      `;
+    }
+
+    container.innerHTML = html;
+  },
+
+  removeProductImage(index) {
+    if (index >= 0 && index < this.currentProductImages.length) {
+      this.currentProductImages.splice(index, 1);
+      this.renderProductImages();
+    }
+  },
+
+  /* =================== MODAL LIGHTBOX IMAGE VIEWER =================== */
+  openImageViewer(index = 0, customList = null) {
+    const list = customList || this.currentProductImages || [];
+    if (!list || !list.length) return;
+    this.activeImageViewerList = list;
+    this.activeImageViewerIndex = Math.max(0, Math.min(index, list.length - 1));
+
+    const modal = document.getElementById('modalImageViewer');
+    if (!modal) return;
+    this.updateImageViewerContent();
+    modal.classList.add('active');
+    document.body.classList.add('modal-open');
+  },
+
+  openImageViewerById(id, index = 0) {
+    const prod = window.appStore?.getProductById(id);
+    if (!prod || !Array.isArray(prod.images) || !prod.images.length) return;
+    this.openImageViewer(index, prod.images);
+  },
+
+  updateImageViewerContent() {
+    const imgEl = document.getElementById('imageViewerImg');
+    const indexText = document.getElementById('imageViewerIndexText');
+    const list = this.activeImageViewerList;
+    const idx = this.activeImageViewerIndex;
+
+    if (imgEl && list[idx]) {
+      imgEl.src = list[idx];
+    }
+    if (indexText) {
+      indexText.textContent = `Ảnh ${idx + 1} / ${list.length}`;
+    }
+    const prevBtn = document.getElementById('btnPrevImage');
+    const nextBtn = document.getElementById('btnNextImage');
+    if (prevBtn) prevBtn.style.visibility = list.length > 1 ? 'visible' : 'hidden';
+    if (nextBtn) nextBtn.style.visibility = list.length > 1 ? 'visible' : 'hidden';
+  },
+
+  navImageViewer(direction) {
+    const list = this.activeImageViewerList;
+    if (!list || !list.length) return;
+    this.activeImageViewerIndex = (this.activeImageViewerIndex + direction + list.length) % list.length;
+    this.updateImageViewerContent();
+  },
+
+  closeImageViewer(event) {
+    if (event && event.target && event.target.closest && event.target.closest('#imageViewerContainer') && event.target.id !== 'btnCloseImageViewer') {
+      return;
+    }
+    const modal = document.getElementById('modalImageViewer');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+    const otherOpen = document.querySelectorAll('.modal-backdrop.active');
+    if (otherOpen.length === 0) {
+      document.body.classList.remove('modal-open');
+    }
+  },
+
+  /* =================== SAO CHÉP THÔNG TIN SẢN PHẨM =================== */
+  async copyProductInfo(customText = null) {
+    const text = customText !== null ? customText : (document.getElementById('prodNotes')?.value || '');
+    if (!text || !text.trim()) {
+      this.showToast('Chưa có thông tin để sao chép!');
+      return;
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      }
+
+      const btn = document.getElementById('btnCopyProdInfo');
+      if (btn && customText === null) {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Đã chép!</span>
+        `;
+        btn.style.background = '#dcfce7';
+        btn.style.color = '#15803d';
+        btn.style.borderColor = '#86efac';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 2000);
+      }
+
+      this.showToast('Đã sao chép thông tin sản phẩm!');
+    } catch (err) {
+      console.warn('Lỗi sao chép clipboard:', err);
+      this.showToast('Không thể sao chép tự động, vui lòng chọn text để copy!');
+    }
+  },
+
+  copyProductInfoById(id) {
+    const prod = window.appStore?.getProductById(id);
+    if (!prod || !prod.notes || !prod.notes.trim()) {
+      this.showToast('Sản phẩm chưa có thông tin!');
+      return;
+    }
+    this.copyProductInfo(prod.notes);
+  },
+
   openAddProductModal(product = null) {
     try {
       const setVal = (id, val) => {
@@ -1601,6 +1850,25 @@ const MobileApp = {
       setVal('prodStock', product ? product.stock : 0);
       setVal('prodMinStock', product ? product.minStock : 5);
       setVal('prodNotes', product ? product.notes : '');
+
+      // Khởi tạo danh sách ảnh sản phẩm (tối đa 5 hình)
+      this.currentProductImages = (product && Array.isArray(product.images)) ? [...product.images] : [];
+      this.renderProductImages();
+
+      // Reset nút copy
+      const btnCopy = document.getElementById('btnCopyProdInfo');
+      if (btnCopy) {
+        btnCopy.innerHTML = `
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          <span>Sao chép</span>
+        `;
+        btnCopy.style.background = '';
+        btnCopy.style.color = '';
+        btnCopy.style.borderColor = '';
+      }
 
       // Khởi tạo các dòng phân loại (variants)
       const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
@@ -1761,12 +2029,56 @@ const MobileApp = {
         variantsBreakdownHtml = colorsBreakdownHtml + sizesBreakdownHtml;
       }
 
-      const notesHtml = p.notes ? `<div class="prod-notes-row" style="display: inline-flex; align-items: center; gap: 5px;">${Icons.note} <span>${p.notes}</span></div>` : '';
+      // Hình ảnh sản phẩm (tối đa 5 hình)
+      const imagesGalleryHtml = (Array.isArray(p.images) && p.images.length > 0) ? `
+        <div class="prod-images-gallery" style="margin-top: 10px;">
+          <div style="color: #2563eb; font-weight: 800; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; display: flex; align-items: center; gap: 5px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>Hình ảnh sản phẩm (${p.images.length}/5):</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            ${p.images.map((img, idx) => `
+              <img src="${img}" alt="Ảnh ${idx + 1}" onclick="event.stopPropagation(); MobileApp.openImageViewerById('${p.id}', ${idx})" style="width: 54px; height: 54px; object-fit: cover; border-radius: 10px; border: 1.5px solid #cbd5e1; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.06); transition: transform 0.15s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" title="Bấm xem hình lớn" />
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+
+      // Thông tin sản phẩm (có nút sao chép nhanh)
+      const notesHtml = p.notes ? `
+        <div class="prod-info-box" style="margin-top: 10px; background: #faf5ff; border: 1.5px solid #ddd6fe; border-radius: 12px; padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; font-weight: 800; color: #6d28d9; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+              ${Icons.note}
+              <span>Thông tin sản phẩm:</span>
+            </span>
+            <button type="button" class="btn btn-sm btn-copy-card-info" onclick="event.stopPropagation(); MobileApp.copyProductInfoById('${p.id}')" style="display: inline-flex; align-items: center; gap: 4px; background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Sao chép</span>
+            </button>
+          </div>
+          <div style="font-size: 12.5px; color: #334155; line-height: 1.5; white-space: pre-wrap; word-break: break-word;">${this.escapeHtml(p.notes)}</div>
+        </div>
+      ` : '';
 
       return `
         <div class="product-accordion-card" id="prod-card-${p.id}" onclick="MobileApp.toggleProductAccordion('${p.id}')">
           <div class="prod-compact-summary">
-            <div class="prod-index-badge">${index + 1}</div>
+            ${(Array.isArray(p.images) && p.images.length > 0) ? `
+              <div class="prod-thumb-avatar" onclick="event.stopPropagation(); MobileApp.openImageViewerById('${p.id}', 0)" title="Bấm xem hình lớn">
+                <img src="${p.images[0]}" alt="${this.escapeHtml(p.name)}">
+                ${p.images.length > 1 ? `<span class="prod-thumb-avatar-badge">${p.images.length}</span>` : ''}
+              </div>
+            ` : `
+              <div class="prod-index-badge">${index + 1}</div>
+            `}
             <div class="prod-summary-left">
               <div class="prod-summary-title">${p.name}</div>
               <div class="prod-summary-meta">
@@ -1808,6 +2120,7 @@ const MobileApp = {
             </div>
 
             ${variantsBreakdownHtml}
+            ${imagesGalleryHtml}
             ${notesHtml}
 
             <div class="prod-card-actions-bar">

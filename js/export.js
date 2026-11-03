@@ -59,7 +59,7 @@ const ExportManager = {
         'Giá vốn (VNĐ)': p.costPrice,
         'Giá bán niêm yết (VNĐ)': p.sellingPrice,
         'Tổng giá trị tồn (VNĐ)': (p.stock || 0) * (p.costPrice || 0),
-        'Ghi chú': p.notes || ''
+        'Thông tin sản phẩm': p.notes || ''
       }));
 
       const ws = XLSX.utils.json_to_sheet(data);
@@ -70,7 +70,7 @@ const ExportManager = {
     }
 
     // Fallback sang CSV chuẩn UTF-8
-    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Phân loại màu', 'Kích cỡ (Size)', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Ghi chú'];
+    const headers = ['STT', 'Mã hàng (SKU)', 'Tên hàng hóa', 'Danh mục', 'Đơn vị tính', 'Khối lượng (kg)', 'Phân loại màu', 'Kích cỡ (Size)', 'Tồn kho', 'Cảnh báo tồn', 'Giá vốn', 'Giá bán niêm yết', 'Tổng giá trị tồn', 'Thông tin sản phẩm'];
     const rows = products.map((p, idx) => [
       idx + 1,
       p.sku,

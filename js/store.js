@@ -364,6 +364,7 @@ class DataStore {
       variants: cleanedVariants,
       colors: cleanedColors,
       sizes: cleanedSizes,
+      images: Array.isArray(product.images) ? product.images.slice(0, 5) : [],
       costPrice: Number(product.costPrice || 0),
       sellingPrice: Number(product.sellingPrice || 0),
       stock: finalStock,

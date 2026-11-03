@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=6.1">
+  <link rel="stylesheet" href="css/style.css?v=6.2">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1176,11 +1176,37 @@
             </div>
           </div>
 
-          <!-- GHI CHÚ -->
+          <!-- BENTO CARD 5: HÌNH ẢNH SẢN PHẨM (TỐI ĐA 5 HÌNH) -->
+          <div class="bento-modal-card bento-modal-card-blue">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="bento-tag-pill tag-blue">Hình ảnh sản phẩm</span>
+                <span id="prodImageCountBadge" style="font-size: 11px; font-weight: 700; color: #2563eb;">(0/5)</span>
+              </div>
+              <span style="font-size: 11px; color: #64748b; font-weight: 600;">Tối đa 5 hình</span>
+            </div>
+
+            <!-- Khung chứa các ô hình thumbnail và nút thêm hình -->
+            <div class="prod-images-container" id="prodImagesContainer">
+              <!-- Render động bằng JS: các ô hình và nút thêm hình -->
+            </div>
+            <input type="file" id="prodImageFileInput" accept="image/*" multiple style="display: none;">
+          </div>
+
+          <!-- BENTO CARD 6: THÔNG TIN SẢN PHẨM (CÓ NÚT COPY TEXT) -->
           <div class="bento-modal-card" style="margin-bottom: 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <span class="bento-tag-pill tag-lilac">Thông tin sản phẩm</span>
+              <button type="button" id="btnCopyProdInfo" class="btn btn-sm btn-copy-prod-info" onclick="MobileApp.copyProductInfo()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>Sao chép</span>
+              </button>
+            </div>
             <div class="form-group" style="margin-bottom: 0;">
-              <label>Ghi chú thêm:</label>
-              <input type="text" id="prodNotes" class="form-control" placeholder="Chất liệu, kệ để, size...">
+              <textarea id="prodNotes" class="form-control" rows="4" placeholder="Nhập hoặc dán thông tin chi tiết sản phẩm, công dụng, chất liệu, thông số..." style="font-size: 13px; line-height: 1.5; resize: vertical; border-radius: 12px; min-height: 85px;"></textarea>
             </div>
           </div>
         </div>
@@ -1782,15 +1808,36 @@
     </div>
   </div>
 
+  <!-- MODAL XEM HÌNH ẢNH LỚN (LIGHTBOX VIEWER) -->
+  <div class="modal-backdrop modal-image-viewer-backdrop" id="modalImageViewer" onclick="MobileApp.closeImageViewer(event)">
+    <div class="modal-image-viewer-container" id="imageViewerContainer" onclick="event.stopPropagation()">
+      <button type="button" class="btn-close-image-viewer" id="btnCloseImageViewer" onclick="MobileApp.closeImageViewer()" title="Đóng">&times;</button>
+      
+      <div class="image-viewer-stage">
+        <img id="imageViewerImg" src="" alt="Hình ảnh sản phẩm lớn">
+      </div>
+
+      <div class="image-viewer-bottom-bar" id="imageViewerCaption">
+        <button type="button" class="btn-nav-img" id="btnPrevImage" onclick="MobileApp.navImageViewer(-1)" title="Ảnh trước">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <span id="imageViewerIndexText" class="image-viewer-counter">Ảnh 1 / 1</span>
+        <button type="button" class="btn-nav-img" id="btnNextImage" onclick="MobileApp.navImageViewer(1)" title="Ảnh tiếp theo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST CONTAINER -->
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=6.1"></script>
-  <script src="js/cloud-sync.js?v=6.1"></script>
-  <script src="js/store.js?v=6.1"></script>
-  <script src="js/export.js?v=6.1"></script>
-  <script src="js/charts.js?v=6.1"></script>
-  <script src="js/app.js?v=6.1"></script>
+  <script src="js/calculations.js?v=6.2"></script>
+  <script src="js/cloud-sync.js?v=6.2"></script>
+  <script src="js/store.js?v=6.2"></script>
+  <script src="js/export.js?v=6.2"></script>
+  <script src="js/charts.js?v=6.2"></script>
+  <script src="js/app.js?v=6.2"></script>
 </body>
 </html>
