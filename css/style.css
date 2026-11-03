@@ -2784,6 +2784,7 @@ body.theme-wordsy .product-accordion-card,
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 10px 14px;
   margin-bottom: 0 !important;
+  scroll-margin-top: calc(72px + var(--safe-top, 0px));
 }
 
 body.theme-wordsy .product-accordion-card:active,

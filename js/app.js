@@ -1939,8 +1939,30 @@ const MobileApp = {
 
   toggleProductAccordion(id) {
     const card = document.getElementById(`prod-card-${id}`);
-    if (card) {
-      card.classList.toggle('expanded');
+    if (!card) return;
+
+    const isExpanded = card.classList.toggle('expanded');
+    if (isExpanded) {
+      // Khi click mở thông tin món hàng, tự động cuộn mượt món hàng lên top màn hình dưới header
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const header = document.querySelector('.mobile-header');
+          const headerBottom = header ? header.getBoundingClientRect().bottom : 64;
+          const cardRect = card.getBoundingClientRect();
+          const currentScroll = window.pageYOffset || document.documentElement.scrollTop || 0;
+          const delta = cardRect.top - headerBottom - 8;
+          const targetScroll = Math.max(0, currentScroll + delta);
+
+          try {
+            window.scrollTo({
+              top: targetScroll,
+              behavior: 'smooth'
+            });
+          } catch (e) {
+            window.scrollTo(0, targetScroll);
+          }
+        }, 50);
+      });
     }
   },
 
