@@ -743,7 +743,7 @@ const MobileApp = {
       });
     }
 
-    // Sự kiện phím bàn phím điều khiển Lightbox Image Viewer (ESC, mũi tên trái/phải)
+    // Sự kiện phím bàn phím điều khiển Lightbox Image Viewer (ESC, mũi tên trái/phải, s để lưu)
     document.addEventListener('keydown', (e) => {
       const viewer = document.getElementById('modalImageViewer');
       if (!viewer || !viewer.classList.contains('active')) return;
@@ -753,6 +753,8 @@ const MobileApp = {
         MobileApp.navImageViewer(-1);
       } else if (e.key === 'ArrowRight') {
         MobileApp.navImageViewer(1);
+      } else if (e.key === 's' || e.key === 'S') {
+        MobileApp.saveCurrentImage();
       }
     });
 
@@ -1773,8 +1775,47 @@ const MobileApp = {
     }
   },
 
-  /* =================== SAO CHÉP THÔNG TIN SẢN PHẨM =================== */
-  async copyProductInfo(customText = null) {
+  /* =================== LƯU HÌNH ẢNH VỀ MÁY (ICON SAVE) =================== */
+  saveCurrentImage() {
+    const list = this.activeImageViewerList;
+    const idx = this.activeImageViewerIndex;
+    if (!list || !list[idx]) {
+      this.showToast('Không tìm thấy hình ảnh để lưu!');
+      return;
+    }
+    const imgSrc = list[idx];
+    try {
+      const link = document.createElement('a');
+      link.href = imgSrc;
+      const fileName = `hinh-anh-san-pham-${Date.now().toString().slice(-6)}-${idx + 1}.jpg`;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Phản hồi trực quan trên nút Save (chỉ đổi icon checkmark xanh)
+      const saveBtns = [document.getElementById('btnSaveImage'), document.getElementById('btnSaveImageTop')].filter(Boolean);
+      saveBtns.forEach(btn => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        `;
+        setTimeout(() => {
+          btn.innerHTML = orig;
+        }, 1500);
+      });
+
+      this.showToast('Đang tải hình ảnh về máy...');
+    } catch (err) {
+      console.warn('Lỗi tải ảnh:', err);
+      window.open(imgSrc, '_blank');
+    }
+  },
+
+  /* =================== SAO CHÉP THÔNG TIN SẢN PHẨM (CHỈ ICON) =================== */
+  async copyProductInfo(customText = null, targetBtn = null) {
     const text = customText !== null ? customText : (document.getElementById('prodNotes')?.value || '');
     if (!text || !text.trim()) {
       this.showToast('Chưa có thông tin để sao chép!');
@@ -1795,14 +1836,14 @@ const MobileApp = {
         document.body.removeChild(ta);
       }
 
-      const btn = document.getElementById('btnCopyProdInfo');
-      if (btn && customText === null) {
+      // Phản hồi trực quan: chỉ hiển thị icon checkmark, không có text
+      const btn = targetBtn || (customText === null ? document.getElementById('btnCopyProdInfo') : null);
+      if (btn) {
         const originalHtml = btn.innerHTML;
         btn.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"></polyline>
           </svg>
-          <span>Đã chép!</span>
         `;
         btn.style.background = '#dcfce7';
         btn.style.color = '#15803d';
@@ -1812,7 +1853,7 @@ const MobileApp = {
           btn.style.background = '';
           btn.style.color = '';
           btn.style.borderColor = '';
-        }, 2000);
+        }, 1800);
       }
 
       this.showToast('Đã sao chép thông tin sản phẩm!');
@@ -1822,13 +1863,13 @@ const MobileApp = {
     }
   },
 
-  copyProductInfoById(id) {
+  copyProductInfoById(id, targetBtn = null) {
     const prod = window.appStore?.getProductById(id);
     if (!prod || !prod.notes || !prod.notes.trim()) {
       this.showToast('Sản phẩm chưa có thông tin!');
       return;
     }
-    this.copyProductInfo(prod.notes);
+    this.copyProductInfo(prod.notes, targetBtn);
   },
 
   openAddProductModal(product = null) {
@@ -1855,15 +1896,14 @@ const MobileApp = {
       this.currentProductImages = (product && Array.isArray(product.images)) ? [...product.images] : [];
       this.renderProductImages();
 
-      // Reset nút copy
+      // Reset nút copy (chỉ icon, không text)
       const btnCopy = document.getElementById('btnCopyProdInfo');
       if (btnCopy) {
         btnCopy.innerHTML = `
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
-          <span>Sao chép</span>
         `;
         btnCopy.style.background = '';
         btnCopy.style.color = '';
@@ -2056,12 +2096,11 @@ const MobileApp = {
               ${Icons.note}
               <span>Thông tin sản phẩm:</span>
             </span>
-            <button type="button" class="btn btn-sm btn-copy-card-info" onclick="event.stopPropagation(); MobileApp.copyProductInfoById('${p.id}')" style="display: inline-flex; align-items: center; gap: 4px; background: #ede9fe; color: #6d28d9; border: 1px solid #c4b5fd; border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; cursor: pointer;">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <button type="button" class="btn btn-sm btn-copy-card-info" onclick="event.stopPropagation(); MobileApp.copyProductInfoById('${p.id}', this)" title="Sao chép thông tin" aria-label="Sao chép">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                 <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
-              <span>Sao chép</span>
             </button>
           </div>
           <div style="font-size: 12.5px; color: #334155; line-height: 1.5; white-space: pre-wrap; word-break: break-word;">${this.escapeHtml(p.notes)}</div>

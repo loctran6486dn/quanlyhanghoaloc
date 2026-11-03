@@ -4569,30 +4569,58 @@ body.theme-wordsy .badge-info {
   transform: scale(0.98);
 }
 
-/* Copy Button for Product Info */
+/* Copy Button for Product Info (Icon Only) */
 .btn-copy-prod-info {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   background: #f5f3ff;
   color: #6d28d9;
   border: 1.5px solid #ddd6fe;
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 11.5px;
-  font-weight: 700;
+  border-radius: 9px;
+  padding: 0;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  flex-shrink: 0;
 }
 
 .btn-copy-prod-info:hover {
   background: #ede9fe;
   border-color: #c4b5fd;
+  transform: scale(1.06);
 }
 
 .btn-copy-prod-info:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
+}
+
+.btn-copy-card-info {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #ede9fe;
+  color: #6d28d9;
+  border: 1px solid #c4b5fd;
+  border-radius: 7px;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.btn-copy-card-info:hover {
+  background: #ddd6fe;
+  transform: scale(1.08);
+}
+
+.btn-copy-card-info:active {
+  transform: scale(0.92);
 }
 
 /* Product list thumbnail in Kho Hàng */
@@ -4667,10 +4695,37 @@ body.theme-wordsy .badge-info {
   margin: auto;
 }
 
-.btn-close-image-viewer {
+.image-viewer-top-actions {
   position: absolute;
   top: -46px;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.btn-image-viewer-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+
+.btn-image-viewer-action:hover,
+.btn-image-viewer-action:active {
+  background: rgba(255, 255, 255, 0.38);
+  transform: scale(1.08);
+}
+
+.btn-close-image-viewer {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -4683,7 +4738,6 @@ body.theme-wordsy .badge-info {
   justify-content: center;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s;
-  z-index: 10;
   line-height: 1;
 }
 
@@ -4753,6 +4807,16 @@ body.theme-wordsy .badge-info {
 
 .btn-nav-img:active {
   transform: scale(0.9);
+}
+
+.btn-save-img {
+  background: rgba(37, 99, 235, 0.8) !important;
+  color: #ffffff !important;
+}
+
+.btn-save-img:hover {
+  background: #2563eb !important;
+  transform: scale(1.08);
 }
 
 .image-viewer-counter {

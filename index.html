@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=6.2">
+  <link rel="stylesheet" href="css/style.css?v=6.3">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1197,12 +1197,11 @@
           <div class="bento-modal-card" style="margin-bottom: 0;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <span class="bento-tag-pill tag-lilac">Thông tin sản phẩm</span>
-              <button type="button" id="btnCopyProdInfo" class="btn btn-sm btn-copy-prod-info" onclick="MobileApp.copyProductInfo()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <button type="button" id="btnCopyProdInfo" class="btn btn-sm btn-copy-prod-info" onclick="MobileApp.copyProductInfo()" title="Sao chép thông tin" aria-label="Sao chép">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                 </svg>
-                <span>Sao chép</span>
               </button>
             </div>
             <div class="form-group" style="margin-bottom: 0;">
@@ -1811,7 +1810,16 @@
   <!-- MODAL XEM HÌNH ẢNH LỚN (LIGHTBOX VIEWER) -->
   <div class="modal-backdrop modal-image-viewer-backdrop" id="modalImageViewer" onclick="MobileApp.closeImageViewer(event)">
     <div class="modal-image-viewer-container" id="imageViewerContainer" onclick="event.stopPropagation()">
-      <button type="button" class="btn-close-image-viewer" id="btnCloseImageViewer" onclick="MobileApp.closeImageViewer()" title="Đóng">&times;</button>
+      <div class="image-viewer-top-actions">
+        <button type="button" class="btn-image-viewer-action" id="btnSaveImageTop" onclick="MobileApp.saveCurrentImage()" title="Lưu / Tải hình ảnh về máy" aria-label="Lưu hình ảnh">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+        <button type="button" class="btn-close-image-viewer" id="btnCloseImageViewer" onclick="MobileApp.closeImageViewer()" title="Đóng">&times;</button>
+      </div>
       
       <div class="image-viewer-stage">
         <img id="imageViewerImg" src="" alt="Hình ảnh sản phẩm lớn">
@@ -1825,6 +1833,14 @@
         <button type="button" class="btn-nav-img" id="btnNextImage" onclick="MobileApp.navImageViewer(1)" title="Ảnh tiếp theo">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
+        <span style="display: inline-block; width: 1px; height: 16px; background: rgba(255, 255, 255, 0.25); margin: 0 4px;"></span>
+        <button type="button" class="btn-nav-img btn-save-img" id="btnSaveImage" onclick="MobileApp.saveCurrentImage()" title="Lưu / Tải hình ảnh về máy" aria-label="Lưu hình ảnh">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -1833,11 +1849,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=6.2"></script>
-  <script src="js/cloud-sync.js?v=6.2"></script>
-  <script src="js/store.js?v=6.2"></script>
-  <script src="js/export.js?v=6.2"></script>
-  <script src="js/charts.js?v=6.2"></script>
-  <script src="js/app.js?v=6.2"></script>
+  <script src="js/calculations.js?v=6.3"></script>
+  <script src="js/cloud-sync.js?v=6.3"></script>
+  <script src="js/store.js?v=6.3"></script>
+  <script src="js/export.js?v=6.3"></script>
+  <script src="js/charts.js?v=6.3"></script>
+  <script src="js/app.js?v=6.3"></script>
 </body>
 </html>
