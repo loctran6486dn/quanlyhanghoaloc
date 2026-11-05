@@ -364,6 +364,13 @@ class CloudSyncManager {
     const delPo = new Set([...(del.purchases || []), ...(remoteDel.purchases || [])]);
     const delCf = new Set([...(del.cashflow || []), ...(remoteDel.cashflow || [])]);
 
+    // Nếu bản ghi có mặt trong danh sách hợp lệ thì tự động gỡ khỏi danh sách đã xóa (Undelete)
+    const incomingSaleIds = new Set([...(safeLocal.sales || []).map(s => s.id), ...(safeRemote.sales || []).map(s => s.id)]);
+    incomingSaleIds.forEach(id => delSales.delete(id));
+
+    const incomingPoIds = new Set([...(safeLocal.purchases || []).map(p => p.id), ...(safeRemote.purchases || []).map(p => p.id)]);
+    incomingPoIds.forEach(id => delPo.delete(id));
+
     // 1. Trộn sản phẩm (Ghép theo ID, ưu tiên bản ghi có thời gian cập nhật mới hơn)
     const prodMap = new Map();
     (safeLocal.products || []).forEach(p => {

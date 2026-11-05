@@ -29,6 +29,8 @@ const Icons = {
 const MobileApp = {
   activeTab: 'dashboard',
   dateFilter: { startDate: '', endDate: '' },
+  salesDateRange: 'this_month',
+  salesDateFilter: { startDate: '', endDate: '' },
   productStockFilter: 'all',
   productCategoryFilter: 'all',
   salesPaymentFilter: 'all',
@@ -39,6 +41,39 @@ const MobileApp = {
   currentProductImages: [],
   activeImageViewerList: [],
   activeImageViewerIndex: 0,
+
+  /**
+   * Tính toán khoảng thời gian chuẩn xác theo giờ địa phương (tránh lỗi UTC lệch ngày)
+   */
+  getDateRangeBoundaries(range) {
+    const today = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const formatYMD = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+
+    let start = '';
+    let end = formatYMD(today);
+
+    if (range === 'today') {
+      start = end;
+    } else if (range === 'this_week') {
+      const d = new Date(today);
+      d.setDate(d.getDate() - 6);
+      start = formatYMD(d);
+    } else if (range === 'this_month') {
+      start = formatYMD(new Date(today.getFullYear(), today.getMonth(), 1));
+      end = formatYMD(today);
+    } else if (range === 'last_month') {
+      start = formatYMD(new Date(today.getFullYear(), today.getMonth() - 1, 1));
+      end = formatYMD(new Date(today.getFullYear(), today.getMonth(), 0));
+    } else if (range === 'this_year') {
+      start = formatYMD(new Date(today.getFullYear(), 0, 1));
+      end = formatYMD(today);
+    } else {
+      start = '';
+      end = '';
+    }
+    return { startDate: start, endDate: end };
+  },
 
   init() {
     this.setupDatePillFilters();
@@ -100,46 +135,39 @@ const MobileApp = {
 
   /* =================== BỘ LỌC THỜI GIAN DẠNG PILL =================== */
   setupDatePillFilters() {
-    const pills = document.querySelectorAll('#mobileTimePills .pill-item');
-    pills.forEach(pill => {
+    // 1. Bộ lọc thời gian trên Dashboard (Tổng quan)
+    const dashPills = document.querySelectorAll('#mobileTimePills .pill-item');
+    dashPills.forEach(pill => {
       pill.addEventListener('click', () => {
-        pills.forEach(p => p.classList.remove('active'));
+        dashPills.forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
 
         const range = pill.getAttribute('data-range');
-        const today = new Date();
-        let start = '';
-        let end = today.toISOString().slice(0, 10);
-
-        if (range === 'today') {
-          start = end;
-        } else if (range === 'this_week') {
-          const d = new Date(today);
-          d.setDate(d.getDate() - 6);
-          start = d.toISOString().slice(0, 10);
-        } else if (range === 'this_month') {
-          start = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10);
-        } else if (range === 'last_month') {
-          start = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().slice(0, 10);
-          end = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().slice(0, 10);
-        } else if (range === 'this_year') {
-          start = new Date(today.getFullYear(), 0, 1).toISOString().slice(0, 10);
-        } else {
-          start = '';
-          end = '';
-        }
-
-        this.dateFilter = { startDate: start, endDate: end };
+        this.dateFilter = this.getDateRangeBoundaries(range);
         this.renderCurrentView();
       });
     });
 
-    // Mặc định: Tháng này
-    const today = new Date();
-    this.dateFilter = {
-      startDate: new Date(today.getFullYear(), today.getMonth(), 1).toISOString().slice(0, 10),
-      endDate: today.toISOString().slice(0, 10)
-    };
+    // Mặc định Dashboard: Tháng này
+    this.dateFilter = this.getDateRangeBoundaries('this_month');
+
+    // 2. Bộ lọc thời gian trên Tab Quản Lý (Đơn Bán / Lịch Sử Mua Bán)
+    const salesPills = document.querySelectorAll('#mobileSalesTimePills .pill-item');
+    salesPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        salesPills.forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        const range = pill.getAttribute('data-range');
+        this.salesDateRange = range;
+        this.salesDateFilter = this.getDateRangeBoundaries(range);
+        this.renderSales();
+      });
+    });
+
+    // Mặc định Quản Lý: Tháng này
+    this.salesDateRange = 'this_month';
+    this.salesDateFilter = this.getDateRangeBoundaries('this_month');
   },
 
   /* =================== ĐIỀU HƯỚNG BOTTOM NAVIGATION =================== */
@@ -198,6 +226,27 @@ const MobileApp = {
     const wrapPills = document.getElementById('wrapPaymentFilterPills');
     if (wrapPills) {
       wrapPills.style.display = subTab === 'active' ? 'flex' : 'none';
+    }
+
+    if (subTab === 'history') {
+      const state = window.appStore ? window.appStore.state : null;
+      const historySales = (state && state.sales) ? state.sales.filter(s => s.status === 'completed') : [];
+      const currentMonthYMD = this.getDateRangeBoundaries('this_month');
+      const hasThisMonth = historySales.some(s => {
+        const d = (s.date || s.createdAt || '').slice(0, 10);
+        return d >= currentMonthYMD.startDate && d <= currentMonthYMD.endDate;
+      });
+
+      // Nếu tháng này chưa có đơn hoàn thành nào nhưng có đơn tháng trước, tự động chuyển sang xem Tháng trước
+      if (!hasThisMonth && historySales.length > 0 && this.salesDateRange === 'this_month') {
+        const pillLastMonth = document.querySelector('#mobileSalesTimePills .pill-item[data-range="last_month"]');
+        if (pillLastMonth) {
+          document.querySelectorAll('#mobileSalesTimePills .pill-item').forEach(p => p.classList.remove('active'));
+          pillLastMonth.classList.add('active');
+          this.salesDateRange = 'last_month';
+          this.salesDateFilter = this.getDateRangeBoundaries('last_month');
+        }
+      }
     }
 
     this.renderSales();
@@ -3443,7 +3492,21 @@ const MobileApp = {
     this.updatePendingSalesBadge();
 
     const currentSubTab = this.manageSubTab || 'active';
-    const baseList = currentSubTab === 'active' ? activeSales : historySales;
+    let baseList = currentSubTab === 'active' ? activeSales : historySales;
+
+    // Áp dụng bộ lọc thời gian khi ở tab Lịch Sử Mua Bán
+    if (currentSubTab === 'history') {
+      const { startDate, endDate } = this.salesDateFilter || {};
+      if (startDate || endDate) {
+        baseList = baseList.filter(s => {
+          const d = (s.date || s.createdAt || '').slice(0, 10);
+          if (!d) return true;
+          if (startDate && d < startDate) return false;
+          if (endDate && d > endDate) return false;
+          return true;
+        });
+      }
+    }
 
     const searchInput = document.getElementById('mobileSalesSearch');
     const clearBtn = document.getElementById('btnClearSalesSearch');
@@ -3483,6 +3546,8 @@ const MobileApp = {
           </div>
         `;
       } else {
+        const activeSalesPill = document.querySelector('#mobileSalesTimePills .pill-item.active');
+        const rangeText = activeSalesPill ? activeSalesPill.textContent : 'thời gian này';
         container.innerHTML = `
           <div style="background: #fff; padding: 32px 16px; border-radius: 16px; text-align: center; color: #94a3b8; font-size: 13.5px; border: 1.5px dashed #cbd5e1;">
             <div style="width: 52px; height: 52px; border-radius: 50%; background: #f1f5f9; color: #64748b; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;">
@@ -3491,8 +3556,9 @@ const MobileApp = {
                 <polyline points="12 6 12 12 14 14"/>
               </svg>
             </div>
-            <div style="font-weight: 800; color: #334155; margin-bottom: 4px; font-size: 15px;">Chưa có đơn hàng nào hoàn thành</div>
-            <div style="font-size: 12px; color: #94a3b8;">Khi bạn bấm "Xác nhận thành công" ở tab Đơn Bán, đơn sẽ được lưu vào lịch sử tại đây.</div>
+            <div style="font-weight: 800; color: #334155; margin-bottom: 4px; font-size: 15px;">Chưa có đơn hoàn thành trong "${rangeText}"</div>
+            <div style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">Bạn có thể bấm chọn <strong>Tháng trước</strong> hoặc <strong>Toàn bộ</strong> ở thanh nút lọc bên trên để xem dữ liệu quá khứ.</div>
+            <button type="button" class="btn-dark-pill" onclick="const p = document.querySelector('#mobileSalesTimePills .pill-item[data-range=\\'last_month\\']'); if(p) p.click();" style="margin: 0 auto; display: inline-flex;">Xem Đơn Tháng Trước</button>
           </div>
         `;
       }

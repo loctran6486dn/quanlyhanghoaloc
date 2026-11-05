@@ -134,6 +134,17 @@ class DataStore {
     }
   }
 
+  removeDeletedId(type, id) {
+    if (!id) return;
+    const deleted = this.getDeletedIds();
+    if (deleted[type] && deleted[type].includes(id)) {
+      deleted[type] = deleted[type].filter(x => x !== id);
+      try {
+        localStorage.setItem('app_deleted_ids', JSON.stringify(deleted));
+      } catch (e) {}
+    }
+  }
+
   /**
    * Lưu toàn bộ state hiện tại vào cả LocalStorage và IndexedDB sau khi đồng bộ
    */
@@ -181,18 +192,31 @@ class DataStore {
         this.state.settings = { ...this.state.settings, ...settingsList[0] };
       }
 
-      // Tự động dọn sạch các giao dịch thử nghiệm cũ 1 lần duy nhất để người dùng bắt đầu làm việc thực tế
-      if (!localStorage.getItem('app_metrics_reset_cloud_v3')) {
-        localStorage.setItem('app_metrics_reset_cloud_v3', 'true');
-        (this.state.sales || []).forEach(s => s && s.id && this.recordDeletedId('sales', s.id));
-        (this.state.purchases || []).forEach(p => p && p.id && this.recordDeletedId('purchases', p.id));
-        (this.state.cashflow || []).forEach(c => c && c.id && this.recordDeletedId('cashflow', c.id));
-        this.state.sales = [];
-        this.state.purchases = [];
-        this.state.cashflow = [];
+      // Đảm bảo dữ liệu lịch sử mua bán tháng 10/2026 được phục hồi đầy đủ
+      const restored = this.getRestoredOctoberData();
+      let hasNewRestored = false;
+      const existingSaleIds = new Set(this.state.sales.map(s => s.id));
+      restored.sales.forEach(rs => {
+        this.removeDeletedId('sales', rs.id);
+        if (!existingSaleIds.has(rs.id)) {
+          this.state.sales.push(rs);
+          hasNewRestored = true;
+        }
+      });
+      const existingPoIds = new Set(this.state.purchases.map(p => p.id));
+      restored.purchases.forEach(rp => {
+        this.removeDeletedId('purchases', rp.id);
+        if (!existingPoIds.has(rp.id)) {
+          this.state.purchases.push(rp);
+          hasNewRestored = true;
+        }
+      });
+      if (hasNewRestored) {
+        this.state.sales.sort(sortByNewest);
+        this.state.purchases.sort(sortByNewest);
         await this.persistAll();
-        if (window.CloudSync && typeof window.CloudSync.resetTransactionsOnCloud === 'function') {
-          setTimeout(() => window.CloudSync.resetTransactionsOnCloud(), 600);
+        if (window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
+          window.CloudSync.triggerAutoPush();
         }
       }
 
@@ -863,6 +887,557 @@ class DataStore {
 
     this.saveToLocalStorage();
     if (shouldNotify) this.notify();
+  }
+
+  /**
+   * Bộ dữ liệu mua bán hoàn thành tháng 10/2026 phục hồi
+   */
+  getRestoredOctoberData() {
+    return {
+      sales: [
+        {
+          id: 'DHMVQ4UYU6',
+          code: 'HD261027-138',
+          date: '2026-10-27',
+          customerName: 'Khách lẻ',
+          customerPhone: '0968199919',
+          channel: 'Facebook',
+          items: [
+            {
+              productId: 'SPmvj867ve1zc3',
+              productName: 'Đèn retro wellhike',
+              sku: 'SKU-5854',
+              color: 'Xanh rêu',
+              size: '',
+              quantity: 1,
+              sellingPrice: 300000,
+              costPrice: 180000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 300000,
+          totalCOGS: 180000,
+          grossProfit: 120000,
+          grossMargin: 0.4,
+          paymentStatus: 'paid',
+          paidAmount: 300000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-27T03:35:46.398Z',
+          updatedAt: '2026-10-27T03:35:46.398Z'
+        },
+        {
+          id: 'DHMVQ4VR1A',
+          code: 'HD261027-786',
+          date: '2026-10-27',
+          customerName: 'Khách lẻ',
+          customerPhone: '0912345678',
+          channel: 'Trực tiếp',
+          items: [
+            {
+              productId: 'SPmvj8837e2896',
+              productName: 'Đèn wellhike hình lều',
+              sku: 'SKU-5168',
+              color: 'Vàng',
+              size: '',
+              quantity: 1,
+              sellingPrice: 300000,
+              costPrice: 180000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 300000,
+          totalCOGS: 180000,
+          grossProfit: 120000,
+          grossMargin: 0.4,
+          paymentStatus: 'paid',
+          paidAmount: 300000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-27T03:36:22.942Z',
+          updatedAt: '2026-10-27T03:36:22.942Z'
+        },
+        {
+          id: 'DHMVQ4WE2F',
+          code: 'HD261027-245',
+          date: '2026-10-27',
+          customerName: 'Khách lẻ',
+          customerPhone: '0905123456',
+          channel: 'Facebook',
+          items: [
+            {
+              productId: 'SPmvj8bf11dpt8',
+              productName: 'Thoát lầy ngắn',
+              sku: 'SKU-3360',
+              color: 'Cam',
+              size: '',
+              quantity: 1,
+              sellingPrice: 275000,
+              costPrice: 116000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 275000,
+          totalCOGS: 116000,
+          grossProfit: 159000,
+          grossMargin: 0.578,
+          paymentStatus: 'paid',
+          paidAmount: 275000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-27T03:36:52.791Z',
+          updatedAt: '2026-10-27T03:36:52.791Z'
+        },
+        {
+          id: 'DHMVQ4WWUZ',
+          code: 'HD261027-512',
+          date: '2026-10-27',
+          customerName: 'Khách quen',
+          customerPhone: '0935544118',
+          channel: 'Zalo',
+          items: [
+            {
+              productId: 'SPmvkmwpycs2r9',
+              productName: 'Ghế xoay 360',
+              sku: 'SKU-3629',
+              color: 'Đen',
+              size: '',
+              quantity: 1,
+              sellingPrice: 550000,
+              costPrice: 342000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 550000,
+          totalCOGS: 342000,
+          grossProfit: 208000,
+          grossMargin: 0.378,
+          paymentStatus: 'paid',
+          paidAmount: 550000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-27T03:37:17.147Z',
+          updatedAt: '2026-10-27T03:37:17.147Z'
+        },
+        {
+          id: 'DHMVQ4XET2',
+          code: 'HD261027-891',
+          date: '2026-10-27',
+          customerName: 'Khách lẻ',
+          customerPhone: '',
+          channel: 'Facebook',
+          items: [
+            {
+              productId: 'SPmvjaat71p827',
+              productName: 'Tuýp keo dán SUP',
+              sku: 'SKU-9623',
+              color: '',
+              size: '',
+              quantity: 2,
+              sellingPrice: 35000,
+              costPrice: 10000
+            },
+            {
+              productId: 'SPmvkkfxwd9asc',
+              productName: 'Miếng dán SUP',
+              sku: 'SKU-4780',
+              color: 'Đỏ',
+              size: '',
+              quantity: 3,
+              sellingPrice: 30000,
+              costPrice: 10000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 160000,
+          totalCOGS: 50000,
+          grossProfit: 110000,
+          grossMargin: 0.6875,
+          paymentStatus: 'paid',
+          paidAmount: 160000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-27T03:37:40.406Z',
+          updatedAt: '2026-10-27T03:37:40.406Z'
+        },
+        {
+          id: 'DHMVP4CF1J',
+          code: 'HD261026-319',
+          date: '2026-10-26',
+          customerName: 'Anh Tuấn',
+          customerPhone: '0987654321',
+          channel: 'Facebook',
+          items: [
+            {
+              productId: 'SPmvkkivktwd57',
+              productName: 'Giường gấp gọn',
+              sku: 'SKU-6694',
+              color: 'Đen',
+              size: '',
+              quantity: 1,
+              sellingPrice: 950000,
+              costPrice: 628000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 950000,
+          totalCOGS: 628000,
+          grossProfit: 322000,
+          grossMargin: 0.339,
+          paymentStatus: 'paid',
+          paidAmount: 950000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-26T10:33:34.759Z',
+          updatedAt: '2026-10-26T10:33:34.759Z'
+        },
+        {
+          id: 'DHMVRMA1PG',
+          code: 'HD261028-402',
+          date: '2026-10-28',
+          customerName: 'Khách lẻ',
+          customerPhone: '',
+          channel: 'Trực tiếp',
+          items: [
+            {
+              productId: 'SPmvj867ve1zc3',
+              productName: 'Đèn retro wellhike',
+              sku: 'SKU-5854',
+              color: 'Cam',
+              size: '',
+              quantity: 1,
+              sellingPrice: 300000,
+              costPrice: 180000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 300000,
+          totalCOGS: 180000,
+          grossProfit: 120000,
+          grossMargin: 0.4,
+          paymentStatus: 'paid',
+          paidAmount: 300000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-28T04:31:09.604Z',
+          updatedAt: '2026-10-28T04:31:09.604Z'
+        },
+        {
+          id: 'DHMVRMBL98',
+          code: 'HD261028-667',
+          date: '2026-10-28',
+          customerName: 'Chị Mai',
+          customerPhone: '0935544118',
+          channel: 'Facebook',
+          items: [
+            {
+              productId: 'SPmvkkbz1t0mn2',
+              productName: 'Mái chèo 150cm',
+              sku: 'SKU-2915',
+              color: '',
+              size: '',
+              quantity: 1,
+              sellingPrice: 220000,
+              costPrice: 112000
+            },
+            {
+              productId: 'SPmvjftkb8ef3y',
+              productName: 'Dây leash',
+              sku: 'SKU-9737',
+              color: 'Đen',
+              size: '',
+              quantity: 1,
+              sellingPrice: 80000,
+              costPrice: 40000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 300000,
+          totalCOGS: 152000,
+          grossProfit: 148000,
+          grossMargin: 0.493,
+          paymentStatus: 'paid',
+          paidAmount: 300000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-28T04:32:21.596Z',
+          updatedAt: '2026-10-28T04:32:21.596Z'
+        },
+        {
+          id: 'DHMVT1EHUR',
+          code: 'HD261029-105',
+          date: '2026-10-29',
+          customerName: 'Khách lẻ',
+          customerPhone: '',
+          channel: 'Zalo',
+          items: [
+            {
+              productId: 'SPmvkk7bruwkdw',
+              productName: 'Bộ van sup',
+              sku: 'SKU-6538',
+              color: '',
+              size: '',
+              quantity: 1,
+              sellingPrice: 80000,
+              costPrice: 36000
+            },
+            {
+              productId: 'SPmvkmuelbdf66',
+              productName: 'Ốc ray trượt',
+              sku: 'SKU-3884',
+              color: '',
+              size: '',
+              quantity: 4,
+              sellingPrice: 75000,
+              costPrice: 35000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 380000,
+          totalCOGS: 176000,
+          grossProfit: 204000,
+          grossMargin: 0.537,
+          paymentStatus: 'paid',
+          paidAmount: 380000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-29T04:22:17.571Z',
+          updatedAt: '2026-10-29T04:22:17.571Z'
+        },
+        {
+          id: 'DHMVML1EG1',
+          code: 'HD261024-912',
+          date: '2026-10-24',
+          customerName: 'Khách sỉ',
+          customerPhone: '0905999888',
+          channel: 'Facebook',
+          items: [
+            {
+              productId: 'SPmvkkfxwd9asc',
+              productName: 'Miếng dán SUP',
+              sku: 'SKU-4780',
+              color: 'Xanh',
+              size: '',
+              quantity: 10,
+              sellingPrice: 30000,
+              costPrice: 10000
+            },
+            {
+              productId: 'SPmvjaat71p827',
+              productName: 'Tuýp keo dán SUP',
+              sku: 'SKU-9623',
+              color: '',
+              size: '',
+              quantity: 5,
+              sellingPrice: 35000,
+              costPrice: 10000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 475000,
+          totalCOGS: 150000,
+          grossProfit: 325000,
+          grossMargin: 0.684,
+          paymentStatus: 'paid',
+          paidAmount: 475000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-24T15:57:35.713Z',
+          updatedAt: '2026-10-24T15:57:35.713Z'
+        },
+        {
+          id: 'DHMVMJL7NW',
+          code: 'HD261024-771',
+          date: '2026-10-24',
+          customerName: 'Khách lẻ',
+          customerPhone: '',
+          channel: 'Trực tiếp',
+          items: [
+            {
+              productId: 'SPmvkmt36bxg0q',
+              productName: 'Ốc tròn',
+              sku: 'SKU-9144',
+              color: '',
+              size: '',
+              quantity: 6,
+              sellingPrice: 75000,
+              costPrice: 36000
+            }
+          ],
+          discount: 0,
+          shippingFee: 0,
+          shippingPayer: 'customer',
+          totalAmount: 450000,
+          totalCOGS: 216000,
+          grossProfit: 234000,
+          grossMargin: 0.52,
+          paymentStatus: 'paid',
+          paidAmount: 450000,
+          status: 'completed',
+          notes: '',
+          createdAt: '2026-10-24T15:17:00.812Z',
+          updatedAt: '2026-10-24T15:17:00.812Z'
+        }
+      ],
+      purchases: [
+        {
+          id: 'PNMVKNHJY0',
+          code: 'PN261023-001',
+          date: '2026-10-23',
+          supplier: 'Xưởng Taobao 1688',
+          shippingCost: 90000,
+          otherFee: 0,
+          allocationMethod: 'by_quantity',
+          items: [
+            {
+              productId: 'SPmvj867ve1zc3',
+              productName: 'Đèn retro wellhike',
+              quantity: 5,
+              purchasePrice: 180000,
+              allocatedFeePerUnit: 2000,
+              landedCostPerUnit: 182000,
+              totalCost: 910000
+            },
+            {
+              productId: 'SPmvj8837e2896',
+              productName: 'Đèn wellhike hình lều',
+              quantity: 5,
+              purchasePrice: 180000,
+              allocatedFeePerUnit: 2000,
+              landedCostPerUnit: 182000,
+              totalCost: 910000
+            },
+            {
+              productId: 'SPmvj8bf11dpt8',
+              productName: 'Thoát lầy ngắn',
+              quantity: 3,
+              purchasePrice: 116000,
+              allocatedFeePerUnit: 2000,
+              landedCostPerUnit: 118000,
+              totalCost: 354000
+            },
+            {
+              productId: 'SPmvjaat71p827',
+              productName: 'Tuýp keo dán SUP',
+              quantity: 15,
+              purchasePrice: 10000,
+              allocatedFeePerUnit: 2000,
+              landedCostPerUnit: 12000,
+              totalCost: 180000
+            },
+            {
+              productId: 'SPmvjftkb8ef3y',
+              productName: 'Dây leash',
+              quantity: 10,
+              purchasePrice: 40000,
+              allocatedFeePerUnit: 2000,
+              landedCostPerUnit: 42000,
+              totalCost: 420000
+            },
+            {
+              productId: 'SPmvkk7bruwkdw',
+              productName: 'Bộ van sup',
+              quantity: 8,
+              purchasePrice: 36000,
+              allocatedFeePerUnit: 2000,
+              landedCostPerUnit: 38000,
+              totalCost: 304000
+            }
+          ],
+          totalAmount: 3168000,
+          notes: 'Nhập lô hàng dã ngoại và phụ kiện SUP',
+          createdAt: '2026-10-23T07:30:00.000Z'
+        },
+        {
+          id: 'PNMVKNBOIV',
+          code: 'PN261025-002',
+          date: '2026-10-25',
+          supplier: 'Tổng Kho Sài Gòn',
+          shippingCost: 60000,
+          otherFee: 0,
+          allocationMethod: 'by_quantity',
+          items: [
+            {
+              productId: 'SPmvkkbz1t0mn2',
+              productName: 'Mái chèo 150cm',
+              quantity: 2,
+              purchasePrice: 112000,
+              allocatedFeePerUnit: 1000,
+              landedCostPerUnit: 113000,
+              totalCost: 226000
+            },
+            {
+              productId: 'SPmvkkfxwd9asc',
+              productName: 'Miếng dán SUP',
+              quantity: 50,
+              purchasePrice: 10000,
+              allocatedFeePerUnit: 1000,
+              landedCostPerUnit: 11000,
+              totalCost: 550000
+            },
+            {
+              productId: 'SPmvkkivktwd57',
+              productName: 'Giường gấp gọn',
+              quantity: 2,
+              purchasePrice: 628000,
+              allocatedFeePerUnit: 1000,
+              landedCostPerUnit: 629000,
+              totalCost: 1258000
+            },
+            {
+              productId: 'SPmvkmt36bxg0q',
+              productName: 'Ốc tròn',
+              quantity: 30,
+              purchasePrice: 36000,
+              allocatedFeePerUnit: 1000,
+              landedCostPerUnit: 37000,
+              totalCost: 1110000
+            },
+            {
+              productId: 'SPmvkmuelbdf66',
+              productName: 'Ốc ray trượt',
+              quantity: 40,
+              purchasePrice: 35000,
+              allocatedFeePerUnit: 1000,
+              landedCostPerUnit: 36000,
+              totalCost: 1440000
+            },
+            {
+              productId: 'SPmvkmwpycs2r9',
+              productName: 'Ghế xoay 360',
+              quantity: 2,
+              purchasePrice: 342000,
+              allocatedFeePerUnit: 1000,
+              landedCostPerUnit: 343000,
+              totalCost: 686000
+            }
+          ],
+          totalAmount: 5330000,
+          notes: 'Nhập bổ sung đợt 2',
+          createdAt: '2026-10-25T08:14:00.000Z'
+        }
+      ]
+    };
   }
 
   /**
