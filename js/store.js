@@ -201,28 +201,7 @@ class DataStore {
         }
       }
 
-      // Đảm bảo dữ liệu lịch sử mua bán tháng 10/2026 được phục hồi đầy đủ
-      const restored = this.getRestoredOctoberData();
-      let hasNewRestored = false;
-      const existingSaleIds = new Set(this.state.sales.map(s => s.id));
-      restored.sales.forEach(rs => {
-        this.removeDeletedId('sales', rs.id);
-        if (!existingSaleIds.has(rs.id)) {
-          this.state.sales.push(rs);
-          hasNewRestored = true;
-        }
-      });
-      const existingPoIds = new Set(this.state.purchases.map(p => p.id));
-      restored.purchases.forEach(rp => {
-        this.removeDeletedId('purchases', rp.id);
-        if (!existingPoIds.has(rp.id)) {
-          this.state.purchases.push(rp);
-          hasNewRestored = true;
-        }
-      });
-      if (hasNewRestored || productsRepaired) {
-        this.state.sales.sort(sortByNewest);
-        this.state.purchases.sort(sortByNewest);
+      if (productsRepaired) {
         await this.persistAll();
         if (window.CloudSync && typeof window.CloudSync.triggerAutoPush === 'function') {
           window.CloudSync.triggerAutoPush();
@@ -438,6 +417,7 @@ class DataStore {
     await this.deleteFromStore('products', id);
     this.state.products = this.state.products.filter(p => p.id !== id);
     this.recordDeletedId('products', id);
+    await this.persistAll();
     this.notify();
   }
 
@@ -716,6 +696,7 @@ class DataStore {
     await this.deleteFromStore('purchases', id);
     this.state.purchases = this.state.purchases.filter(p => p.id !== id);
     this.recordDeletedId('purchases', id);
+    await this.persistAll();
     this.notify();
   }
 
@@ -914,6 +895,7 @@ class DataStore {
     await this.deleteFromStore('sales', id);
     this.state.sales = this.state.sales.filter(s => s.id !== id);
     this.recordDeletedId('sales', id);
+    await this.persistAll();
     this.notify();
   }
 
@@ -932,6 +914,7 @@ class DataStore {
 
     await this.putToStore('cashflow', item);
     this.state.cashflow.unshift(item);
+    await this.persistAll();
     this.notify();
     return item;
   }
@@ -940,6 +923,7 @@ class DataStore {
     await this.deleteFromStore('cashflow', id);
     this.state.cashflow = this.state.cashflow.filter(c => c.id !== id);
     this.recordDeletedId('cashflow', id);
+    await this.persistAll();
     this.notify();
   }
 

@@ -370,12 +370,20 @@ class CloudSyncManager {
     const delPo = new Set([...(del.purchases || []), ...(remoteDel.purchases || [])]);
     const delCf = new Set([...(del.cashflow || []), ...(remoteDel.cashflow || [])]);
 
-    // Nếu bản ghi có mặt trong danh sách hợp lệ thì tự động gỡ khỏi danh sách đã xóa (Undelete)
-    const incomingSaleIds = new Set([...(safeLocal.sales || []).map(s => s.id), ...(safeRemote.sales || []).map(s => s.id)]);
-    incomingSaleIds.forEach(id => delSales.delete(id));
+    // Đồng bộ và lưu lại các ID đã xóa (tombstones) từ cả máy này và Cloud
+    if (window.appStore && typeof window.appStore.recordDeletedId === 'function') {
+      delSales.forEach(id => window.appStore.recordDeletedId('sales', id));
+      delPo.forEach(id => window.appStore.recordDeletedId('purchases', id));
+      delProds.forEach(id => window.appStore.recordDeletedId('products', id));
+      delCf.forEach(id => window.appStore.recordDeletedId('cashflow', id));
+    }
 
-    const incomingPoIds = new Set([...(safeLocal.purchases || []).map(p => p.id), ...(safeRemote.purchases || []).map(p => p.id)]);
-    incomingPoIds.forEach(id => delPo.delete(id));
+    result.deletedIds = {
+      products: Array.from(delProds),
+      sales: Array.from(delSales),
+      purchases: Array.from(delPo),
+      cashflow: Array.from(delCf)
+    };
 
     // 1. Trộn sản phẩm (Ghép theo ID, ưu tiên bản ghi có thời gian cập nhật mới hơn)
     const prodMap = new Map();

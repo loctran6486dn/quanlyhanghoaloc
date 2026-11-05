@@ -168,19 +168,6 @@ module.exports = async function handler(req, res) {
         clientData.purchases = [];
         existingData.cashflow = [];
         clientData.cashflow = [];
-      } else {
-        // Tự động gỡ bỏ khỏi deletedIds nếu bản ghi tồn tại trong payload gửi lên (Cơ chế phục hồi / Undelete)
-        const incomingSaleIds = new Set((clientData.sales || []).map(s => s.id));
-        allDeleted.sales = allDeleted.sales.filter(id => !incomingSaleIds.has(id));
-
-        const incomingPoIds = new Set((clientData.purchases || []).map(p => p.id));
-        allDeleted.purchases = allDeleted.purchases.filter(id => !incomingPoIds.has(id));
-
-        const incomingProdIds = new Set((clientData.products || []).map(p => p.id));
-        allDeleted.products = allDeleted.products.filter(id => !incomingProdIds.has(id));
-
-        const incomingCfIds = new Set((clientData.cashflow || []).map(c => c.id));
-        allDeleted.cashflow = allDeleted.cashflow.filter(id => !incomingCfIds.has(id));
       }
 
       const delProds = new Set(allDeleted.products);
