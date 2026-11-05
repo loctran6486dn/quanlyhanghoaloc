@@ -192,6 +192,15 @@ class DataStore {
         this.state.settings = { ...this.state.settings, ...settingsList[0] };
       }
 
+      // Tự động kiểm tra và đồng bộ cấu trúc variants cho mọi sản phẩm cũ
+      let productsRepaired = false;
+      for (const p of this.state.products) {
+        if (this.reconcileProductVariants(p)) {
+          productsRepaired = true;
+          await this.putToStore('products', p);
+        }
+      }
+
       // Đảm bảo dữ liệu lịch sử mua bán tháng 10/2026 được phục hồi đầy đủ
       const restored = this.getRestoredOctoberData();
       let hasNewRestored = false;
@@ -211,7 +220,7 @@ class DataStore {
           hasNewRestored = true;
         }
       });
-      if (hasNewRestored) {
+      if (hasNewRestored || productsRepaired) {
         this.state.sales.sort(sortByNewest);
         this.state.purchases.sort(sortByNewest);
         await this.persistAll();
@@ -357,25 +366,39 @@ class DataStore {
       ? product.sizes.map(s => String(s).trim()).filter(Boolean)
       : (product.sizes ? String(product.sizes).split(',').map(s => s.trim()).filter(Boolean) : []);
 
-    // Nếu có variants thì tự động đồng bộ colors và sizes từ variants
+    let finalStock = Number(product.stock || 0);
+
+    // Luôn đảm bảo sản phẩm có cấu trúc variants chuẩn
+    if (cleanedVariants.length === 0) {
+      if (cleanedColors.length > 0) {
+        cleanedVariants = cleanedColors.map((c, idx) => ({
+          model: '',
+          color: c.name || '',
+          size: (cleanedSizes && cleanedSizes[idx]) || (cleanedSizes && cleanedSizes[0]) || '',
+          quantity: Number(c.quantity || 0)
+        }));
+      } else {
+        cleanedVariants = [{
+          model: '',
+          color: '',
+          size: '',
+          quantity: finalStock
+        }];
+      }
+    }
+
+    // Tự động đồng bộ colors, sizes và finalStock từ variants
     if (cleanedVariants.length > 0) {
+      finalStock = cleanedVariants.reduce((sum, v) => sum + v.quantity, 0);
       const colorMap = new Map();
       const sizeSet = new Set();
       cleanedVariants.forEach(v => {
-        const cName = v.color || v.model || 'Mặc định';
+        const cName = (v.color || v.model || 'Mặc định').trim();
         colorMap.set(cName, (colorMap.get(cName) || 0) + v.quantity);
-        if (v.size) sizeSet.add(v.size);
+        if (v.size && String(v.size).trim()) sizeSet.add(String(v.size).trim());
       });
       cleanedColors = Array.from(colorMap.entries()).map(([name, quantity]) => ({ name, quantity }));
       cleanedSizes = Array.from(sizeSet);
-    }
-
-    // Nếu có danh sách phân loại (variants hoặc colors), tồn kho sẽ tự động đồng bộ
-    let finalStock = Number(product.stock || 0);
-    if (cleanedVariants.length > 0) {
-      finalStock = cleanedVariants.reduce((sum, v) => sum + v.quantity, 0);
-    } else if (cleanedColors.length > 0) {
-      finalStock = cleanedColors.reduce((sum, c) => sum + c.quantity, 0);
     }
 
     const item = {
@@ -420,6 +443,190 @@ class DataStore {
 
   getProductById(id) {
     return this.state.products.find(p => p.id === id);
+  }
+
+  /**
+   * Cân chỉnh và tự sửa lỗi variants để tổng số lượng phân loại luôn bằng tồn kho của sản phẩm
+   */
+  reconcileProductVariants(prod) {
+    if (!prod) return false;
+    let modified = false;
+    const stock = Number(prod.stock || 0);
+    prod.stock = stock;
+
+    if (!Array.isArray(prod.variants)) {
+      prod.variants = [];
+      modified = true;
+    }
+
+    if (prod.variants.length === 0) {
+      if (Array.isArray(prod.colors) && prod.colors.length > 0) {
+        const sizes = Array.isArray(prod.sizes) ? prod.sizes : [];
+        prod.variants = prod.colors.map((c, idx) => ({
+          model: '',
+          color: c.name || '',
+          size: sizes[idx] || sizes[0] || '',
+          quantity: Number(c.quantity || 0)
+        }));
+        modified = true;
+      } else {
+        prod.variants = [{
+          model: '',
+          color: '',
+          size: '',
+          quantity: stock
+        }];
+        modified = true;
+      }
+    }
+
+    const currentSum = prod.variants.reduce((sum, v) => sum + Number(v.quantity || 0), 0);
+    if (currentSum !== stock) {
+      modified = true;
+      if (prod.variants.length === 1) {
+        prod.variants[0].quantity = stock;
+      } else if (stock > currentSum) {
+        prod.variants[0].quantity = Number(prod.variants[0].quantity || 0) + (stock - currentSum);
+      } else {
+        let diff = currentSum - stock;
+        for (let i = prod.variants.length - 1; i >= 0 && diff > 0; i--) {
+          const curQ = Number(prod.variants[i].quantity || 0);
+          const deduct = Math.min(curQ, diff);
+          prod.variants[i].quantity = curQ - deduct;
+          diff -= deduct;
+        }
+      }
+    }
+
+    // Luôn đồng bộ lại colors và sizes cho tương thích ngược
+    const colorMap = new Map();
+    const sizeSet = new Set();
+    prod.variants.forEach(v => {
+      const cName = (v.color || v.model || 'Mặc định').trim();
+      colorMap.set(cName, (colorMap.get(cName) || 0) + Number(v.quantity || 0));
+      if (v.size && String(v.size).trim()) {
+        sizeSet.add(String(v.size).trim());
+      }
+    });
+    prod.colors = Array.from(colorMap.entries()).map(([name, quantity]) => ({ name, quantity }));
+    prod.sizes = Array.from(sizeSet);
+
+    return modified;
+  }
+
+  /**
+   * Áp dụng biến động số lượng (nhập hàng + / bán hàng -) vào các dòng phân loại (variants)
+   */
+  applyVariantStockDelta(prod, it, deltaQty) {
+    if (!prod || !deltaQty) return;
+
+    if (!Array.isArray(prod.variants)) {
+      prod.variants = [];
+    }
+
+    if (prod.variants.length === 0 && Array.isArray(prod.colors) && prod.colors.length > 0) {
+      const sizes = Array.isArray(prod.sizes) ? prod.sizes : [];
+      prod.variants = prod.colors.map((c, idx) => ({
+        model: '',
+        color: c.name || '',
+        size: sizes[idx] || sizes[0] || '',
+        quantity: Number(c.quantity || 0)
+      }));
+    }
+
+    const itColor = (it.color || '').trim();
+    const itSize = String(it.size || '').trim();
+    const targetColor = itColor.toLowerCase();
+    const targetSize = itSize.toLowerCase();
+
+    let vObj = null;
+
+    if (prod.variants.length === 0) {
+      vObj = {
+        model: '',
+        color: itColor,
+        size: itSize,
+        quantity: Math.max(0, Number(prod.stock || 0))
+      };
+      prod.variants.push(vObj);
+    } else {
+      // 1. Tìm variant khớp chính xác cả màu và size
+      vObj = prod.variants.find(v => {
+        const vColor = (v.color || '').trim().toLowerCase();
+        const vSize = String(v.size || '').trim().toLowerCase();
+        return vColor === targetColor && vSize === targetSize;
+      });
+
+      // 2. Nếu không khớp chính xác và phiếu không chọn màu/size
+      if (!vObj && !targetColor && !targetSize) {
+        if (prod.variants.length === 1) {
+          vObj = prod.variants[0];
+        } else {
+          vObj = prod.variants.find(v => !(v.color || '').trim() && !(v.size || '').trim()) || prod.variants[0];
+        }
+      }
+
+      // 3. Nếu phiếu có nhập màu hoặc size nhưng sản phẩm chưa có dòng khớp
+      if (!vObj && (targetColor || targetSize)) {
+        if (prod.variants.length === 1 && !(prod.variants[0].color || '').trim() && !(prod.variants[0].size || '').trim()) {
+          prod.variants[0].color = itColor;
+          prod.variants[0].size = itSize;
+          vObj = prod.variants[0];
+        } else if (deltaQty > 0) {
+          vObj = {
+            model: '',
+            color: itColor,
+            size: itSize,
+            quantity: 0
+          };
+          prod.variants.push(vObj);
+        } else {
+          vObj = prod.variants.find(v => targetColor && (v.color || '').trim().toLowerCase() === targetColor)
+            || prod.variants.find(v => targetSize && String(v.size || '').trim().toLowerCase() === targetSize)
+            || prod.variants[0];
+        }
+      }
+
+      if (vObj) {
+        vObj.quantity = Math.max(0, Number(vObj.quantity || 0) + deltaQty);
+      }
+    }
+
+    // Đảm bảo tổng variants luôn khớp chính xác với prod.stock
+    const vSum = prod.variants.reduce((sum, v) => sum + Number(v.quantity || 0), 0);
+    const pStock = Number(prod.stock || 0);
+    if (vSum !== pStock) {
+      if (prod.variants.length === 1) {
+        prod.variants[0].quantity = pStock;
+      } else if (pStock > vSum) {
+        if (vObj) {
+          vObj.quantity = Number(vObj.quantity || 0) + (pStock - vSum);
+        } else {
+          prod.variants[0].quantity = Number(prod.variants[0].quantity || 0) + (pStock - vSum);
+        }
+      } else {
+        let diff = vSum - pStock;
+        for (let i = prod.variants.length - 1; i >= 0 && diff > 0; i--) {
+          const curQ = Number(prod.variants[i].quantity || 0);
+          const deduct = Math.min(curQ, diff);
+          prod.variants[i].quantity = curQ - deduct;
+          diff -= deduct;
+        }
+      }
+    }
+
+    // Đồng bộ lại colors và sizes
+    const colorMap = new Map();
+    const sizeSet = new Set();
+    prod.variants.forEach(v => {
+      const cName = (v.color || v.model || 'Mặc định').trim();
+      colorMap.set(cName, (colorMap.get(cName) || 0) + Number(v.quantity || 0));
+      if (v.size && String(v.size).trim()) {
+        sizeSet.add(String(v.size).trim());
+      }
+    });
+    prod.colors = Array.from(colorMap.entries()).map(([name, quantity]) => ({ name, quantity }));
+    prod.sizes = Array.from(sizeSet);
   }
 
   // =================== CÁC THAO TÁC NHẬP HÀNG (INBOUND) ===================
@@ -476,35 +683,8 @@ class DataStore {
         prod.stock = newStock;
         prod.costPrice = newAverageCost;
 
-        // Cập nhật tồn kho màu sắc tương ứng (nếu có)
-        if (it.color) {
-          if (!Array.isArray(prod.colors)) prod.colors = [];
-          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
-          if (colorObj) {
-            colorObj.quantity = Number(colorObj.quantity || 0) + addedQty;
-          } else {
-            prod.colors.push({ name: it.color, quantity: addedQty });
-          }
-        }
-
-        // Cập nhật kích cỡ vào danh sách size sản phẩm (nếu có size mới)
-        if (it.size) {
-          if (!Array.isArray(prod.sizes)) prod.sizes = [];
-          if (!prod.sizes.some(s => String(s).toLowerCase() === String(it.size).toLowerCase())) {
-            prod.sizes.push(it.size);
-          }
-        }
-
-        // Cập nhật biến thể variants tương ứng (nếu có)
-        if (Array.isArray(prod.variants) && (it.color || it.size)) {
-          const vObj = prod.variants.find(v => 
-            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
-            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
-          );
-          if (vObj) {
-            vObj.quantity = Number(vObj.quantity || 0) + addedQty;
-          }
-        }
+        // Cập nhật tăng tồn kho phân loại variants tương ứng
+        this.applyVariantStockDelta(prod, it, addedQty);
 
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
@@ -525,22 +705,9 @@ class DataStore {
     for (const it of purchase.items || []) {
       const prod = this.getProductById(it.productId);
       if (prod) {
-        prod.stock = Math.max(0, Number(prod.stock || 0) - Number(it.quantity || 0));
-        if (it.color && Array.isArray(prod.colors)) {
-          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
-          if (colorObj) {
-            colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
-          }
-        }
-        if (Array.isArray(prod.variants) && (it.color || it.size)) {
-          const vObj = prod.variants.find(v => 
-            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
-            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
-          );
-          if (vObj) {
-            vObj.quantity = Math.max(0, Number(vObj.quantity || 0) - Number(it.quantity || 0));
-          }
-        }
+        const deductQty = Number(it.quantity || 0);
+        prod.stock = Math.max(0, Number(prod.stock || 0) - deductQty);
+        this.applyVariantStockDelta(prod, it, -deductQty);
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -601,26 +768,13 @@ class DataStore {
       createdAt: new Date().toISOString()
     };
 
-    // Trừ tồn kho sản phẩm & màu sắc tương ứng
+    // Trừ tồn kho sản phẩm & phân loại tương ứng
     for (const it of enrichedItems) {
       const prod = this.getProductById(it.productId);
       if (prod) {
-        prod.stock = Math.max(0, Number(prod.stock || 0) - Number(it.quantity || 0));
-        if (it.color && Array.isArray(prod.colors)) {
-          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
-          if (colorObj) {
-            colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
-          }
-        }
-        if (Array.isArray(prod.variants) && (it.color || it.size)) {
-          const vObj = prod.variants.find(v => 
-            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
-            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
-          );
-          if (vObj) {
-            vObj.quantity = Math.max(0, Number(vObj.quantity || 0) - Number(it.quantity || 0));
-          }
-        }
+        const deductQty = Number(it.quantity || 0);
+        prod.stock = Math.max(0, Number(prod.stock || 0) - deductQty);
+        this.applyVariantStockDelta(prod, it, -deductQty);
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -668,20 +822,9 @@ class DataStore {
     for (const it of oldSale.items || []) {
       const prod = this.getProductById(it.productId);
       if (prod) {
-        prod.stock = Number(prod.stock || 0) + Number(it.quantity || 0);
-        if (it.color && Array.isArray(prod.colors)) {
-          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
-          if (colorObj) colorObj.quantity = Number(colorObj.quantity || 0) + Number(it.quantity || 0);
-        }
-        if (Array.isArray(prod.variants) && (it.color || it.size)) {
-          const vObj = prod.variants.find(v => 
-            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
-            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
-          );
-          if (vObj) {
-            vObj.quantity = Number(vObj.quantity || 0) + Number(it.quantity || 0);
-          }
-        }
+        const revertQty = Number(it.quantity || 0);
+        prod.stock = Number(prod.stock || 0) + revertQty;
+        this.applyVariantStockDelta(prod, it, revertQty);
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -715,22 +858,9 @@ class DataStore {
     for (const it of enrichedItems) {
       const prod = this.getProductById(it.productId);
       if (prod) {
-        prod.stock = Math.max(0, Number(prod.stock || 0) - Number(it.quantity || 0));
-        if (it.color && Array.isArray(prod.colors)) {
-          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
-          if (colorObj) {
-            colorObj.quantity = Math.max(0, Number(colorObj.quantity || 0) - Number(it.quantity || 0));
-          }
-        }
-        if (Array.isArray(prod.variants) && (it.color || it.size)) {
-          const vObj = prod.variants.find(v => 
-            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
-            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
-          );
-          if (vObj) {
-            vObj.quantity = Math.max(0, Number(vObj.quantity || 0) - Number(it.quantity || 0));
-          }
-        }
+        const deductQty = Number(it.quantity || 0);
+        prod.stock = Math.max(0, Number(prod.stock || 0) - deductQty);
+        this.applyVariantStockDelta(prod, it, -deductQty);
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }
@@ -769,26 +899,13 @@ class DataStore {
     const sale = this.state.sales.find(s => s.id === id);
     if (!sale) return;
 
-    // Hoàn trả lại tồn kho sản phẩm & màu sắc
+    // Hoàn trả lại tồn kho sản phẩm & phân loại
     for (const it of sale.items || []) {
       const prod = this.getProductById(it.productId);
       if (prod) {
-        prod.stock = Number(prod.stock || 0) + Number(it.quantity || 0);
-        if (it.color && Array.isArray(prod.colors)) {
-          const colorObj = prod.colors.find(c => c.name.toLowerCase() === it.color.toLowerCase());
-          if (colorObj) {
-            colorObj.quantity = Number(colorObj.quantity || 0) + Number(it.quantity || 0);
-          }
-        }
-        if (Array.isArray(prod.variants) && (it.color || it.size)) {
-          const vObj = prod.variants.find(v => 
-            (!it.color || v.color.toLowerCase() === it.color.toLowerCase()) &&
-            (!it.size || String(v.size).toLowerCase() === String(it.size).toLowerCase())
-          );
-          if (vObj) {
-            vObj.quantity = Number(vObj.quantity || 0) + Number(it.quantity || 0);
-          }
-        }
+        const revertQty = Number(it.quantity || 0);
+        prod.stock = Number(prod.stock || 0) + revertQty;
+        this.applyVariantStockDelta(prod, it, revertQty);
         prod.updatedAt = new Date().toISOString();
         await this.putToStore('products', prod);
       }

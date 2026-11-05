@@ -158,6 +158,9 @@ class CloudSyncManager {
         if (localState) {
           // Trộn dữ liệu thông minh không làm mất đơn hàng hay hàng hóa của cả 2 máy
           const mergedState = this.smartMerge(localState, remoteData);
+          if (window.appStore && typeof window.appStore.reconcileProductVariants === 'function') {
+            (mergedState.products || []).forEach(p => window.appStore.reconcileProductVariants(p));
+          }
           window.appStore.state = mergedState;
 
           // Lưu vào bộ nhớ cục bộ IndexedDB & LocalStorage
@@ -263,6 +266,9 @@ class CloudSyncManager {
           const serverData = this.parseStoreData(resJson.data);
           if (serverData && Array.isArray(serverData.products)) {
             const mergedWithServer = this.smartMerge(window.appStore.state, serverData);
+            if (window.appStore && typeof window.appStore.reconcileProductVariants === 'function') {
+              (mergedWithServer.products || []).forEach(p => window.appStore.reconcileProductVariants(p));
+            }
             window.appStore.state = mergedWithServer;
             if (typeof window.appStore.persistAll === 'function') {
               await window.appStore.persistAll();

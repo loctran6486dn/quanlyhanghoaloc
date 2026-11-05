@@ -1067,8 +1067,8 @@ const MobileApp = {
     const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
     if (!container) return;
 
-    // Nếu người dùng không nhập Mẫu nhưng dòng trước đó có Mẫu, gợi ý lấy Mẫu của dòng trước
-    if (!model) {
+    // Nếu người dùng không nhập Mẫu nhưng dòng trước đó có Mẫu khi bấm thêm dòng thủ công, gợi ý lấy Mẫu của dòng trước
+    if (!model && autoScroll) {
       const prevRows = container.querySelectorAll('.variant-row');
       if (prevRows.length > 0) {
         const lastModel = prevRows[prevRows.length - 1].querySelector('.variant-model-input')?.value || '';
@@ -1963,16 +1963,44 @@ const MobileApp = {
       const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
       if (container) {
         container.innerHTML = '';
-        if (product && Array.isArray(product.variants) && product.variants.length > 0) {
-          product.variants.forEach(v => {
-            MobileApp.addVariantRow(v.model || '', v.color || '', v.size || '', v.quantity !== undefined ? v.quantity : 1);
+        if (product) {
+          // Luôn đảm bảo variants được đối soát chuẩn xác với product.stock hiện thời
+          let variantsToRender = [];
+          if (Array.isArray(product.variants) && product.variants.length > 0) {
+            variantsToRender = JSON.parse(JSON.stringify(product.variants));
+          } else if (Array.isArray(product.colors) && product.colors.length > 0) {
+            variantsToRender = product.colors.map((c, idx) => ({
+              model: '',
+              color: c.name || '',
+              size: (product.sizes && product.sizes[idx]) || (product.sizes && product.sizes[0]) || '',
+              quantity: Number(c.quantity || 0)
+            }));
+          }
+
+          if (variantsToRender.length === 0) {
+            variantsToRender.push({
+              model: '',
+              color: '',
+              size: '',
+              quantity: Number(product.stock || 0)
+            });
+          }
+
+          // Kiểm tra nếu tổng phân loại khác với product.stock thì tự động cân chỉnh
+          const currentSum = variantsToRender.reduce((s, v) => s + Number(v.quantity || 0), 0);
+          const targetStock = Number(product.stock || 0);
+          if (currentSum !== targetStock) {
+            if (variantsToRender.length === 1) {
+              variantsToRender[0].quantity = targetStock;
+            } else if (targetStock > currentSum) {
+              variantsToRender[0].quantity = Number(variantsToRender[0].quantity || 0) + (targetStock - currentSum);
+            }
+          }
+
+          variantsToRender.forEach(v => {
+            MobileApp.addVariantRow(v.model || '', v.color || '', v.size || '', v.quantity !== undefined ? v.quantity : 0);
           });
-        } else if (product && Array.isArray(product.colors) && product.colors.length > 0) {
-          product.colors.forEach((c, idx) => {
-            const sizeVal = (product.sizes && product.sizes[idx]) || (product.sizes && product.sizes[0]) || '';
-            MobileApp.addVariantRow('', c.name, sizeVal, c.quantity);
-          });
-        } else if (!product) {
+        } else {
           // Khi thêm hàng mới: luôn hiển thị mặc định 1 hàng để điền Mẫu Hàng, Màu Sắc, Size, Số Lượng
           MobileApp.addVariantRow('', '', '', 1);
         }
@@ -2092,7 +2120,9 @@ const MobileApp = {
       }
 
       let variantsBreakdownHtml = '';
-      if (Array.isArray(p.variants) && p.variants.length > 0) {
+      const hasDistinctVariants = Array.isArray(p.variants) && p.variants.length > 0 &&
+        (p.variants.length > 1 || p.variants.some(v => (v.model || '').trim() || (v.color || '').trim() || (v.size || '').trim()));
+      if (hasDistinctVariants) {
         variantsBreakdownHtml = `
           <div class="prod-variants-breakdown" style="margin-top: 8px;">
             <div style="color: #6d28d9; font-weight: 700; margin-bottom: 5px; font-size: 11px;">Phân loại chi tiết (Mẫu • Màu • Size • Tồn):</div>
