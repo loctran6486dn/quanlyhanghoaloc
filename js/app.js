@@ -41,6 +41,7 @@ const MobileApp = {
   currentProductImages: [],
   activeImageViewerList: [],
   activeImageViewerIndex: 0,
+  isPoTotalWeightManuallyEdited: false,
 
   /**
    * Tính toán khoảng thời gian chuẩn xác theo giờ địa phương (tránh lỗi UTC lệch ngày)
@@ -2365,22 +2366,29 @@ const MobileApp = {
 
     // Nút tự động tính tổng khối lượng từ các dòng món hàng
     document.getElementById('btnAutoCalcWeight')?.addEventListener('click', () => {
-      const rows = document.querySelectorAll('#purchaseItemsContainer .mobile-item-row');
-      let sumWeight = 0;
-      rows.forEach(row => {
-        const qty = parseFloat(row.querySelector('.po-qty-input')?.value) || 0;
-        const weight = parseFloat(row.querySelector('.po-weight-input')?.value) || 0;
-        sumWeight += (qty * weight);
-      });
-      const weightInput = document.getElementById('poTotalWeight');
-      if (weightInput) {
-        weightInput.value = Number(sumWeight.toFixed(2));
-      }
+      this.isPoTotalWeightManuallyEdited = false;
       this.updatePurchaseLiveCalc();
-      this.showToast(`Đã tính tổng khối lượng: ${sumWeight.toFixed(2)} kg`);
+      const weightInput = document.getElementById('poTotalWeight');
+      const sumWeight = weightInput ? weightInput.value : '0';
+      this.showToast(`Đã tính tổng khối lượng: ${sumWeight} kg`);
     });
 
-    ['poPricePerKg', 'poTotalWeight', 'poShippingCost'].forEach(id => {
+    const poTotalWeightEl = document.getElementById('poTotalWeight');
+    if (poTotalWeightEl) {
+      const handleWeightInput = () => {
+        const val = poTotalWeightEl.value.trim();
+        if (val === '') {
+          this.isPoTotalWeightManuallyEdited = false;
+        } else {
+          this.isPoTotalWeightManuallyEdited = true;
+        }
+        this.updatePurchaseLiveCalc();
+      };
+      poTotalWeightEl.addEventListener('input', handleWeightInput);
+      poTotalWeightEl.addEventListener('change', handleWeightInput);
+    }
+
+    ['poPricePerKg', 'poShippingCost'].forEach(id => {
       document.getElementById(id)?.addEventListener('input', () => this.updatePurchaseLiveCalc());
       document.getElementById(id)?.addEventListener('change', () => this.updatePurchaseLiveCalc());
     });
@@ -2492,6 +2500,7 @@ const MobileApp = {
       }
 
       setVal('poNotes', '');
+      this.isPoTotalWeightManuallyEdited = false;
 
       const container = document.getElementById('purchaseItemsContainer');
       if (container) {
@@ -2786,8 +2795,14 @@ const MobileApp = {
     });
 
     priceInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
+    priceInput.addEventListener('change', () => this.updatePurchaseLiveCalc());
     qtyInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
+    qtyInput.addEventListener('change', () => this.updatePurchaseLiveCalc());
     weightInput.addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+      this.updatePurchaseLiveCalc();
+    });
+    weightInput.addEventListener('change', (e) => {
       e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
       this.updatePurchaseLiveCalc();
     });
@@ -2824,9 +2839,25 @@ const MobileApp = {
     const pricePerKg = Calculations.parseDecimal(document.getElementById('poPricePerKg')?.value, 0);
 
     rows.forEach(row => {
-      const qty = parseFloat(row.querySelector('.po-qty-input')?.value) || 0;
+      const prodSelect = row.querySelector('.po-product-select');
+      const prodId = prodSelect ? prodSelect.value : '';
+
+      const qty = Calculations.parseDecimal(row.querySelector('.po-qty-input')?.value, 0);
       const price = Calculations.parseDecimal(row.querySelector('.po-price-input')?.value, 0);
       const weight = Calculations.parseDecimal(row.querySelector('.po-weight-input')?.value, 0);
+
+      // Nếu dòng chưa chọn sản phẩm thì chưa cộng vào tổng tiền và tổng khối lượng cả gói
+      if (!prodId) {
+        const totalEl = row.querySelector('.po-line-total');
+        if (totalEl) totalEl.textContent = '0 đ';
+
+        const weightEl = row.querySelector('.po-item-total-weight');
+        if (weightEl) weightEl.textContent = '0 kg';
+
+        const landedEl = row.querySelector('.po-line-landed-preview');
+        if (landedEl) landedEl.textContent = 'Sau ship: 0 đ/cái';
+        return;
+      }
 
       const lineTotal = qty * price;
       const lineWeight = qty * weight;
@@ -2854,23 +2885,50 @@ const MobileApp = {
     let totalWeight = sumWeight;
 
     if (shipType === 'by_weight') {
-      const currentEntered = weightInput ? weightInput.value.trim() : '';
-      if (weightInput && (currentEntered === '0' || currentEntered === '')) {
-        weightInput.value = Number(sumWeight.toFixed(2));
+      const enteredStr = weightInput ? weightInput.value.trim() : '';
+      if (!this.isPoTotalWeightManuallyEdited || enteredStr === '') {
+        if (weightInput) {
+          weightInput.value = Number(sumWeight.toFixed(2));
+        }
+        totalWeight = sumWeight;
+        if (enteredStr === '') {
+          this.isPoTotalWeightManuallyEdited = false;
+        }
+      } else {
+        totalWeight = Calculations.parseDecimal(weightInput?.value, sumWeight);
       }
-      totalWeight = Calculations.parseDecimal(weightInput?.value, sumWeight);
       const autoShipCost = Math.round(totalWeight * pricePerKg);
       const costInput = document.getElementById('poShippingCost');
       if (costInput) costInput.value = autoShipCost;
+    } else {
+      const enteredStr = weightInput ? weightInput.value.trim() : '';
+      if (!this.isPoTotalWeightManuallyEdited || enteredStr === '') {
+        if (weightInput) {
+          weightInput.value = Number(sumWeight.toFixed(2));
+        }
+        totalWeight = sumWeight;
+        if (enteredStr === '') {
+          this.isPoTotalWeightManuallyEdited = false;
+        }
+      } else {
+        totalWeight = Calculations.parseDecimal(weightInput?.value, sumWeight);
+      }
     }
 
     const shipping = Calculations.parseDecimal(document.getElementById('poShippingCost')?.value, 0);
     const total = subtotal + shipping;
 
-    document.getElementById('poPreviewSubtotal').textContent = Calculations.formatCurrency(subtotal);
-    document.getElementById('poPreviewWeight').textContent = `${Number(totalWeight.toFixed(2))} kg`;
-    document.getElementById('poPreviewShipping').textContent = Calculations.formatCurrency(shipping);
-    document.getElementById('poPreviewTotal').textContent = Calculations.formatCurrency(total);
+    const elSubtotal = document.getElementById('poPreviewSubtotal');
+    if (elSubtotal) elSubtotal.textContent = Calculations.formatCurrency(subtotal);
+
+    const elWeight = document.getElementById('poPreviewWeight');
+    if (elWeight) elWeight.textContent = `${Number(totalWeight.toFixed(2))} kg`;
+
+    const elShipping = document.getElementById('poPreviewShipping');
+    if (elShipping) elShipping.textContent = Calculations.formatCurrency(shipping);
+
+    const elTotal = document.getElementById('poPreviewTotal');
+    if (elTotal) elTotal.textContent = Calculations.formatCurrency(total);
   },
 
   renderPurchases() {
