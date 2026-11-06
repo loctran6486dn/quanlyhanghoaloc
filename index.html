@@ -858,11 +858,11 @@
             <div class="form-row">
               <div class="form-group">
                 <label>Giảm giá (VNĐ):</label>
-                <input type="number" id="saleDiscount" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
+                <input type="text" id="saleDiscount" class="form-control" value="0" placeholder="0" inputmode="numeric">
               </div>
               <div class="form-group">
                 <label>Tiền ship giao:</label>
-                <input type="number" id="saleShippingFee" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
+                <input type="text" id="saleShippingFee" class="form-control" value="0" placeholder="0" inputmode="numeric">
               </div>
             </div>
 
@@ -885,8 +885,8 @@
                 </select>
               </div>
               <div class="form-group" id="divPaidAmount" style="display: none; margin-bottom: 0;">
-                <label>Tiền khách cọc:</label>
-                <input type="number" id="salePaidAmount" class="form-control" value="0" min="0" inputmode="numeric" placeholder="Nhập số tiền cọc">
+                <label>Tiền khách cọc (VNĐ):</label>
+                <input type="text" id="salePaidAmount" class="form-control" value="0" placeholder="VD: 100.000" inputmode="numeric">
               </div>
             </div>
           </div>
@@ -999,7 +999,7 @@
               </div>
               <div class="form-group" id="divPoPricePerKg">
                 <label>Giá ship mỗi kg (VNĐ):</label>
-                <input type="number" id="poPricePerKg" class="form-control" value="30000" min="0" placeholder="VD: 30000" inputmode="numeric">
+                <input type="text" id="poPricePerKg" class="form-control" value="30.000" placeholder="VD: 30.000" inputmode="numeric">
               </div>
             </div>
 
@@ -1014,7 +1014,7 @@
               </div>
               <div class="form-group" style="margin-bottom: 0;">
                 <label>Tiền ship về kho (VNĐ):</label>
-                <input type="number" id="poShippingCost" class="form-control" value="0" min="0" placeholder="0" inputmode="numeric">
+                <input type="text" id="poShippingCost" class="form-control" value="0" placeholder="0" inputmode="numeric">
               </div>
             </div>
           </div>
@@ -1117,11 +1117,11 @@
             <div class="form-row" style="margin-bottom: 0;">
               <div class="form-group" style="margin-bottom: 0;">
                 <label>Giá vốn ước tính (VNĐ):</label>
-                <input type="number" id="prodCostPrice" class="form-control" value="0" min="0" inputmode="numeric">
+                <input type="text" id="prodCostPrice" class="form-control" value="0" placeholder="0" inputmode="numeric">
               </div>
               <div class="form-group" style="margin-bottom: 0;">
                 <label>Giá bán niêm yết (VNĐ): <span style="color: red;">*</span></label>
-                <input type="number" id="prodSellingPrice" class="form-control" placeholder="0" min="0" required inputmode="numeric">
+                <input type="text" id="prodSellingPrice" class="form-control" placeholder="0" required inputmode="numeric">
               </div>
             </div>
           </div>
@@ -1270,7 +1270,7 @@
             </div>
             <div class="form-group">
               <label>Số tiền (VNĐ): <span style="color: red;">*</span></label>
-              <input type="number" id="cfAmount" class="form-control" placeholder="0" min="1000" required inputmode="numeric" style="font-size: 18px; font-weight: 800; color: #be123c;">
+              <input type="text" id="cfAmount" class="form-control" placeholder="0" required inputmode="numeric" style="font-size: 18px; font-weight: 800; color: #be123c;">
             </div>
 
             <div class="form-group" style="margin-bottom: 0;">
@@ -1859,11 +1859,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=7.0"></script>
-  <script src="js/cloud-sync.js?v=7.0"></script>
-  <script src="js/store.js?v=7.0"></script>
-  <script src="js/export.js?v=7.0"></script>
-  <script src="js/charts.js?v=7.0"></script>
-  <script src="js/app.js?v=7.0"></script>
+  <script src="js/calculations.js?v=7.1"></script>
+  <script src="js/cloud-sync.js?v=7.1"></script>
+  <script src="js/store.js?v=7.1"></script>
+  <script src="js/export.js?v=7.1"></script>
+  <script src="js/charts.js?v=7.1"></script>
+  <script src="js/app.js?v=7.1"></script>
 </body>
 </html>

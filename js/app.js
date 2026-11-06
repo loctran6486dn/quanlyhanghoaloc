@@ -104,6 +104,7 @@ const MobileApp = {
     });
 
     this.loadStoreSettings();
+    this.initCurrencyInputs();
     this.renderCurrentView();
 
     // Gợi ý demo nếu trống
@@ -112,6 +113,75 @@ const MobileApp = {
         this.showToast('Chào bạn! Vào Cài Đặt để nạp Dữ liệu mẫu trải nghiệm ngay.', 'info');
       }, 600);
     }
+  },
+
+  /* =================== TỰ ĐỘNG PHÂN TÁCH HÀNG NGHÌN DẤU CHẤM (VNĐ) =================== */
+  bindCurrencyInput(inputOrId, onUpdate = null) {
+    const input = typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+    if (!input || input.__currencyBound) return;
+    input.__currencyBound = true;
+
+    // Đảm bảo type="text" và inputmode="numeric" để bật bàn phím số chuẩn trên mobile
+    input.type = 'text';
+    input.setAttribute('inputmode', 'numeric');
+
+    const handleFormat = () => {
+      const cursor = input.selectionStart;
+      const res = Calculations.formatCurrencyInput(input.value, cursor);
+      if (input.value !== res.value) {
+        input.value = res.value;
+        try {
+          input.setSelectionRange(res.cursor, res.cursor);
+        } catch (_) {}
+      }
+      if (typeof onUpdate === 'function') {
+        onUpdate(input);
+      }
+    };
+
+    input.addEventListener('input', handleFormat);
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Backspace' && input.selectionStart === input.selectionEnd) {
+        const pos = input.selectionStart;
+        if (pos > 0 && input.value[pos - 1] === '.') {
+          e.preventDefault();
+          const val = input.value;
+          const newVal = val.slice(0, pos - 2) + val.slice(pos);
+          const res = Calculations.formatCurrencyInput(newVal, pos - 2);
+          input.value = res.value;
+          try {
+            input.setSelectionRange(res.cursor, res.cursor);
+          } catch (_) {}
+          if (typeof onUpdate === 'function') {
+            onUpdate(input);
+          }
+        }
+      }
+    });
+
+    if (input.value && input.value.trim() !== '') {
+      const res = Calculations.formatCurrencyInput(input.value);
+      input.value = res.value;
+    }
+  },
+
+  initCurrencyInputs() {
+    // 1. Modal Thêm/Sửa Sản Phẩm
+    this.bindCurrencyInput('prodCostPrice');
+    this.bindCurrencyInput('prodSellingPrice');
+
+    // 2. Modal Phiếu Nhập Hàng
+    this.bindCurrencyInput('poPricePerKg', () => this.updatePurchaseLiveCalc());
+    this.bindCurrencyInput('poShippingCost', () => this.updatePurchaseLiveCalc());
+
+    // 3. Modal Đơn Bán Hàng
+    this.bindCurrencyInput('saleDiscount', () => this.updateSaleLiveCalc());
+    this.bindCurrencyInput('saleShippingFee', () => this.updateSaleLiveCalc());
+    this.bindCurrencyInput('salePaidAmount', () => this.updateSaleLiveCalc());
+
+    // 4. Modal Sổ Quỹ Thu Chi
+    this.bindCurrencyInput('cfAmount');
   },
 
   /* =================== TOAST THÔNG BÁO =================== */
@@ -841,8 +911,8 @@ const MobileApp = {
       const category = document.getElementById('prodCategory').value.trim();
       const unit = document.getElementById('prodUnit').value.trim();
       const weight = Calculations.parseDecimal(document.getElementById('prodWeight').value, 0.2);
-      const costPrice = Calculations.parseDecimal(document.getElementById('prodCostPrice').value, 0);
-      const sellingPrice = Calculations.parseDecimal(document.getElementById('prodSellingPrice').value, 0);
+      const costPrice = Calculations.parseCurrency(document.getElementById('prodCostPrice').value, 0);
+      const sellingPrice = Calculations.parseCurrency(document.getElementById('prodSellingPrice').value, 0);
       const minStock = parseInt(document.getElementById('prodMinStock').value, 10) || 0;
       const notes = document.getElementById('prodNotes').value.trim();
 
@@ -1978,8 +2048,8 @@ const MobileApp = {
       setVal('prodCategory', product ? product.category : '');
       setVal('prodUnit', product ? product.unit : 'Cái');
       setVal('prodWeight', product && product.weight !== undefined ? product.weight : 0.2);
-      setVal('prodCostPrice', product ? product.costPrice : 0);
-      setVal('prodSellingPrice', product ? product.sellingPrice : '');
+      setVal('prodCostPrice', product ? Calculations.formatNumber(product.costPrice) : '0');
+      setVal('prodSellingPrice', product && product.sellingPrice ? Calculations.formatNumber(product.sellingPrice) : '');
       setVal('prodStock', product ? product.stock : 0);
       setVal('prodMinStock', product ? product.minStock : 5);
       setVal('prodNotes', product ? product.notes : '');
@@ -2424,7 +2494,7 @@ const MobileApp = {
 
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
-        const purchasePrice = Calculations.parseDecimal(priceInput.value, 0);
+        const purchasePrice = Calculations.parseCurrency(priceInput.value, 0);
         const weight = Calculations.parseDecimal(weightInput?.value, 0.2);
 
         if (!productId || quantity <= 0) {
@@ -2451,9 +2521,9 @@ const MobileApp = {
       const date = document.getElementById('poDate').value;
       const supplier = document.getElementById('poSupplier').value;
       const shippingType = document.getElementById('poShippingType')?.value || 'by_weight';
-      const pricePerKg = Calculations.parseDecimal(document.getElementById('poPricePerKg')?.value, 0);
+      const pricePerKg = Calculations.parseCurrency(document.getElementById('poPricePerKg')?.value, 0);
       const totalWeight = Calculations.parseDecimal(document.getElementById('poTotalWeight')?.value, 0);
-      const shippingCost = Calculations.parseDecimal(document.getElementById('poShippingCost')?.value, 0);
+      const shippingCost = Calculations.parseCurrency(document.getElementById('poShippingCost')?.value, 0);
       const notes = document.getElementById('poNotes').value;
 
       await window.appStore.createPurchase({
@@ -2489,12 +2559,12 @@ const MobileApp = {
       setVal('poDate', new Date().toISOString().slice(0, 10));
       setVal('poSupplier', '');
       setVal('poShippingType', 'by_weight');
-      setVal('poPricePerKg', 30000);
+      setVal('poPricePerKg', Calculations.formatNumber(30000));
       setVal('poTotalWeight', 0);
       
       const costInput = document.getElementById('poShippingCost');
       if (costInput) {
-        costInput.value = 0;
+        costInput.value = '0';
         costInput.readOnly = true;
         costInput.style.background = '#f1f5f9';
       }
@@ -2578,7 +2648,7 @@ const MobileApp = {
         </div>
         <div>
           <label style="font-size: 11px; color: #64748b; font-weight: 700;">Giá mua (VNĐ/cái):</label>
-          <input type="number" class="form-control po-price-input" value="0" min="0" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
+          <input type="text" class="form-control po-price-input" value="0" placeholder="0" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
         </div>
       </div>
       <div class="form-row" style="margin-top: 8px;">
@@ -2782,7 +2852,7 @@ const MobileApp = {
       const cost = selected?.getAttribute('data-cost');
       const w = selected?.getAttribute('data-weight');
       if (cost && (!priceInput.value || priceInput.value === '0')) {
-        priceInput.value = cost;
+        priceInput.value = Calculations.formatNumber(cost);
       }
       if (w) {
         weightInput.value = w;
@@ -2794,8 +2864,7 @@ const MobileApp = {
       this.updatePurchaseLiveCalc();
     });
 
-    priceInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
-    priceInput.addEventListener('change', () => this.updatePurchaseLiveCalc());
+    this.bindCurrencyInput(priceInput, () => this.updatePurchaseLiveCalc());
     qtyInput.addEventListener('input', () => this.updatePurchaseLiveCalc());
     qtyInput.addEventListener('change', () => this.updatePurchaseLiveCalc());
     weightInput.addEventListener('input', (e) => {
@@ -2815,7 +2884,7 @@ const MobileApp = {
         this.updateProductTriggerDisplay(triggerEl, '', 'purchase');
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
-      if (itemData.purchasePrice !== undefined) priceInput.value = itemData.purchasePrice;
+      if (itemData.purchasePrice !== undefined) priceInput.value = Calculations.formatNumber(itemData.purchasePrice);
       if (itemData.weight !== undefined) weightInput.value = itemData.weight;
       if (itemData.color) applyChosenColor(itemData.color);
       if (itemData.size && sizeInput) sizeInput.value = itemData.size;
@@ -2836,14 +2905,14 @@ const MobileApp = {
     let sumWeight = 0;
 
     const shipType = document.getElementById('poShippingType')?.value || 'by_weight';
-    const pricePerKg = Calculations.parseDecimal(document.getElementById('poPricePerKg')?.value, 0);
+    const pricePerKg = Calculations.parseCurrency(document.getElementById('poPricePerKg')?.value, 0);
 
     rows.forEach(row => {
       const prodSelect = row.querySelector('.po-product-select');
       const prodId = prodSelect ? prodSelect.value : '';
 
       const qty = Calculations.parseDecimal(row.querySelector('.po-qty-input')?.value, 0);
-      const price = Calculations.parseDecimal(row.querySelector('.po-price-input')?.value, 0);
+      const price = Calculations.parseCurrency(row.querySelector('.po-price-input')?.value, 0);
       const weight = Calculations.parseDecimal(row.querySelector('.po-weight-input')?.value, 0);
 
       // Nếu dòng chưa chọn sản phẩm thì chưa cộng vào tổng tiền và tổng khối lượng cả gói
@@ -2899,7 +2968,7 @@ const MobileApp = {
       }
       const autoShipCost = Math.round(totalWeight * pricePerKg);
       const costInput = document.getElementById('poShippingCost');
-      if (costInput) costInput.value = autoShipCost;
+      if (costInput) costInput.value = Calculations.formatNumber(autoShipCost);
     } else {
       const enteredStr = weightInput ? weightInput.value.trim() : '';
       if (!this.isPoTotalWeightManuallyEdited || enteredStr === '') {
@@ -2915,7 +2984,7 @@ const MobileApp = {
       }
     }
 
-    const shipping = Calculations.parseDecimal(document.getElementById('poShippingCost')?.value, 0);
+    const shipping = Calculations.parseCurrency(document.getElementById('poShippingCost')?.value, 0);
     const total = subtotal + shipping;
 
     const elSubtotal = document.getElementById('poPreviewSubtotal');
@@ -3095,7 +3164,7 @@ const MobileApp = {
 
         const productId = prodSelect.value;
         const quantity = parseFloat(qtyInput.value) || 0;
-        const sellingPrice = Calculations.parseDecimal(priceInput.value, 0);
+        const sellingPrice = Calculations.parseCurrency(priceInput.value, 0);
         const saleColorInput = row.querySelector('.sale-color-input');
         const colorSelect = row.querySelector('.sale-color-select');
         const colorCustom = row.querySelector('.sale-color-custom');
@@ -3152,9 +3221,9 @@ const MobileApp = {
       const customerPhone = document.getElementById('saleCustomerPhone').value.trim();
       const channel = document.getElementById('saleChannel').value;
       const paymentStatus = document.getElementById('salePaymentStatus').value;
-      const paidAmount = parseFloat(document.getElementById('salePaidAmount').value) || 0;
-      const discount = parseFloat(document.getElementById('saleDiscount').value) || 0;
-      const shippingFee = parseFloat(document.getElementById('saleShippingFee').value) || 0;
+      const paidAmount = Calculations.parseCurrency(document.getElementById('salePaidAmount').value, 0);
+      const discount = Calculations.parseCurrency(document.getElementById('saleDiscount').value, 0);
+      const shippingFee = Calculations.parseCurrency(document.getElementById('saleShippingFee').value, 0);
       const shippingPayer = document.getElementById('saleShippingPayer').value;
       const notes = document.getElementById('saleNotes').value.trim();
 
@@ -3212,9 +3281,9 @@ const MobileApp = {
 
         const divPaid = document.getElementById('divPaidAmount');
         if (divPaid) divPaid.style.display = sale.paymentStatus === 'partial' ? 'block' : 'none';
-        setVal('salePaidAmount', sale.paidAmount || 0);
-        setVal('saleDiscount', sale.discount || 0);
-        setVal('saleShippingFee', sale.shippingFee || 0);
+        setVal('salePaidAmount', Calculations.formatNumber(sale.paidAmount || 0));
+        setVal('saleDiscount', Calculations.formatNumber(sale.discount || 0));
+        setVal('saleShippingFee', Calculations.formatNumber(sale.shippingFee || 0));
         setVal('saleShippingPayer', sale.shippingPayer || 'customer');
         setVal('saleNotes', sale.notes || '');
 
@@ -3239,9 +3308,9 @@ const MobileApp = {
 
         const divPaid = document.getElementById('divPaidAmount');
         if (divPaid) divPaid.style.display = 'none';
-        setVal('salePaidAmount', 0);
-        setVal('saleDiscount', 0);
-        setVal('saleShippingFee', 0);
+        setVal('salePaidAmount', '0');
+        setVal('saleDiscount', '0');
+        setVal('saleShippingFee', '0');
         setVal('saleShippingPayer', window.appStore.state.settings?.defaultShippingPayer || 'customer');
         setVal('saleNotes', '');
 
@@ -3323,7 +3392,7 @@ const MobileApp = {
         </div>
         <div>
           <label style="font-size: 11px; color: #64748b; font-weight: 700;">Giá bán (VNĐ):</label>
-          <input type="number" class="form-control sale-price-input" value="0" min="0" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
+          <input type="text" class="form-control sale-price-input" value="0" placeholder="0" required inputmode="numeric" style="font-weight: 700; border-radius: 12px;">
         </div>
       </div>
       <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; margin-top: 8px; padding-top: 6px; border-top: 1.5px dashed #fecdd3; color: #64748b;">
@@ -3513,7 +3582,7 @@ const MobileApp = {
       const selected = prodSelect.options[prodSelect.selectedIndex];
       const price = selected?.getAttribute('data-price');
       if (price !== undefined && price !== null && price !== '') {
-        priceInput.value = price;
+        priceInput.value = Calculations.formatNumber(price);
       }
 
       const prod = window.appStore.getProductById(prodSelect.value);
@@ -3523,8 +3592,9 @@ const MobileApp = {
       this.updateSaleLiveCalc();
     });
 
-    priceInput.addEventListener('input', () => this.updateSaleLiveCalc());
+    this.bindCurrencyInput(priceInput, () => this.updateSaleLiveCalc());
     qtyInput.addEventListener('input', () => this.updateSaleLiveCalc());
+    qtyInput.addEventListener('change', () => this.updateSaleLiveCalc());
 
     if (itemData) {
       if (itemData.productId) {
@@ -3534,7 +3604,7 @@ const MobileApp = {
         this.updateProductTriggerDisplay(triggerEl, '', 'sale');
       }
       if (itemData.quantity !== undefined) qtyInput.value = itemData.quantity;
-      if (itemData.sellingPrice !== undefined) priceInput.value = itemData.sellingPrice;
+      if (itemData.sellingPrice !== undefined) priceInput.value = Calculations.formatNumber(itemData.sellingPrice);
       if (itemData.color) applyChosenColor(itemData.color);
       if (itemData.size && sizeInput) sizeInput.value = itemData.size;
     } else {
@@ -3556,7 +3626,7 @@ const MobileApp = {
     rows.forEach(row => {
       const prodSelect = row.querySelector('.sale-product-select');
       const qty = parseFloat(row.querySelector('.sale-qty-input')?.value) || 0;
-      const price = parseFloat(row.querySelector('.sale-price-input')?.value) || 0;
+      const price = Calculations.parseCurrency(row.querySelector('.sale-price-input')?.value, 0);
       const lineTotal = qty * price;
       merchandiseValue += lineTotal;
 
@@ -3569,8 +3639,8 @@ const MobileApp = {
       }
     });
 
-    const discount = parseFloat(document.getElementById('saleDiscount')?.value) || 0;
-    const shippingFee = parseFloat(document.getElementById('saleShippingFee')?.value) || 0;
+    const discount = Calculations.parseCurrency(document.getElementById('saleDiscount')?.value, 0);
+    const shippingFee = Calculations.parseCurrency(document.getElementById('saleShippingFee')?.value, 0);
     const shippingPayer = document.getElementById('saleShippingPayer')?.value || 'customer';
 
     const netMerch = Math.max(0, merchandiseValue - discount);
@@ -3866,9 +3936,9 @@ const MobileApp = {
       await window.appStore.updateSalePayment(id, 'paid', sale.totalAmount);
       this.showToast('Đã đánh dấu: Đã thanh toán đủ!');
     } else if (opt === '3') {
-      const amtStr = prompt('Nhập số tiền khách cọc:', sale.paidAmount || '0');
+      const amtStr = prompt('Nhập số tiền khách cọc (VNĐ):', Calculations.formatNumber(sale.paidAmount || 0));
       if (amtStr !== null) {
-        const amt = parseFloat(amtStr) || 0;
+        const amt = Calculations.parseCurrency(amtStr, 0);
         const status = amt >= sale.totalAmount ? 'paid' : (amt > 0 ? 'partial' : 'unpaid');
         await window.appStore.updateSalePayment(id, status, amt);
         this.showToast(status === 'paid' ? 'Đã thu đủ toàn bộ đơn!' : 'Đã cập nhật tiền khách cọc!');
@@ -3948,7 +4018,7 @@ const MobileApp = {
       const type = document.getElementById('cfType').value;
       const date = document.getElementById('cfDate').value;
       const category = document.getElementById('cfCategory').value.trim();
-      const amount = parseFloat(document.getElementById('cfAmount').value) || 0;
+      const amount = Calculations.parseCurrency(document.getElementById('cfAmount').value, 0);
       const description = document.getElementById('cfDescription').value.trim();
 
       await window.appStore.addCashflow({

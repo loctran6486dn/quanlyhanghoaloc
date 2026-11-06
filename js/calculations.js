@@ -15,11 +15,56 @@ const Calculations = {
   },
 
   /**
-   * Định dạng số nguyên có phân tách phần ngàn
+   * Định dạng số nguyên có phân tách hàng nghìn bằng dấu chấm (ví dụ: 150.000, 1.250.000)
+   * Chuẩn hệ thống số Việt Nam
    */
   formatNumber(value) {
-    if (value === null || value === undefined || isNaN(value)) return '0';
-    return new Intl.NumberFormat('vi-VN').format(Math.round(value));
+    if (value === null || value === undefined || value === '') return '0';
+    const num = typeof value === 'number' ? value : this.parseCurrency(value, 0);
+    if (isNaN(num)) return '0';
+    return String(Math.round(num)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  },
+
+  /**
+   * Chuyển đổi chuỗi tiền tệ VNĐ sang số nguyên (hỗ trợ dấu chấm phân tách hàng nghìn: 100.000 -> 100000)
+   */
+  parseCurrency(value, defaultValue = 0) {
+    if (value === null || value === undefined || value === '') return defaultValue;
+    if (typeof value === 'number') return isNaN(value) ? defaultValue : Math.round(value);
+    const str = String(value).trim();
+    if (!str) return defaultValue;
+    const isNegative = str.startsWith('-');
+    const cleaned = str.replace(/[^\d]/g, '');
+    if (!cleaned) return defaultValue;
+    const parsed = parseInt(cleaned, 10);
+    return isNaN(parsed) ? defaultValue : (isNegative ? -parsed : parsed);
+  },
+
+  /**
+   * Định dạng chuỗi nhập liệu tiền tệ có dấu chấm phân cách hàng nghìn theo thời gian thực (Real-time Masking)
+   * Giữ nguyên vị trí con trỏ (cursor) chuẩn xác khi người dùng đang gõ
+   */
+  formatCurrencyInput(value, cursor = null) {
+    if (value === null || value === undefined) return { value: '', cursor: 0 };
+    const str = String(value);
+    const hasCursor = typeof cursor === 'number';
+    const digitsBefore = hasCursor ? str.slice(0, cursor).replace(/\D/g, '').length : 0;
+    const rawDigits = str.replace(/\D/g, '');
+    if (!rawDigits) return { value: '', cursor: 0 };
+    const normalizedDigits = rawDigits.length > 1 ? rawDigits.replace(/^0+/, '') || '0' : rawDigits;
+    const formatted = normalizedDigits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    if (!hasCursor) return { value: formatted, cursor: formatted.length };
+
+    let newCursor = 0;
+    let digitCount = 0;
+    const targetDigits = Math.min(digitsBefore, normalizedDigits.length);
+    while (newCursor < formatted.length && digitCount < targetDigits) {
+      if (/\d/.test(formatted[newCursor])) {
+        digitCount++;
+      }
+      newCursor++;
+    }
+    return { value: formatted, cursor: newCursor };
   },
 
   /**
