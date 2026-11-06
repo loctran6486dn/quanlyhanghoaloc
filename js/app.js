@@ -670,6 +670,30 @@ const MobileApp = {
       this.addVariantRow('', '', '', 1, true);
     });
 
+    // Đồng bộ 2 chiều khi người dùng trực tiếp gõ vào ô Tồn kho hiện có (prodStock)
+    const stockInput = document.getElementById('prodStock');
+    stockInput?.addEventListener('input', () => {
+      const val = parseInt(stockInput.value, 10);
+      if (isNaN(val) || val < 0) return;
+      const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
+      const rows = container ? container.querySelectorAll('.variant-row') : [];
+      if (rows.length === 1) {
+        const qtyInput = rows[0].querySelector('.variant-qty-input');
+        if (qtyInput) qtyInput.value = val;
+        const sumDisplay = document.getElementById('variantTotalSumQty') || document.getElementById('colorTotalSumQty');
+        if (sumDisplay) sumDisplay.textContent = val;
+      } else if (rows.length > 1) {
+        let otherSum = 0;
+        for (let i = 1; i < rows.length; i++) {
+          otherSum += parseInt(rows[i].querySelector('.variant-qty-input')?.value, 10) || 0;
+        }
+        const firstQtyInput = rows[0].querySelector('.variant-qty-input');
+        if (firstQtyInput) firstQtyInput.value = Math.max(0, val - otherSum);
+        const sumDisplay = document.getElementById('variantTotalSumQty') || document.getElementById('colorTotalSumQty');
+        if (sumDisplay) sumDisplay.textContent = val;
+      }
+    });
+
     // Chạm các chip màu nhanh bằng 1 chạm
     const colorChips = document.querySelectorAll('#quickColorChips .color-chip');
     colorChips.forEach(chip => {
@@ -824,32 +848,50 @@ const MobileApp = {
       // Đọc danh sách phân loại: Mẫu hàng, Màu sắc, Size, Số lượng
       const container = document.getElementById('productVariantsContainer') || document.getElementById('productColorsContainer');
       const variantRows = container ? container.querySelectorAll('.variant-row') : [];
+      let stock = parseInt(document.getElementById('prodStock').value, 10);
+      if (isNaN(stock) || stock < 0) stock = 0;
+
       const variants = [];
       variantRows.forEach(row => {
         const model = (row.querySelector('.variant-model-input')?.value || '').trim();
         const color = (row.querySelector('.variant-color-input')?.value || '').trim();
         const size = (row.querySelector('.variant-size-input')?.value || '').trim();
         const quantity = parseInt(row.querySelector('.variant-qty-input')?.value, 10) || 0;
-        if (model || color || size || quantity > 0) {
+        if (model || color || size || quantity > 0 || variantRows.length === 1) {
           variants.push({ model, color, size, quantity });
         }
       });
+
+      if (variants.length === 1) {
+        // Luôn đảm bảo dòng phân loại duy nhất khớp chính xác với ô Tồn kho hiện có mà người dùng vừa sửa
+        variants[0].quantity = stock;
+      } else if (variants.length > 1) {
+        const vSum = variants.reduce((sum, v) => sum + v.quantity, 0);
+        if (vSum !== stock) {
+          const diff = stock - vSum;
+          variants[0].quantity = Math.max(0, variants[0].quantity + diff);
+        }
+      } else {
+        variants.push({
+          model: '',
+          color: '',
+          size: '',
+          quantity: stock
+        });
+      }
 
       // Tự động đồng bộ danh sách màu & sizes từ variants cho backward compatibility
       const colorMap = new Map();
       const sizeSet = new Set();
       variants.forEach(v => {
-        const cName = v.color || v.model || 'Mặc định';
+        const cName = (v.color || v.model || 'Mặc định').trim();
         colorMap.set(cName, (colorMap.get(cName) || 0) + v.quantity);
-        if (v.size) sizeSet.add(v.size);
+        if (v.size && String(v.size).trim()) sizeSet.add(String(v.size).trim());
       });
       const colors = Array.from(colorMap.entries()).map(([name, quantity]) => ({ name, quantity }));
       const sizes = Array.from(sizeSet);
 
-      let stock = parseInt(document.getElementById('prodStock').value, 10) || 0;
-      if (variants.length > 0) {
-        stock = variants.reduce((sum, v) => sum + v.quantity, 0);
-      }
+      stock = variants.reduce((sum, v) => sum + v.quantity, 0);
 
       await window.appStore.saveProduct({
         id: id || undefined,
@@ -1670,7 +1712,7 @@ const MobileApp = {
     }
     if (stockInput) {
       stockInput.value = totalQty;
-      stockInput.style.background = '#f1f5f9';
+      stockInput.style.background = '#ffffff';
     }
   },
 
@@ -2001,8 +2043,8 @@ const MobileApp = {
             MobileApp.addVariantRow(v.model || '', v.color || '', v.size || '', v.quantity !== undefined ? v.quantity : 0);
           });
         } else {
-          // Khi thêm hàng mới: luôn hiển thị mặc định 1 hàng để điền Mẫu Hàng, Màu Sắc, Size, Số Lượng
-          MobileApp.addVariantRow('', '', '', 1);
+          // Khi thêm hàng mới: luôn hiển thị mặc định 1 hàng để điền Mẫu Hàng, Màu Sắc, Size, Số Lượng (mặc định tồn 0 để sẵn sàng nhập kho)
+          MobileApp.addVariantRow('', '', '', 0);
         }
       }
       MobileApp.syncVariantStockSum();

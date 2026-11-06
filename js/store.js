@@ -366,6 +366,11 @@ class DataStore {
       }
     }
 
+    // Nếu chỉ có 1 variant, luôn đồng bộ số lượng của variant với finalStock
+    if (cleanedVariants.length === 1) {
+      cleanedVariants[0].quantity = finalStock;
+    }
+
     // Tự động đồng bộ colors, sizes và finalStock từ variants
     if (cleanedVariants.length > 0) {
       finalStock = cleanedVariants.reduce((sum, v) => sum + v.quantity, 0);
