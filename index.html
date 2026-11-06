@@ -20,7 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- CSS Stylesheet Mobile-First -->
-  <link rel="stylesheet" href="css/style.css?v=6.5">
+  <link rel="stylesheet" href="css/style.css?v=7.2">
 
   <!-- Thư viện biểu đồ & Excel (có fallback tự động khi offline) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
@@ -1244,47 +1244,62 @@
       <form id="formCashflow">
         <div class="modal-body">
           <!-- BENTO CARD 1: LOẠI GIAO DỊCH -->
-          <div class="bento-modal-card bento-modal-card-lilac">
+          <div class="bento-modal-card bento-modal-card-lilac" id="cardCfType">
             <div class="bento-card-title">
-              <span class="bento-tag-pill tag-lilac">Phân loại giao dịch</span>
+              <span class="bento-tag-pill tag-lilac" id="cfTagPill">Phân loại giao dịch</span>
             </div>
             <div class="form-row" style="margin-bottom: 0;">
               <div class="form-group" style="margin-bottom: 0;">
-                <label>Loại giao dịch:</label>
-                <select id="cfType" class="form-control" required style="font-weight: 700;">
-                  <option value="expense">Khoản Chi (Chi phí vận hành)</option>
-                  <option value="income">Khoản Thu (Thu khác ngoài bán)</option>
-                </select>
+                <label style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+                  <span>Loại giao dịch:</span>
+                  <span id="cfTypeBadge" class="bento-tag-pill tag-coral" style="font-size: 10px; padding: 2px 7px;">Khoản Chi (-)</span>
+                </label>
+                <div id="cfTypeTrigger" class="cf-type-trigger cf-trigger-expense" tabindex="0" role="button" aria-haspopup="dialog" onclick="MobileApp.openCashflowTypePicker()">
+                  <div class="cf-trigger-content">
+                    <span class="cf-trigger-icon" id="cfTriggerIcon">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                    </span>
+                    <span class="cf-trigger-text" id="cfTriggerText">Khoản Chi (Chi phí)</span>
+                  </div>
+                  <span class="cf-trigger-chevron">▾</span>
+                </div>
+                <input type="hidden" id="cfType" value="expense">
               </div>
               <div class="form-group" style="margin-bottom: 0;">
-                <label>Ngày:</label>
-                <input type="date" id="cfDate" class="form-control" required>
+                <label style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Ngày:</label>
+                <input type="date" id="cfDate" class="form-control" required style="font-weight: 700;">
               </div>
             </div>
           </div>
 
           <!-- BENTO CARD 2: SỐ TIỀN & DANH MỤC -->
-          <div class="bento-modal-card bento-modal-card-rose">
+          <div class="bento-modal-card bento-modal-card-rose" id="cardCfAmount">
             <div class="bento-card-title">
-              <span class="bento-tag-pill tag-coral">Số tiền & Danh mục</span>
+              <span class="bento-tag-pill tag-coral" id="cfAmountPill">Chi phí (-)</span>
             </div>
             <div class="form-group">
-              <label>Số tiền (VNĐ): <span style="color: red;">*</span></label>
-              <input type="text" id="cfAmount" class="form-control" placeholder="0" required inputmode="numeric" style="font-size: 18px; font-weight: 800; color: #be123c;">
+              <label id="cfAmountLabel" style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px;">Số tiền chi (VNĐ): <span style="color: red;">*</span></label>
+              <input type="text" id="cfAmount" class="form-control" placeholder="0" required inputmode="numeric" style="font-size: 18px; font-weight: 800; color: #be123c; border-radius: 12px; height: 46px;">
             </div>
 
-            <div class="form-group" style="margin-bottom: 0;">
-              <label>Danh mục chi phí:</label>
-              <input type="text" id="cfCategory" class="form-control" list="cfCategoryListMobile" placeholder="Bao bì, Marketing, Mặt bằng..." required>
-              <datalist id="cfCategoryListMobile">
-                <option value="Bao bì & Đóng gói">
-                <option value="Quảng cáo & Marketing">
-                <option value="Mặt bằng & Kho bãi">
-                <option value="Cước viễn thông & Điện thoại">
-                <option value="Phí sàn thương mại điện tử">
-                <option value="Thu khác">
-                <option value="Chi phí khác">
-              </datalist>
+            <div class="form-group cf-category-group" style="margin-bottom: 0; position: relative;">
+              <label style="font-size: 11px; font-weight: 700; color: #475569; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+                <span>Danh mục thu / chi:</span>
+                <span id="btnToggleCfCategoryText" style="font-size: 10.5px; color: #7c3aed; font-weight: 700; cursor: pointer;" onclick="MobileApp.toggleCashflowCategoryDropdown()">Xem gợi ý ▾</span>
+              </label>
+              <div class="cf-category-input-wrapper">
+                <input type="text" id="cfCategory" class="form-control" placeholder="-- Chọn hoặc tự nhập danh mục --" required autocomplete="off">
+                <button type="button" id="btnToggleCfCategory" class="btn-cf-category-chevron" onclick="MobileApp.toggleCashflowCategoryDropdown()" title="Gợi ý danh mục" aria-label="Gợi ý danh mục">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+              </div>
+
+              <!-- DROPDOWN DANH MỤC SỔ RA (BENTO STYLE) -->
+              <div id="cfCategoryDropdown" class="cf-category-dropdown" style="display: none;">
+                <div class="cf-dropdown-list" id="cfCategoryOptionsList">
+                  <!-- Được render tự động theo danh mục tương ứng -->
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1301,6 +1316,65 @@
           <button type="submit" class="btn btn-theme-submit">Lưu Giao Dịch</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP CHỌN LOẠI GIAO DỊCH THU / CHI ĐỒNG BỘ BENTO UI -->
+  <div class="modal-backdrop" id="modalCashflowTypePicker">
+    <div class="modal-dialog modal-cashflow-type-dialog" style="max-width: 360px; width: 92%; margin: auto; padding: 18px 16px; border-radius: 20px; background: #ffffff; border: 2px solid #8b5cf6; box-shadow: 0 16px 40px rgba(109, 40, 217, 0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; border-bottom: 1.5px solid #f3e8ff; padding-bottom: 10px;">
+        <div>
+          <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #581c87; display: flex; align-items: center; gap: 6px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <span>Chọn Loại Giao Dịch</span>
+          </h4>
+          <div style="font-size: 11.5px; color: #7c3aed; font-weight: 600; margin-top: 2px;">Sổ quỹ thu chi nội bộ</div>
+        </div>
+        <button type="button" class="modal-close" onclick="MobileApp.closeCashflowTypePicker()" style="font-size: 22px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #f3e8ff; color: #6b21a8; border: none; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- 2 THẺ BENTO CHỌN: KHOẢN CHI & KHOẢN THU -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <!-- Option 1: Khoản Chi -->
+        <div class="cf-type-option-card cf-type-expense" id="optCfExpense" data-type="expense" onclick="MobileApp.selectCashflowType('expense')">
+          <div class="cf-type-icon-box" style="background: #ffe4e6; color: #e11d48;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <div class="cf-type-info">
+            <div class="cf-type-header-row">
+              <span class="cf-type-title" style="color: #be123c;">Khoản Chi</span>
+              <span class="bento-tag-pill tag-coral" style="font-size: 9.5px; padding: 1px 7px;">Chi phí (-)</span>
+            </div>
+            <div class="cf-type-desc">Bao bì, quảng cáo, cước ship, tiền mặt bằng, chi phí vận hành...</div>
+          </div>
+          <span class="cf-type-check-mark" id="checkCfExpense">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+        </div>
+
+        <!-- Option 2: Khoản Thu -->
+        <div class="cf-type-option-card cf-type-income" id="optCfIncome" data-type="income" onclick="MobileApp.selectCashflowType('income')">
+          <div class="cf-type-icon-box" style="background: #dcfce7; color: #16a34a;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+          </div>
+          <div class="cf-type-info">
+            <div class="cf-type-header-row">
+              <span class="cf-type-title" style="color: #15803d;">Khoản Thu</span>
+              <span class="bento-tag-pill tag-mint" style="font-size: 9.5px; padding: 1px 7px;">Thu ngoài (+)</span>
+            </div>
+            <div class="cf-type-desc">Thu hồi nợ cũ, thưởng hoàn tiền xưởng, thanh lý đồ cũ, thu khác...</div>
+          </div>
+          <span class="cf-type-check-mark" id="checkCfIncome">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1859,11 +1933,11 @@
   <div class="toast-container" id="toastContainer"></div>
 
   <!-- SCRIPTS (Cache busted) -->
-  <script src="js/calculations.js?v=7.1"></script>
-  <script src="js/cloud-sync.js?v=7.1"></script>
-  <script src="js/store.js?v=7.1"></script>
-  <script src="js/export.js?v=7.1"></script>
-  <script src="js/charts.js?v=7.1"></script>
-  <script src="js/app.js?v=7.1"></script>
+  <script src="js/calculations.js?v=7.2"></script>
+  <script src="js/cloud-sync.js?v=7.2"></script>
+  <script src="js/store.js?v=7.2"></script>
+  <script src="js/export.js?v=7.2"></script>
+  <script src="js/charts.js?v=7.2"></script>
+  <script src="js/app.js?v=7.2"></script>
 </body>
 </html>

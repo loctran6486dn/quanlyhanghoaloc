@@ -3987,6 +3987,170 @@ const MobileApp = {
   },
 
   /* =================== 5. SỔ QUỸ THU - CHI =================== */
+  openCashflowTypePicker() {
+    const curType = document.getElementById('cfType')?.value || 'expense';
+    const optExp = document.getElementById('optCfExpense');
+    const optInc = document.getElementById('optCfIncome');
+    if (optExp) optExp.classList.toggle('active', curType === 'expense');
+    if (optInc) optInc.classList.toggle('active', curType === 'income');
+    this.openModal('modalCashflowTypePicker');
+  },
+
+  closeCashflowTypePicker() {
+    this.closeModal('modalCashflowTypePicker');
+  },
+
+  selectCashflowType(type) {
+    const input = document.getElementById('cfType');
+    if (input) input.value = type;
+    this.updateCashflowTypeUI(type);
+    this.closeCashflowTypePicker();
+  },
+
+  updateCashflowTypeUI(type = 'expense') {
+    const isExp = type === 'expense';
+    const trigger = document.getElementById('cfTypeTrigger');
+    const triggerIcon = document.getElementById('cfTriggerIcon');
+    const triggerText = document.getElementById('cfTriggerText');
+    const typeBadge = document.getElementById('cfTypeBadge');
+
+    const cardAmount = document.getElementById('cardCfAmount');
+    const amountPill = document.getElementById('cfAmountPill');
+    const amountLabel = document.getElementById('cfAmountLabel');
+    const amountInput = document.getElementById('cfAmount');
+
+    if (trigger) {
+      trigger.classList.toggle('cf-trigger-expense', isExp);
+      trigger.classList.toggle('cf-trigger-income', !isExp);
+    }
+
+    if (triggerIcon) {
+      triggerIcon.innerHTML = isExp 
+        ? `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`
+        : `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`;
+    }
+
+    if (triggerText) {
+      triggerText.textContent = isExp ? 'Khoản Chi (Chi phí)' : 'Khoản Thu (Thu ngoài)';
+    }
+
+    if (typeBadge) {
+      typeBadge.className = isExp ? 'bento-tag-pill tag-coral' : 'bento-tag-pill tag-mint';
+      typeBadge.textContent = isExp ? 'Khoản Chi (-)' : 'Khoản Thu (+)';
+    }
+
+    if (cardAmount) {
+      cardAmount.className = isExp ? 'bento-modal-card bento-modal-card-rose' : 'bento-modal-card bento-modal-card-green';
+    }
+
+    if (amountPill) {
+      amountPill.className = isExp ? 'bento-tag-pill tag-coral' : 'bento-tag-pill tag-mint';
+      amountPill.textContent = isExp ? 'Chi phí (-)' : 'Khoản Thu (+)';
+    }
+
+    if (amountLabel) {
+      amountLabel.innerHTML = isExp 
+        ? `Số tiền chi (VNĐ): <span style="color: red;">*</span>`
+        : `Số tiền thu (VNĐ): <span style="color: red;">*</span>`;
+    }
+
+    if (amountInput) {
+      amountInput.style.color = isExp ? '#be123c' : '#15803d';
+    }
+
+    // Tự động cập nhật lại danh sách danh mục gợi ý tương ứng
+    this.renderCashflowCategoryOptions();
+  },
+
+  toggleCashflowCategoryDropdown(forceState = null) {
+    const dropdown = document.getElementById('cfCategoryDropdown');
+    const chevronBtn = document.getElementById('btnToggleCfCategory');
+    const textToggle = document.getElementById('btnToggleCfCategoryText');
+    if (!dropdown) return;
+
+    const isCurrentlyOpen = dropdown.style.display === 'block';
+    const nextState = forceState !== null ? forceState : !isCurrentlyOpen;
+
+    if (nextState) {
+      this.renderCashflowCategoryOptions();
+      dropdown.style.display = 'block';
+      if (chevronBtn) chevronBtn.style.transform = 'translateY(-50%) rotate(180deg)';
+      if (textToggle) textToggle.textContent = 'Đóng gợi ý ▴';
+    } else {
+      dropdown.style.display = 'none';
+      if (chevronBtn) chevronBtn.style.transform = 'translateY(-50%) rotate(0deg)';
+      if (textToggle) textToggle.textContent = 'Xem gợi ý ▾';
+    }
+  },
+
+  renderCashflowCategoryOptions(filterText = '') {
+    const container = document.getElementById('cfCategoryOptionsList');
+    if (!container) return;
+
+    const type = document.getElementById('cfType')?.value || 'expense';
+    const isExp = type === 'expense';
+
+    const expenseCategories = [
+      { name: 'Bao bì & Đóng gói', icon: Icons.package, desc: 'Hộp carton, túi gói, băng keo...' },
+      { name: 'Quảng cáo & Marketing', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`, desc: 'Chạy quảng cáo, review, sáng tạo...' },
+      { name: 'Mặt bằng & Kho bãi', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/><path d="M14 9h1"/><path d="M14 13h1"/><path d="M14 17h1"/></svg>`, desc: 'Tiền thuê kho, điện, nước, internet...' },
+      { name: 'Cước viễn thông & Điện thoại', icon: Icons.phone, desc: 'Gọi chốt đơn, data 4G, SMS...' },
+      { name: 'Phí sàn thương mại điện tử', icon: Icons.cart, desc: 'Phí cố định, thanh toán, hoa hồng...' },
+      { name: 'Vận chuyển & Giao hàng', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`, desc: 'Gửi chành, ship xe ôm ngoài...' },
+      { name: 'Chi phí khác', icon: Icons.tag, desc: 'Chi phí vận hành phát sinh khác' }
+    ];
+
+    const incomeCategories = [
+      { name: 'Thu hồi công nợ cũ', icon: Icons.checkCircle, desc: 'Khách thanh toán nợ đơn cũ' },
+      { name: 'Chiết khấu & Thưởng xưởng', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>`, desc: 'Hoa hồng, thưởng doanh số từ đối tác' },
+      { name: 'Thanh lý hàng & Đồ cũ', icon: Icons.package, desc: 'Bán phụ kiện, đồ dùng kho cũ' },
+      { name: 'Thu khác', icon: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`, desc: 'Khoản thu hợp pháp ngoài bán hàng' }
+    ];
+
+    const list = isExp ? expenseCategories : incomeCategories;
+    const cleanFilter = (filterText || '').trim().toLowerCase();
+    const filtered = cleanFilter ? list.filter(item => item.name.toLowerCase().includes(cleanFilter) || item.desc.toLowerCase().includes(cleanFilter)) : list;
+
+    const currentVal = (document.getElementById('cfCategory')?.value || '').trim().toLowerCase();
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div style="padding: 10px 12px; font-size: 12.5px; color: #94a3b8; text-align: center;">
+          Nhấn Enter hoặc chuyển ô để dùng danh mục tự gõ: "<strong>${filterText}</strong>"
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(item => {
+      const isSelected = currentVal === item.name.toLowerCase();
+      return `
+        <div class="cf-category-item ${isSelected ? 'active' : ''}" onclick="MobileApp.selectCashflowCategory('${item.name.replace(/'/g, "\\'")}')">
+          <div class="cf-item-left">
+            <span class="cf-item-icon">${item.icon}</span>
+            <div>
+              <div class="cf-item-title">${item.name}</div>
+              <div style="font-size: 11px; color: #64748b; font-weight: 500;">${item.desc}</div>
+            </div>
+          </div>
+          <span class="cf-item-badge">${isSelected ? '✓ Đang chọn' : 'Chọn'}</span>
+        </div>
+      `;
+    }).join('');
+  },
+
+  selectCashflowCategory(name) {
+    const input = document.getElementById('cfCategory');
+    if (input) {
+      input.value = name;
+    }
+    this.toggleCashflowCategoryDropdown(false);
+    const amountInput = document.getElementById('cfAmount');
+    if (amountInput) {
+      amountInput.focus();
+    }
+  },
+
   openAddCashflowModal() {
     try {
       const setVal = (id, val) => {
@@ -3995,7 +4159,9 @@ const MobileApp = {
       };
       setVal('cfDate', new Date().toISOString().slice(0, 10));
       setVal('cfType', 'expense');
-      setVal('cfCategory', 'Bao bì & Đóng gói');
+      this.updateCashflowTypeUI('expense');
+      setVal('cfCategory', '');
+      this.toggleCashflowCategoryDropdown(false);
       setVal('cfAmount', '');
       setVal('cfDescription', '');
     } catch (err) {
@@ -4013,13 +4179,49 @@ const MobileApp = {
       this.switchTab('more');
     });
 
+    const categoryInput = document.getElementById('cfCategory');
+    if (categoryInput) {
+      categoryInput.addEventListener('click', () => {
+        this.toggleCashflowCategoryDropdown(true);
+      });
+      categoryInput.addEventListener('focus', () => {
+        this.toggleCashflowCategoryDropdown(true);
+      });
+      categoryInput.addEventListener('input', (e) => {
+        this.toggleCashflowCategoryDropdown(true);
+        this.renderCashflowCategoryOptions(e.target.value);
+      });
+    }
+
+    // Đóng dropdown khi click ra ngoài vùng category
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('cfCategoryDropdown');
+      if (!dropdown || dropdown.style.display === 'none') return;
+      const group = e.target.closest('.cf-category-group');
+      if (!group) {
+        this.toggleCashflowCategoryDropdown(false);
+      }
+    });
+
     document.getElementById('formCashflow')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const type = document.getElementById('cfType').value;
       const date = document.getElementById('cfDate').value;
-      const category = document.getElementById('cfCategory').value.trim();
+      const category = (document.getElementById('cfCategory')?.value || '').trim();
       const amount = Calculations.parseCurrency(document.getElementById('cfAmount').value, 0);
-      const description = document.getElementById('cfDescription').value.trim();
+      const description = (document.getElementById('cfDescription')?.value || '').trim();
+
+      if (!category) {
+        alert('Vui lòng chọn hoặc tự nhập danh mục thu / chi.');
+        document.getElementById('cfCategory')?.focus();
+        return;
+      }
+
+      if (amount <= 0) {
+        alert('Vui lòng nhập số tiền lớn hơn 0.');
+        document.getElementById('cfAmount')?.focus();
+        return;
+      }
 
       await window.appStore.addCashflow({
         type,
@@ -4461,6 +4663,11 @@ window.openAddProductModal = (prod = null) => MobileApp.openAddProductModal(prod
 window.openAddSaleModal = () => MobileApp.openAddSaleModal();
 window.openAddPurchaseModal = () => MobileApp.openAddPurchaseModal();
 window.openAddCashflowModal = () => MobileApp.openAddCashflowModal();
+window.openCashflowTypePicker = () => MobileApp.openCashflowTypePicker();
+window.closeCashflowTypePicker = () => MobileApp.closeCashflowTypePicker();
+window.selectCashflowType = (type) => MobileApp.selectCashflowType(type);
+window.toggleCashflowCategoryDropdown = (state = null) => MobileApp.toggleCashflowCategoryDropdown(state);
+window.selectCashflowCategory = (cat) => MobileApp.selectCashflowCategory(cat);
 window.closeModal = (id = null) => MobileApp.closeModal(id);
 window.switchManageSubTab = (subTab) => MobileApp.switchManageSubTab(subTab);
 window.editSale = (id) => MobileApp.editSale(id);

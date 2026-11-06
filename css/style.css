@@ -4825,3 +4825,298 @@ body.theme-wordsy .badge-info {
   font-size: 12.5px;
   letter-spacing: 0.3px;
 }
+
+/* ==========================================================================
+   BENTO UI CHO GHI NHẬN THU CHI (LOẠI GIAO DỊCH & DANH MỤC SỔ RA)
+   ========================================================================== */
+
+/* Trigger chọn loại giao dịch */
+.cf-type-trigger {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+.cf-type-trigger:hover,
+.cf-type-trigger:focus-visible {
+  border-color: #8b5cf6;
+  background: #fdfcff;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.cf-type-trigger:active {
+  transform: scale(0.985);
+}
+
+.cf-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cf-trigger-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cf-trigger-expense .cf-trigger-icon {
+  background: #ffe4e6;
+  color: #e11d48;
+}
+
+.cf-trigger-expense .cf-trigger-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #be123c;
+}
+
+.cf-trigger-income .cf-trigger-icon {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.cf-trigger-income .cf-trigger-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.cf-trigger-chevron {
+  font-size: 12px;
+  color: #94a3b8;
+  transition: transform 0.2s ease;
+}
+
+/* Thẻ tùy chọn trong Modal chọn Loại giao dịch */
+.modal-cashflow-type-dialog {
+  animation: modalScaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cf-type-option-card {
+  padding: 12px 14px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid transparent;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cf-type-option-card.cf-type-expense {
+  background: #fff8f8;
+  border-color: #fecdd3;
+}
+
+.cf-type-option-card.cf-type-expense:hover,
+.cf-type-option-card.cf-type-expense.active {
+  background: #fff1f2;
+  border-color: #e11d48;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.15);
+}
+
+.cf-type-option-card.cf-type-income {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+
+.cf-type-option-card.cf-type-income:hover,
+.cf-type-option-card.cf-type-income.active {
+  background: #dcfce7;
+  border-color: #16a34a;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.15);
+}
+
+.cf-type-option-card:active {
+  transform: scale(0.98);
+}
+
+.cf-type-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cf-type-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cf-type-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.cf-type-title {
+  font-size: 14.5px;
+  font-weight: 800;
+}
+
+.cf-type-desc {
+  font-size: 11.5px;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.cf-type-check-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.cf-type-option-card.cf-type-expense.active .cf-type-check-mark {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.cf-type-option-card.cf-type-income.active .cf-type-check-mark {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+/* Input danh mục kèm nút toggle chevron */
+.cf-category-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cf-category-input-wrapper input {
+  padding-right: 36px;
+  font-weight: 700;
+  border-radius: 12px;
+  height: 42px;
+  font-size: 13.5px;
+}
+
+.btn-cf-category-chevron {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.btn-cf-category-chevron:hover {
+  background: #f1f5f9;
+  color: #7c3aed;
+}
+
+/* Dropdown sổ ra danh mục gợi ý */
+.cf-category-dropdown {
+  margin-top: 8px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1.5px solid #ddd6fe;
+  box-shadow: 0 10px 24px rgba(109, 40, 217, 0.12);
+  padding: 6px;
+  animation: modalScaleUp 0.15s ease-out;
+}
+
+.cf-dropdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 210px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cf-category-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #faf5ff;
+  border: 1px solid #f3e8ff;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cf-category-item:hover {
+  background: #f3e8ff;
+  border-color: #d8b4fe;
+  transform: translateX(2px);
+}
+
+.cf-category-item.active {
+  background: #ede9fe;
+  border-color: #8b5cf6;
+}
+
+.cf-item-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cf-item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #7c3aed;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.cf-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #3b0764;
+}
+
+.cf-item-badge {
+  font-size: 10.5px;
+  color: #7c3aed;
+  font-weight: 600;
+}
