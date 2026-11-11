@@ -430,6 +430,8 @@ const MobileApp = {
             this.closeProductPicker();
           } else if (backdrop.id === 'modalVariantColorPicker') {
             this.closeColorPicker();
+          } else if (backdrop.id === 'modalSaleChannelPicker') {
+            this.closeSaleChannelPicker();
           } else {
             this.closeModal(backdrop.id);
           }
@@ -473,11 +475,14 @@ const MobileApp = {
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
+    const channelPicker = document.getElementById('modalSaleChannelPicker');
+    if (channelPicker) channelPicker.classList.remove('active', 'show');
+
     if (id) {
       const el = document.getElementById(id);
-      if (el) el.classList.remove('active');
+      if (el) el.classList.remove('active', 'show');
     } else {
-      document.querySelectorAll('.modal-backdrop.active').forEach(m => m.classList.remove('active'));
+      document.querySelectorAll('.modal-backdrop.active, .modal-backdrop.show').forEach(m => m.classList.remove('active', 'show'));
     }
     const hasActiveModal = document.querySelectorAll('.modal-backdrop.active').length > 0;
     if (!hasActiveModal) {
@@ -3134,6 +3139,24 @@ const MobileApp = {
       document.getElementById(id)?.addEventListener('change', () => this.updateSaleLiveCalc());
     });
 
+    // Kênh bán hàng: Lắng nghe gõ trực tiếp và gõ phím Enter trên ô tự nhập
+    const saleChannelInput = document.getElementById('saleChannel');
+    if (saleChannelInput) {
+      saleChannelInput.addEventListener('input', (e) => {
+        this.syncSaleChannelChips(e.target.value);
+      });
+    }
+
+    const customChannelInput = document.getElementById('customSaleChannelInput');
+    if (customChannelInput) {
+      customChannelInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.applyCustomSaleChannel();
+        }
+      });
+    }
+
     document.getElementById('salePaymentStatus')?.addEventListener('change', (e) => {
       const divPaid = document.getElementById('divPaidAmount');
       if (divPaid) {
@@ -3219,7 +3242,7 @@ const MobileApp = {
       const date = document.getElementById('saleDate').value;
       const customerName = document.getElementById('saleCustomerName').value.trim();
       const customerPhone = document.getElementById('saleCustomerPhone').value.trim();
-      const channel = document.getElementById('saleChannel').value;
+      const channel = (document.getElementById('saleChannel')?.value || '').trim() || 'Trực tiếp';
       const paymentStatus = document.getElementById('salePaymentStatus').value;
       const paidAmount = Calculations.parseCurrency(document.getElementById('salePaidAmount').value, 0);
       const discount = Calculations.parseCurrency(document.getElementById('saleDiscount').value, 0);
@@ -3253,6 +3276,184 @@ const MobileApp = {
     });
   },
 
+  /* =================== CHỌN KÊNH BÁN HÀNG (BENTO NEO-POP) =================== */
+  setSaleChannel(channelName) {
+    const name = (channelName || '').trim() || 'Trực tiếp';
+    const input = document.getElementById('saleChannel');
+    if (input) {
+      input.value = name;
+    }
+    this.syncSaleChannelChips(name);
+  },
+
+  selectSaleChannel(channelName) {
+    this.setSaleChannel(channelName);
+    this.closeSaleChannelPicker();
+  },
+
+  syncSaleChannelChips(currentVal) {
+    const val = (currentVal || '').trim().toLowerCase();
+    const chips = document.querySelectorAll('#saleChannelChipsBar .sale-channel-chip[data-channel]');
+    let matched = false;
+
+    chips.forEach(chip => {
+      const ch = (chip.getAttribute('data-channel') || '').toLowerCase();
+      const isMatch = (ch === val) || (ch === 'trực tiếp' && (val === 'tại chỗ' || val === 'truc tiep' || val === 'tai cho')) || (ch === 'tại chỗ' && val === 'trực tiếp');
+      if (isMatch) {
+        chip.classList.add('active');
+        matched = true;
+      } else {
+        chip.classList.remove('active');
+      }
+    });
+
+    const moreChip = document.querySelector('#saleChannelChipsBar .sale-channel-chip-more');
+    if (moreChip) {
+      moreChip.classList.toggle('active', !matched && val.length > 0);
+    }
+  },
+
+  openSaleChannelPicker() {
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+      document.activeElement.blur();
+    }
+    const currentVal = document.getElementById('saleChannel')?.value || 'Trực tiếp';
+    const customInput = document.getElementById('customSaleChannelInput');
+    if (customInput) {
+      customInput.value = currentVal;
+    }
+    this.renderSaleChannelPickerGrid(currentVal);
+    const modal = document.getElementById('modalSaleChannelPicker');
+    if (modal) {
+      modal.classList.add('active');
+      modal.classList.add('show');
+    }
+  },
+
+  closeSaleChannelPicker() {
+    const modal = document.getElementById('modalSaleChannelPicker');
+    if (modal) {
+      modal.classList.remove('active');
+      modal.classList.remove('show');
+    }
+  },
+
+  renderSaleChannelPickerGrid(currentVal = '') {
+    const grid = document.getElementById('saleChannelPickerGrid');
+    if (!grid) return;
+
+    const val = (currentVal || document.getElementById('saleChannel')?.value || 'Trực tiếp').trim().toLowerCase();
+
+    const CHANNEL_OPTIONS = [
+      {
+        name: 'Trực tiếp',
+        alias: 'Tại chỗ',
+        desc: 'Bán tại chỗ, tại cửa hàng hoặc kho',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+        color: '#0284c7',
+        bg: '#f0f9ff',
+        border: '#bae6fd'
+      },
+      {
+        name: 'Facebook',
+        alias: 'Facebook',
+        desc: 'Messenger, Fanpage, bài viết cá nhân, Group',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>`,
+        color: '#1877f2',
+        bg: '#eff6ff',
+        border: '#bfdbfe'
+      },
+      {
+        name: 'TikTok',
+        alias: 'TikTok Shop',
+        desc: 'Đơn sàn TikTok Shop hoặc Livestream',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>`,
+        color: '#0f172a',
+        bg: '#f8fafc',
+        border: '#e2e8f0'
+      },
+      {
+        name: 'Shopee',
+        alias: 'Shopee',
+        desc: 'Gian hàng sàn thương mại điện tử Shopee',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
+        color: '#ea580c',
+        bg: '#fff7ed',
+        border: '#ffedd5'
+      },
+      {
+        name: 'Zalo',
+        alias: 'Zalo',
+        desc: 'Tin nhắn Zalo cá nhân, nhóm khách VIP hoặc OA',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+        color: '#0284c7',
+        bg: '#f0f9ff',
+        border: '#bae6fd'
+      },
+      {
+        name: 'Lazada',
+        alias: 'Lazada',
+        desc: 'Gian hàng sàn thương mại điện tử Lazada',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+        color: '#4f46e5',
+        bg: '#eef2ff',
+        border: '#c7d2fe'
+      },
+      {
+        name: 'Instagram',
+        alias: 'Instagram',
+        desc: 'Direct Message, bài đăng Instagram Shop',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>`,
+        color: '#e11d48',
+        bg: '#fff1f2',
+        border: '#fecdd3'
+      },
+      {
+        name: 'Website',
+        alias: 'Website',
+        desc: 'Đơn đặt hàng trực tiếp từ Website riêng',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+        color: '#16a34a',
+        bg: '#f0fdf4',
+        border: '#bbf7d0'
+      },
+      {
+        name: 'Khách quen',
+        alias: 'Khách quen',
+        desc: 'Khách mua nhiều lần, người quen giới thiệu',
+        icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`,
+        color: '#d97706',
+        bg: '#fffbeb',
+        border: '#fde68a'
+      }
+    ];
+
+    grid.innerHTML = CHANNEL_OPTIONS.map(opt => {
+      const optNameLower = opt.name.toLowerCase();
+      const isSelected = (val === optNameLower) || (optNameLower === 'trực tiếp' && (val === 'tại chỗ' || val === 'truc tiep' || val === 'tai cho')) || (optNameLower === 'tại chỗ' && val === 'trực tiếp');
+      return `
+        <div class="sale-channel-card-option ${isSelected ? 'active' : ''}" onclick="MobileApp.selectSaleChannel('${opt.name}')">
+          <div class="channel-card-icon-box" style="background: ${opt.bg}; color: ${opt.color}; border: 1.5px solid ${opt.border};">
+            ${opt.icon}
+          </div>
+          <div class="channel-card-info">
+            <div class="channel-card-name">${opt.name} ${opt.alias && opt.alias !== opt.name ? `<span style="font-size: 11px; font-weight: 500; color: #64748b;">(${opt.alias})</span>` : ''}</div>
+            <div class="channel-card-desc">${opt.desc}</div>
+          </div>
+          <div class="channel-card-check">
+            ${isSelected ? '✓' : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  },
+
+  applyCustomSaleChannel() {
+    const input = document.getElementById('customSaleChannelInput');
+    const val = (input?.value || '').trim() || 'Trực tiếp';
+    this.selectSaleChannel(val);
+  },
+
   openAddSaleModal(sale = null) {
     try {
       if (!window.appStore.state.products || window.appStore.state.products.length === 0) {
@@ -3276,7 +3477,7 @@ const MobileApp = {
         setVal('saleDate', sale.date ? sale.date.slice(0, 10) : new Date().toISOString().slice(0, 10));
         setVal('saleCustomerName', sale.customerName || 'Khách lẻ');
         setVal('saleCustomerPhone', sale.customerPhone || '');
-        setVal('saleChannel', sale.channel || 'Trực tiếp');
+        this.setSaleChannel(sale.channel || 'Trực tiếp');
         setVal('salePaymentStatus', sale.paymentStatus || 'unpaid');
 
         const divPaid = document.getElementById('divPaidAmount');
@@ -3303,7 +3504,7 @@ const MobileApp = {
         setVal('saleDate', new Date().toISOString().slice(0, 10));
         setVal('saleCustomerName', 'Khách lẻ');
         setVal('saleCustomerPhone', '');
-        setVal('saleChannel', 'Trực tiếp');
+        this.setSaleChannel('Trực tiếp');
         setVal('salePaymentStatus', 'unpaid');
 
         const divPaid = document.getElementById('divPaidAmount');
@@ -4663,6 +4864,10 @@ window.openAddProductModal = (prod = null) => MobileApp.openAddProductModal(prod
 window.openAddSaleModal = () => MobileApp.openAddSaleModal();
 window.openAddPurchaseModal = () => MobileApp.openAddPurchaseModal();
 window.openAddCashflowModal = () => MobileApp.openAddCashflowModal();
+window.openSaleChannelPicker = () => MobileApp.openSaleChannelPicker();
+window.closeSaleChannelPicker = () => MobileApp.closeSaleChannelPicker();
+window.selectSaleChannel = (ch) => MobileApp.selectSaleChannel(ch);
+window.applyCustomSaleChannel = () => MobileApp.applyCustomSaleChannel();
 window.openCashflowTypePicker = () => MobileApp.openCashflowTypePicker();
 window.closeCashflowTypePicker = () => MobileApp.closeCashflowTypePicker();
 window.selectCashflowType = (type) => MobileApp.selectCashflowType(type);
